@@ -1,16 +1,6 @@
-# bag_a_moment
+<<<<<<< HEAD
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+=======
+# Bag_A_Moment
+짐깐만
+>>>>>>> 5ada05fd9003a3cd2fe756823a31b26f944d350b
