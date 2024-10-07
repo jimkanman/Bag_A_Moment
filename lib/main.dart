@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/loading_screen.dart';
+import 'home_screen.dart';
 
 //모든 플러터 위젯 시작점
 void main() {
@@ -12,6 +13,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return loadingScreen();
+    return HomeScreen();
   }
 }
