@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/loading_screen.dart';
-import 'home_screen.dart';
+import 'package:bag_a_moment/home_screen.dart';
 
 //모든 플러터 위젯 시작점
 void main() {
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
   //지정 로딩위젯 선언
   StatelessWidget _loadingWidget(AsyncSnapshot<Object> snapshot) {
     if(snapshot.hasError) {print('로딩 중 에러가 발생하였습니다.'); return Text('Error');}
-    else if(snapshot.hasData){return HomeScreen();}
+    else if(snapshot.hasData){return HomeScreen();} //에러 없으면 home_screen으로 넘어감
     else{return loadingScreen();}
 
   }

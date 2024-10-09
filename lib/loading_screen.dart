@@ -17,7 +17,7 @@ class loadingScreen extends StatelessWidget {
                   fit: BoxFit.cover
               ),
               SizedBox(height: 20), //이미지, 로딩바 사이 간격
-              CircularProgressIndicator(
+              CircularProgressIndicator( //로딩
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.blue), // 로딩바 색상 지정
               ),
             ],

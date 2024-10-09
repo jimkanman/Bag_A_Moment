@@ -1,9 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 //홈화면 클래스 생성
-class HomeScreen extends StatelessWidget{
-  const HomeScreen ({Key? key}) : super(key: key);
-  
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+  _HomeScreenState creatState() => _HomeScreenState();
+
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState, 아직 상태 구현 x
+    throw UnimplementedError();
+  }
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // Google Map Controller
+  late GoogleMapController mapController;
+
+  // 초기 맵 위치 설정 (위도, 경도)
+  final LatLng _initialPosition = const LatLng(37.5045563 / 경도, 126.9569379); // 중앙대 위치 넣음
+
+  // GoogleMap 위젯에서 카메라 제어
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
+
+
+
   @override
   Widget build(BuildContext context){
     return Scaffold(
