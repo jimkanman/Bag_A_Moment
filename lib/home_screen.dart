@@ -18,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   late GoogleMapController mapController;
 
   // 초기 맵 위치 설정 (위도, 경도)
-  final LatLng _initialPosition = const LatLng(37.5045563 / 경도, 126.9569379); // 중앙대 위치 넣음
+  final LatLng _initialPosition = const LatLng(37.5045563, 126.9569379); // 중앙대 위치 넣음
 
   // GoogleMap 위젯에서 카메라 제어
   void _onMapCreated(GoogleMapController controller) {
