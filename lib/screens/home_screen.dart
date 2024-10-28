@@ -4,13 +4,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 //홈화면 클래스 생성
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
-  _HomeScreenState creatState() => _HomeScreenState();
-
   @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState, 아직 상태 구현 x
-    throw UnimplementedError();
-  }
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
