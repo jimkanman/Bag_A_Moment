@@ -20,15 +20,17 @@ class _HomeScreenState extends State<HomeScreen> {
     mapController = controller;
   }
 
-
-
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      // Scaffold로 화면 전체 레이아웃을 감싸고, 배경색을 설정
-      body: Container(
-        color: Color.fromARGB(255, 00, 206, 209), //홈화면 기본 색상 정하기
-      ),
+      // Scaffold로 화면 전체 레이아웃을 감싸고, 지도 표출
+        body: GoogleMap(
+          onMapCreated: _onMapCreated,
+          initialCameraPosition: CameraPosition(
+            target: _initialPosition,
+            zoom: 14.0, // 초기 줌 레벨
+          ),
+        ),
     );
   }
 }

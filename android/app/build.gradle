@@ -16,7 +16,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "1.8"
     }
     defaultConfig {
         // You can update the following values to match your application needs.
@@ -28,6 +28,9 @@ android {
         targetSdkVersion 33
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // Google Maps API 키를 AndroidManifest에서 사용하려면 추가 설정 필요 (멀티덱스 설정)
+        multiDexEnabled = true
     }
 
     buildTypes {
@@ -38,6 +41,12 @@ android {
         }
     }
 }
+
+
+dependencies {
+    implementation 'com.google.android.gms:play-services-maps:17.0.1'
+}
+
 
 flutter {
     source = "../.."

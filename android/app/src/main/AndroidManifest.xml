@@ -1,10 +1,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 위치,인터넷 권한 추가 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:label="bag_a_moment"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data
+            android:name="io.flutter.embedding.android.NormalTheme"
+            android:resource="@style/NormalTheme"
+            />
+        <!--Google Maps API 키-->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCbtzR1Pg_7RZvn-uxAO3VQa6CygWtMCoQ"
+            />
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.bag_a_moment.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
@@ -16,15 +30,7 @@
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues
                  to determine the Window background behind the Flutter UI. -->
-            <meta-data
-              android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/NormalTheme"
-              />
-            <!--Google Maps API 키-->
-            <meta-data
-                android:name="com.google.android.geo.API_KEY"
-                android:value="AIzaSyCbtzR1Pg_7RZvn-uxAO3VQa6CygWtMCoQ"
-                />
+
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
