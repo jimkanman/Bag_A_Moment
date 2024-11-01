@@ -2,8 +2,8 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 //로딩스크린 클래스 생성
-class loadingScreen extends StatelessWidget {
-  const loadingScreen({Key? key}) : super(key: key);
+class LoadingScreen extends StatelessWidget {
+  const LoadingScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
