@@ -7,22 +7,26 @@ class LoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        color: Colors.white,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget> [
-              ExtendedImage.asset('assets/images/mainLogo.png',
-                  fit: BoxFit.cover
-              ),
-              SizedBox(height: 20), //이미지, 로딩바 사이 간격
-              CircularProgressIndicator( //로딩
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue), // 로딩바 색상 지정
-              ),
-            ],
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: Stack(
+        children: <Widget>[
+          // 전체 화면을 채우는 이미지
+          Positioned.fill(
+            child: ExtendedImage.asset(
+              'assets/images/main.png',
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
+          // 이미지 위에 중하단에 위치한 로딩 인디케이터
+          Align(
+            alignment: Alignment(0.0, 0.7), // 수직 위치 조정 (1.0이 가장 아래)
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFB3EDE5)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
