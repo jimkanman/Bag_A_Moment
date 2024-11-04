@@ -57,7 +57,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: Color(0xFF21B2A6),
         onTap: _onItemTapped, // 탭 변경 시 호출
       ),
     );

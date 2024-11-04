@@ -19,11 +19,11 @@ class _HomeScreenState extends State<HomeScreen> {
   final Set<Marker> _markers = {};
   // 검색된 마커 리스트
   List<Marker> _filteredMarkers = [];
+  String _location = "현위치";
+  int _selectedItems = 1; // 초기값 설정
+  DateTimeRange? _selectedDateRange;
+  bool _isExpanded = false; // 검색창 확장 여부
 
-  // GoogleMap 위젯에서 카메라 제어
-  void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
-  }
 
   @override
   void initState() {
@@ -48,6 +48,61 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  //필터
+  void _openFilterDialog() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('짐 개수 선택'),
+              Slider(
+                min: 1,
+                max: 10,
+                divisions: 9,
+                label: '$_selectedItems개',
+                value: _selectedItems.toDouble(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedItems = value.toInt();
+                  });
+                },
+              ),
+              SizedBox(height: 10),
+              Text('보관 기간 선택'),
+              ElevatedButton(
+                onPressed: () async {
+                  DateTimeRange? picked = await showDateRangePicker(
+                    context: context,
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(Duration(days: 365)),
+                  );
+                  setState(() {
+                    _selectedDateRange = picked;
+                  });
+                },
+                child: Text(
+                  _selectedDateRange == null
+                      ? '기간 선택'
+                      : '${_selectedDateRange!.start} - ${_selectedDateRange!.end}',
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
+  // GoogleMap 위젯에서 카메라 제어
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
+
   // 마커로 카메라 이동
   void _moveToMarker(Marker marker) {
     mapController.animateCamera(CameraUpdate.newLatLng(marker.position));
@@ -59,7 +114,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // fromAssetImage를 사용하여 BitmapDescriptor 생성, 이미지로 아이콘 설정
     final BitmapDescriptor bagIcon = await BitmapDescriptor.fromAssetImage(
       ImageConfiguration(size: Size(48, 48)), // 크기 설정
-      'assets/images/bag_icon.png', // 파일 경로
+      'assets/images/box_icon.png', // 파일 경로
     );
 
 
@@ -95,61 +150,89 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("보관소 검색하기")),
-      body: Column(
+      body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: "가장 가까운 보관소 찾아보기",
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              onChanged: _searchMarkers, // 입력할 때마다 검색
+          GoogleMap(
+            onMapCreated: (controller) => mapController = controller,
+            initialCameraPosition: CameraPosition(
+              target: _initialPosition,
+              zoom: 14.0,
             ),
+            markers: _markers,
           ),
-          Expanded(
-            child: Stack(
-              children: [
-                GoogleMap(
-                  onMapCreated: _onMapCreated,
-                  initialCameraPosition: CameraPosition(
-                    target: _initialPosition,
-                    zoom: 14.0, // 초기 줌 레벨
-                  ),
-                  markers: _markers, // 마커 설정
-                ),
-                if (_searchController.text.isNotEmpty)
-                  Positioned(
-                    top: 60,
-                    left: 15,
-                    right: 15,
-                    child: Material(
-                      color: Colors.white,
-                      elevation: 4,
-                      borderRadius: BorderRadius.circular(8),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: _filteredMarkers.length,
-                        itemBuilder: (context, index) {
-                          final marker = _filteredMarkers[index];
-                          return ListTile(
-                            title: Text(marker.infoWindow.title!),
-                            onTap: () {
-                              _moveToMarker(marker); // 클릭 시 지도 이동
-                              _searchController.clear(); // 검색창 지우기
-                              setState(() {
-                                _filteredMarkers = _markers.toList();
-                              });
-                            },
-                          );
-                        },
-                      ),
+          Positioned(
+            top: 20,
+            left: 15,
+            right: 15,
+            child: GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _location,
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        TextField(
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: "가장 가까운 보관소 찾아보기",
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onChanged: _searchMarkers,
+                        ),
+                        SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: _openFilterDialog,
+                          child: Text("필터 선택"),
+                        ),
+                      ],
                     ),
                   ),
-              ],
+                );
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 5,
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _location,
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          "보관소 검색",
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                    Icon(Icons.search),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
