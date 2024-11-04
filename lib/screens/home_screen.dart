@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _location = "현위치";
   int _selectedItems = 1; // 초기값 설정
   DateTimeRange? _selectedDateRange;
+  TimeOfDay? _selectedTime;
   bool _isExpanded = false; // 검색창 확장 여부
 
 
@@ -35,6 +36,29 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  // 날짜 선택
+  void _pickDateRange() async {
+    DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(days: 365)),
+    );
+    setState(() {
+      _selectedDateRange = picked;
+    });
+  }
+
+  // 시간 선택
+  void _pickTime() async {
+    TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    setState(() {
+      _selectedTime = picked;
+    });
   }
 
   // 검색 기능
@@ -113,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _addMarkers() async {
     // fromAssetImage를 사용하여 BitmapDescriptor 생성, 이미지로 아이콘 설정
     final BitmapDescriptor bagIcon = await BitmapDescriptor.fromAssetImage(
-      ImageConfiguration(size: Size(48, 48)), // 크기 설정
+      ImageConfiguration(size: Size(70, 70)), // 크기 설정
       'assets/images/box_icon.png', // 파일 경로
     );
 
@@ -166,44 +190,16 @@ class _HomeScreenState extends State<HomeScreen> {
             right: 15,
             child: GestureDetector(
               onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _location,
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        TextField(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText: "가장 가까운 보관소 찾아보기",
-                            prefixIcon: Icon(Icons.search),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onChanged: _searchMarkers,
-                        ),
-                        SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: _openFilterDialog,
-                          child: Text("필터 선택"),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
+                setState(() {
+                  _isExpanded = !_isExpanded;
+                });
               },
-              child: Container(
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black26,
@@ -211,25 +207,107 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ],
                 ),
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          _location,
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, color: Color(0xFF43CBBA)),
+                            SizedBox(width: 5),
+                            Text(
+                              "현위치",
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 4),
-                        Text(
-                          "보관소 검색",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        IconButton(
+                          icon: Icon(Icons.filter_list, color: Color(0xFF43CBBA)),
+                          onPressed: () {
+                            // 필터 선택 시 로직 추가
+                          },
                         ),
                       ],
                     ),
-                    Icon(Icons.search),
+                    if (_isExpanded)
+                      Column(
+                        children: [
+                          Divider(color: Colors.grey),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.shopping_bag, color: Color(0xFF43CBBA)),
+                                  SizedBox(width: 5),
+                                  Text("캐리어 $_selectedItems개", style: TextStyle(fontSize: 14)),
+                                  SizedBox(width: 10),
+                                  IconButton(
+                                    icon: Icon(Icons.remove),
+                                    onPressed: () {
+                                      setState(() {
+                                        if (_selectedItems > 1) _selectedItems--;
+                                      });
+                                    },
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.add),
+                                    onPressed: () {
+                                      setState(() {
+                                        _selectedItems++;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.calendar_today, color: Color(0xFF43CBBA)),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    _selectedDateRange == null
+                                        ? '기간 선택'
+                                        : '${_selectedDateRange!.start} - ${_selectedDateRange!.end}',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.date_range),
+                                onPressed: _pickDateRange,
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.access_time, color: Color(0xFF43CBBA)),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    _selectedTime == null
+                                        ? '시간 선택'
+                                        : '${_selectedTime!.format(context)}',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.schedule),
+                                onPressed: _pickTime,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ),
