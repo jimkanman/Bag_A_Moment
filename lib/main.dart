@@ -33,6 +33,7 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
+  //하단바 위젯
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,28 +67,27 @@ class _MainScreenState extends State<MainScreen> {
 
 
 bool isLoggedIn = true; // 로그인 상태를 나타내는 변수
-//Beamer 인스턴스 전역 선언
+
 final _routerDelegate = BeamerDelegate(
-  //Beamer 가드-로그인 처리
-    guards: [
-      BeamGuard(
-        pathPatterns: ['/home'], // 보호하려는 경로 설정: 홈화면
-        check: (context, location) {
-          // 로그인 여부 등 조건을 확인 (true: 항상 통과, false: 로그인 요청)
-          //return isLoggedIn;
-          print("로그인 상태: $isLoggedIn");
-          return isLoggedIn;
-        },
-        showPage: BeamPage(child: AuthScreen()), // 변수 false일 때 표시할 페이지
-      ),
-    ],
+  initialPath: '/home', // 초기 경로 설정
+  guards: [
+    BeamGuard(
+      pathPatterns: ['/home'], // '/home' 접근 시만 검사를 적용
+      check: (context, location) {
+        print("로그인 상태: $isLoggedIn");
+        return isLoggedIn; // 로그인 상태 확인
+      },
+      showPage: BeamPage(child: AuthScreen()), // false일 때 보여줄 페이지
+    ),
+  ],
   locationBuilder: BeamerLocationBuilder(
     beamLocations: [
-      HomeLocation(), // '/home' 경로에 대응
-      AuthLocation(), // '/auth' 경로에 대응
+      HomeLocation(), // '/home' 경로
+      AuthLocation(), // '/auth' 경로
     ],
   ),
 );
+
 
 class JimApp extends StatelessWidget {
   const JimApp({Key? key}) : super(key: key);
@@ -115,11 +115,16 @@ class JimApp extends StatelessWidget {
                 ),
               );
             } else {
-              // 로딩 완료 후 MainScreen 표시
-              return MaterialApp(
+              return MaterialApp.router(
                 debugShowCheckedModeBanner: false,
-                theme: appTheme, // theme.dart에서 가져온 테마 사용
-                home: MainScreen(), // MainScreen을 초기 화면으로 설정
+                theme: appTheme,
+                routeInformationProvider: PlatformRouteInformationProvider(
+                  initialRouteInformation: RouteInformation(
+                    location: isLoggedIn ? '/home' : '/auth',
+                  ),
+                ),
+                routerDelegate: _routerDelegate,
+                routeInformationParser: BeamerParser(),
               );
             }
             // 초기 경로를 '/home'으로 설정하여 BeamGuard가 적용되도록 함
