@@ -66,7 +66,7 @@ class _MainScreenState extends State<MainScreen> {
 }
 
 
-bool isLoggedIn = true; // 로그인 상태를 나타내는 변수
+bool isLoggedIn = false; // 로그인 상태를 나타내는 변수
 
 final _routerDelegate = BeamerDelegate(
   initialPath: '/home', // 초기 경로 설정
@@ -77,7 +77,8 @@ final _routerDelegate = BeamerDelegate(
         print("로그인 상태: $isLoggedIn");
         return isLoggedIn; // 로그인 상태 확인
       },
-      showPage: BeamPage(child: AuthScreen()), // false일 때 보여줄 페이지
+      showPage: BeamPage(child: LoginScreen(), // false일 때 보여줄 페이지
+    ),
     ),
   ],
   locationBuilder: BeamerLocationBuilder(
@@ -157,7 +158,7 @@ class AuthLocation extends BeamLocation {
   List<BeamPage> buildPages(BuildContext context, RouteInformationSerializable<dynamic> state) {
     return [
       BeamPage(
-        child: AuthScreen(),
+        child: LoginScreen(),
         key: ValueKey('auth'),
       ),
     ];

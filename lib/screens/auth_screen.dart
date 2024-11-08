@@ -1,19 +1,96 @@
+import 'dart:convert';
+import 'package:bag_a_moment/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 //비머 가드 false 리턴화면
-class AuthScreen extends StatelessWidget {
-  const AuthScreen({Key? key}): super(key: key);
+
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  //로그인 기능
+  Future<void> _login() async {
+    final response = await http.post(
+      Uri.parse('http://3.35.175.114:8080/login'),
+      body: jsonEncode({
+        'loginId': _idController.text,
+        'password': _passwordController.text,
+      }),
+    );
+
+    print("${response.statusCode} ${response.body}");
+
+    if (response.statusCode == 200) {
+      // 로그인 성공(e.g., navigate to home screen, save JWT)
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_data', response.body);
+      // 로그인 성공 시 홈 화면으로 이동하고 이전 경로 제거
+    Navigator.of(context).pushAndRemoveUntil(
+    MaterialPageRoute(builder: (context) => HomeScreen()),
+    (Route<dynamic> route) => false, // 모든 이전 경로 제거
+    );
+    } else {
+      // 에러
+      print('로그인 실패: ${response.body}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인에 실패하였습니다. 다시 시도해주세요')),
+      );
+    }
+  }
+
+  // 회원가입 함수
+  Future<void> _signUp() async {
+    final response = await http.post(
+      Uri.parse('YOUR_SERVER_URL/signup'),
+      body: {
+        'loginId': _idController.text,
+        'password': _passwordController.text,
+      },
+    );
+
+    if (response.statusCode == 201) {
+      //회원가입 성공
+    } else {
+      //회원가입 에러
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.red,
-        body: Center( // Center 위젯으로 텍스트를 화면 중앙에 배치
-          child: Text(
-        '로그인 해주세요',
-        style: TextStyle(fontSize: 24, color: Colors.white), // 텍스트 스타일 추가
-          ),
+      appBar: AppBar(title: Text('로그인')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _idController,
+              decoration: InputDecoration(labelText: 'ID 입력'),
+            ),
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(labelText: '비밀번호'),
+              obscureText: true,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _login,
+              child: Text('로그인'),
+            ),
+            TextButton(
+              onPressed: _signUp,
+              child: Text('회원가입'),
+            ),
+          ],
         ),
+      ),
     );
   }
 }
