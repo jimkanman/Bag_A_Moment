@@ -4,6 +4,13 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>사진 라이브러리에 접근하기 위해 권한이 필요합니다.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>카메라에 접근하기 위해 권한이 필요합니다.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>마이크에 접근하기 위해 권한이 필요합니다.</string>
+
 	<key>CFBundleDisplayName</key>
 	<string>Bag A Moment</string>
 	<key>CFBundleExecutable</key>

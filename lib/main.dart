@@ -66,7 +66,7 @@ class _MainScreenState extends State<MainScreen> {
 }
 
 
-bool isLoggedIn = false; // 로그인 상태를 나타내는 변수
+bool isLoggedIn = true; // 로그인 상태를 나타내는 변수
 
 final _routerDelegate = BeamerDelegate(
   initialPath: '/home', // 초기 경로 설정
