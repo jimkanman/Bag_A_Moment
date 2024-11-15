@@ -8,6 +8,8 @@ import 'package:bag_a_moment/screens/storage.dart';
 import 'package:bag_a_moment/screens/mypage.dart';
 import 'package:bag_a_moment/screens/auth_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
 import 'theme.dart';
 
 class MainScreen extends StatefulWidget {
@@ -18,15 +20,13 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  // 페이지 목록 정의
+  // 페이지 목록
   final List<Widget> _pages = [
     HomeScreen(), // 홈 (지도 페이지)
     ReservationScreen(), // 예약 내역 페이지
     StorageScreen(), // 내보관소 페이지
     ProfileScreen(), // 마이페이지
   ];
-
-  // 탭 선택 시 호출되는 메서드
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -69,40 +69,68 @@ class _MainScreenState extends State<MainScreen> {
 class JimApp extends StatelessWidget {
   const JimApp({Key? key}) : super(key: key);
 
-  Future<bool> _checkLoginStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('user_data') != null;
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: InitialScreen(),
+    );
+  }
+}
 
-    //토큰 해독해서 현재 시간 비교, 만료확인
+class InitialScreen extends StatefulWidget {
+  @override
+  _InitialScreenState createState() => _InitialScreenState();
+}
+
+class _InitialScreenState extends State<InitialScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+
+
+  Future<void> _checkLoginStatus() async {
+    // 로딩 화면을 2초 동안 보여주기 위해 딜레이 추가
+    await Future.delayed(Duration(seconds: 2));
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getString('user_data') != null;
+
+    //로그인 상태 받아오기
+    final response = await http.post(Uri.parse('http://3.35.175.114:8080/login'));
+    // 로그인 상태에 따라 페이지 네비게이션 처리
+    //###여기 로그인 여부 확인 방법-토큰 만료 되었는지로 바꾸기!!!
+    if (response.statusCode == 200){
+
+      // 로그인 성공 (e.g., navigate to home screen, save JWT)
+      print('로그인 성공: 상태 코드 ${response.statusCode}, 응답 메시지: ${response.body}');
+
+      // 추가 작업 (예: JWT 저장 및 화면 이동)
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_data', response.body);
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+      );
+    } else {
+      // 에러 처리
+      print('로그인 실패: 상태 코드 ${response.statusCode}, 응답 메시지: ${response.body}');
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('짐깐만 이용을 위해 로그인 해주세요.')),
+          // 추가 작업 (예: JWT 저장 및 화면 이동)
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    }
+
+
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: _checkLoginStatus(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return MaterialApp(
-            home: LoadingScreen(),
-          );
-        } else if (snapshot.hasError) {
-          return MaterialApp(
-            home: Scaffold(
-              body: Center(
-                child: Text('Error: 로딩 중 문제가 발생했습니다.'),
-              ),
-            ),
-          );
-        } else {
-          bool isLoggedIn = snapshot.data ?? false;
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: appTheme,
-            home: isLoggedIn ? MainScreen() : LoginScreen(),
-          );
-        }
-      },
-    );
+    return LoadingScreen(); // 앱을 실행할 때 처음에 로딩 화면이 표시됨
   }
 }
 

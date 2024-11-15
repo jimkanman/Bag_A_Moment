@@ -29,6 +29,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (response.statusCode == 200) {
       // 로그인 성공(e.g., navigate to home screen, save JWT)
+      print('로그인 성공: 상태 코드 ${response.statusCode}, 응답 메시지: ${response.body}');
+      //jwt 저장, 화면 이동
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_data', response.body);
       // 로그인 성공 시 홈 화면으로 이동하고 이전 경로 제거
@@ -38,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     } else {
       // 에러
-      print('로그인 실패: ${response.body}');
+      print('로그인 실패: 상태 코드 ${response.statusCode}, 응답 메시지: ${response.body}');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('로그인에 실패하였습니다. 다시 시도해주세요')),
       );
