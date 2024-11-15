@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-//비머 가드 false 리턴화면
-
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
+
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  //로그인 기능
+  //로그인
   Future<void> _login() async {
     final response = await http.post(
       Uri.parse('http://3.35.175.114:8080/login'),
@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
   // 회원가입 함수
   Future<void> _signUp() async {
     final response = await http.post(
-      Uri.parse('YOUR_SERVER_URL/signup'),
+      Uri.parse('http://3.35.175.114:8080/signup'),
       body: {
         'loginId': _idController.text,
         'password': _passwordController.text,

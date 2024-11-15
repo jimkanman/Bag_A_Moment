@@ -1,5 +1,4 @@
 import 'package:bag_a_moment/rounter/locations.dart';
-import 'package:beamer/beamer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/screens/loading_screen.dart';
@@ -8,6 +7,7 @@ import 'package:bag_a_moment/screens/reservation.dart';
 import 'package:bag_a_moment/screens/storage.dart';
 import 'package:bag_a_moment/screens/mypage.dart';
 import 'package:bag_a_moment/screens/auth_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'theme.dart';
 
 class MainScreen extends StatefulWidget {
@@ -66,106 +66,44 @@ class _MainScreenState extends State<MainScreen> {
 }
 
 
-bool isLoggedIn = true; // 로그인 상태를 나타내는 변수
-
-final _routerDelegate = BeamerDelegate(
-  initialPath: '/home', // 초기 경로 설정
-  guards: [
-    BeamGuard(
-      pathPatterns: ['/home'], // '/home' 접근 시만 검사를 적용
-      check: (context, location) {
-        print("로그인 상태: $isLoggedIn");
-        return isLoggedIn; // 로그인 상태 확인
-      },
-      showPage: BeamPage(child: LoginScreen(), // false일 때 보여줄 페이지
-    ),
-    ),
-  ],
-  locationBuilder: BeamerLocationBuilder(
-    beamLocations: [
-      HomeLocation(), // '/home' 경로
-      AuthLocation(), // '/auth' 경로
-    ],
-  ),
-);
-
-
 class JimApp extends StatelessWidget {
   const JimApp({Key? key}) : super(key: key);
 
+  Future<bool> _checkLoginStatus() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_data') != null;
+
+    //토큰 해독해서 현재 시간 비교, 만료확인
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Object>(
-      future: Future.delayed(Duration(seconds: 3), () => 100), // 3초 로딩 후 빌더값 반환
+    return FutureBuilder<bool>(
+      future: _checkLoginStatus(),
       builder: (context, snapshot) {
-        return MaterialApp.router(
-          debugShowCheckedModeBanner: false,
-          routeInformationParser: BeamerParser(),
-          routerDelegate: _routerDelegate,
-          builder: (context, child) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              // 로딩 중일 때 로딩 화면 표시
-              return MaterialApp(
-                home: LoadingScreen(),
-              );
-            } else if (snapshot.hasError) {
-              // 에러가 발생한 경우 에러 화면 표시
-              return Scaffold(
-                body: Center(
-                  child: Text('Error: 로딩 중 문제가 발생했습니다.'),
-                ),
-              );
-            } else {
-              return MaterialApp.router(
-                debugShowCheckedModeBanner: false,
-                theme: appTheme,
-                routeInformationProvider: PlatformRouteInformationProvider(
-                  initialRouteInformation: RouteInformation(
-                    location: isLoggedIn ? '/home' : '/auth',
-                  ),
-                ),
-                routerDelegate: _routerDelegate,
-                routeInformationParser: BeamerParser(),
-              );
-            }
-            // 초기 경로를 '/home'으로 설정하여 BeamGuard가 적용되도록 함
-          },
-        );
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return MaterialApp(
+            home: LoadingScreen(),
+          );
+        } else if (snapshot.hasError) {
+          return MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: Text('Error: 로딩 중 문제가 발생했습니다.'),
+              ),
+            ),
+          );
+        } else {
+          bool isLoggedIn = snapshot.data ?? false;
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: appTheme,
+            home: isLoggedIn ? MainScreen() : LoginScreen(),
+          );
+        }
       },
     );
   }
-}
-
-// 홈 화면 경로 설정
-class HomeLocation extends BeamLocation {
-  @override
-  List<BeamPage> buildPages(BuildContext context, RouteInformationSerializable<dynamic> state) {
-    return [
-      BeamPage(
-        child: HomeScreen(),
-        key: ValueKey('home'),
-      ),
-    ];
-  }
-
-  @override
-  List<Pattern> get pathPatterns => ['/home'];
-}
-
-// 로그인 화면 경로 설정
-class AuthLocation extends BeamLocation {
-  @override
-  List<BeamPage> buildPages(BuildContext context, RouteInformationSerializable<dynamic> state) {
-    return [
-      BeamPage(
-        child: LoginScreen(),
-        key: ValueKey('auth'),
-      ),
-    ];
-  }
-
-  @override
-  List<Pattern> get pathPatterns => ['/auth'];
 }
 
 //모든 플러터 위젯 시작점

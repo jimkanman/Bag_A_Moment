@@ -10,7 +10,6 @@
 
     <application
         android:label="bag_a_moment"
-        android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <meta-data
             android:name="io.flutter.embedding.android.NormalTheme"
@@ -47,6 +46,9 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    <!-- 위치 권한 추가 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

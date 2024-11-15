@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 //홈화면 클래스 생성
 class HomeScreen extends StatefulWidget {
@@ -11,6 +12,26 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // Google Map Controller
   late GoogleMapController mapController;
+  void initState() {
+    super.initState();
+    _requestLocationPermission();
+    _addMarkers();
+  }
+    // 위치 권한 요청 함수
+    void _requestLocationPermission() async {
+      if (await Permission.location.request().isGranted) {
+        // 권한이 부여됨
+        print("위치 권한이 부여되었습니다.");
+      } else {
+        // 권한이 거부됨
+        print("위치 권한이 거부되었습니다.");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("위치 권한이 필요합니다."),
+          ),
+        );
+      }
+    }
 
   // 검색 컨트롤러 초기화
   final TextEditingController _searchController = TextEditingController();
@@ -33,13 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
   TimeOfDay? _fromTime;
   TimeOfDay? _toTime;
   bool _isExpanded = false; // 검색창 확장 여부
-
-
-  @override
-  void initState() {
-    super.initState();
-    _addMarkers();
-  }
 
 // dispose에서 컨트롤러 해제
   @override
