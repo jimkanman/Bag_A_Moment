@@ -1,6 +1,7 @@
 
-짐깐만: FrontEnd Repository
-by Haesol Jeong
+#짐깐만: Bag A Moment, for your luggage everywhere 
+##FrontEnd Repository
+###by Haesol Jeong
 
-# Chung-ang University
+Chung-ang University, Team Project
 
