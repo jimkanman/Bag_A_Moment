@@ -12,12 +12,108 @@ import 'package:http/http.dart' as http;
 
 import 'theme.dart';
 
-class MainScreen extends StatefulWidget {
+class JimApp extends StatelessWidget {
+  const JimApp({Key? key}) : super(key: key);
+
   @override
-  _MainScreenState createState() => _MainScreenState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: InitialScreen(),
+    );
+  }
 }
 
-class _MainScreenState extends State<MainScreen> {
+class InitialScreen extends StatefulWidget {
+  @override
+  _InitialScreenState createState() => _InitialScreenState();
+}
+
+class _InitialScreenState extends State<InitialScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  void dispose(){
+    super.dispose();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    // 로딩 화면을 2초 동안 보여주기 위해 딜레이 추가
+    await Future.delayed(Duration(seconds: 2));
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userData = prefs.getString('user_data');
+
+    try {
+      //로그인 상태 받아오기
+      final response = await http.post(
+          Uri.parse('http://3.35.175.114:8080/login'));
+      // 로그인 상태에 따라 페이지 네비게이션 처리
+      //###여기 로그인 여부 확인 방법-토큰 만료 되었는지로 바꾸기!!!
+      if (response.statusCode == 200) {
+        // 로그인 성공 (e.g., navigate to home screen, save JWT)
+        print('로그인 성공: 상태 코드 ${response.statusCode}, 응답 메시지: ${response.body}');
+
+        // 추가 작업 (예: JWT 저장 및 화면 이동)
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('user_data', response.body);
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => MainBottomScreen()),
+        );
+      } else {
+        // 에러 처리
+        print(
+            '로그인 실패: 상태 코드 ${response.statusCode}, 응답 메시지: ${response.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('짐깐만 이용을 위해 먼저 로그인 해주세요.')),
+          // 추가 작업 (예: JWT 저장 및 화면 이동)
+        );
+      }
+    } catch (e) {
+      print('HTTP 요청 실패: $e');
+      _showLoginError();
+    }
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    }
+
+    //로그인 실패
+  void _showLoginError() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('짐깐만 이용을 위해 로그인 해주세요.')),
+    );
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => LoginScreen()),
+    );
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return LoadingScreen(); // 앱을 실행할 때 처음에 로딩 화면이 표시됨
+  }
+}
+
+//모든 플러터 위젯 시작점
+void main() {
+  runApp(JimApp());
+}
+
+
+//하단바
+class MainBottomScreen extends StatefulWidget {
+  @override
+  _MainScreenBottomState createState() => _MainScreenBottomState();
+}
+
+//하단 메뉴바
+class _MainScreenBottomState extends State<MainBottomScreen>
+    with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
 
   // 페이지 목록
@@ -29,6 +125,7 @@ class _MainScreenState extends State<MainScreen> {
   ];
   void _onItemTapped(int index) {
     setState(() {
+      print("탭 선택: $index");
       _selectedIndex = index;
     });
   }
@@ -37,7 +134,10 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex], // 현재 선택된 페이지
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ), // 현재 선택된 페이지
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -64,79 +164,3 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 }
-
-
-class JimApp extends StatelessWidget {
-  const JimApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: InitialScreen(),
-    );
-  }
-}
-
-class InitialScreen extends StatefulWidget {
-  @override
-  _InitialScreenState createState() => _InitialScreenState();
-}
-
-class _InitialScreenState extends State<InitialScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _checkLoginStatus();
-  }
-
-
-
-  Future<void> _checkLoginStatus() async {
-    // 로딩 화면을 2초 동안 보여주기 위해 딜레이 추가
-    await Future.delayed(Duration(seconds: 2));
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool isLoggedIn = prefs.getString('user_data') != null;
-
-    //로그인 상태 받아오기
-    final response = await http.post(Uri.parse('http://3.35.175.114:8080/login'));
-    // 로그인 상태에 따라 페이지 네비게이션 처리
-    //###여기 로그인 여부 확인 방법-토큰 만료 되었는지로 바꾸기!!!
-    if (response.statusCode == 200){
-
-      // 로그인 성공 (e.g., navigate to home screen, save JWT)
-      print('로그인 성공: 상태 코드 ${response.statusCode}, 응답 메시지: ${response.body}');
-
-      // 추가 작업 (예: JWT 저장 및 화면 이동)
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_data', response.body);
-
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
-    } else {
-      // 에러 처리
-      print('로그인 실패: 상태 코드 ${response.statusCode}, 응답 메시지: ${response.body}');
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('짐깐만 이용을 위해 로그인 해주세요.')),
-          // 추가 작업 (예: JWT 저장 및 화면 이동)
-      );
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
-    }
-
-
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return LoadingScreen(); // 앱을 실행할 때 처음에 로딩 화면이 표시됨
-  }
-}
-
-//모든 플러터 위젯 시작점
-void main() {
-  runApp(JimApp());
-}
-
-
