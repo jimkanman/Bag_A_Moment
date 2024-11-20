@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:bag_a_moment/main.dart';
 import 'package:bag_a_moment/screens/home_screen.dart';
 import 'package:bag_a_moment/screens/signup_screen.dart';
 import 'package:flutter/material.dart';
@@ -37,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setString('user_data', response.body);
       // 로그인 성공 시 홈 화면으로 이동하고 이전 경로 제거
     Navigator.of(context).pushAndRemoveUntil(
-    MaterialPageRoute(builder: (context) => HomeScreen()),
+    MaterialPageRoute(builder: (context) => MainBottomScreen()),
     (Route<dynamic> route) => false, // 모든 이전 경로 제거
     );
     } else {
