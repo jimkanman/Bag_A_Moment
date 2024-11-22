@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:bag_a_moment/screens/validation.dart';
 class StorageScreen extends StatefulWidget {
   @override
   _StorageScreenState createState() => _StorageScreenState();
@@ -13,14 +13,21 @@ class _StorageScreenState extends State<StorageScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _postalCodeController = TextEditingController(); // 추가된 필드
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _backpackPriceController = TextEditingController(); // 추가된 필드
+  final TextEditingController _carrierPriceController = TextEditingController(); // 추가된 필드
+  final TextEditingController _miscellaneousPriceController = TextEditingController(); // 추가된 필드
   final TextEditingController _refundPolicyController = TextEditingController();
+  final List<String> _availableOptions = ["PARKING", "LOADING_ZONE", "DELIVERY_SERVICE"];
+
 
   TimeOfDay? _openTime;
   TimeOfDay? _closeTime;
   File? _selectedImage;
   File? _selectedFile;
+
+  List<String> _storageOptions = [];
 
   Future<void> _pickTime(bool isOpeningTime) async {
     final TimeOfDay? picked = await showTimePicker(
@@ -79,6 +86,12 @@ class _StorageScreenState extends State<StorageScreen> {
                 validator: (value) => value!.isEmpty ? '전화번호를 입력해주세요.' : null,
               ),
               TextFormField(
+                controller: _postalCodeController,
+                decoration: InputDecoration(labelText: '우편번호'),
+                maxLength: 10,
+                validator: (value) => value!.isEmpty ? '우편번호를 입력해주세요.' : null,
+              ),
+              TextFormField(
                 controller: _addressController,
                 decoration: InputDecoration(labelText: '보관소 주소'),
                 maxLength: 30,
@@ -115,8 +128,20 @@ class _StorageScreenState extends State<StorageScreen> {
               ),
               SizedBox(height: 10),
               TextFormField(
-                controller: _priceController,
+                controller: _backpackPriceController,
                 decoration: InputDecoration(labelText: '가방 한개당 가격 (원)'),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? '가격을 입력해주세요.' : null,
+              ),
+              TextFormField(
+                controller: _carrierPriceController,
+                decoration: InputDecoration(labelText: '캐리어 한개당 가격 (원)'),
+                keyboardType: TextInputType.number,
+                validator: (value) => value!.isEmpty ? '가격을 입력해주세요.' : null,
+              ),
+              TextFormField(
+                controller: _miscellaneousPriceController,
+                decoration: InputDecoration(labelText: '기타 물품 가격 (원)'),
                 keyboardType: TextInputType.number,
                 validator: (value) => value!.isEmpty ? '가격을 입력해주세요.' : null,
               ),
@@ -135,12 +160,59 @@ class _StorageScreenState extends State<StorageScreen> {
                 onPressed: _pickFile,
                 child: Text('파일 선택'),
               ),
+              SizedBox(height: 10),
+              Text('보관소 옵션 선택'),
+              Wrap(
+                spacing: 10,
+                children: _availableOptions.map((option) {
+                  return ChoiceChip(
+                    label: Text(option),
+                    selected: _storageOptions.contains(option),
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          _storageOptions.add(option);
+                        } else {
+                          _storageOptions.remove(option);
+                        }
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
+                    if (_openTime == null || _closeTime == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('운영 시간을 선택해주세요.')),
+                      );
+                      return; // 검증 실패 시 실행 중단
+                    }
+
                     // 서버에 전송
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('보관소 등록 완료')));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ValidationScreen(
+                          name: _nameController.text,
+                          phone: _phoneController.text,
+                          address: _addressController.text,
+                          postalCode: _postalCodeController.text,
+                          description: _descriptionController.text,
+                          backpackPrice: _backpackPriceController.text,
+                          carrierPrice: _carrierPriceController.text,
+                          miscellaneousPrice: _miscellaneousPriceController.text,
+                          openTime: _openTime?.format(context),
+                          closeTime: _closeTime?.format(context),
+                          image: _selectedImage,
+                          refundPolicy: _refundPolicyController.text,
+                          storageOptions: _storageOptions,
+                        ),
+                      ),
+                    );
                   }
                 },
                 child: Text('보관소 정보 입력 완료'),
