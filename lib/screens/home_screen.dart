@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:bag_a_moment/screens/detailed_page.dart';
+import 'package:bag_a_moment/widgets/marker_details_widget.dart';
+import 'package:http/http.dart' as http;
 
 //홈화면 클래스 생성
 class HomeScreen extends StatefulWidget {
@@ -12,26 +16,45 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // Google Map Controller
   late GoogleMapController mapController;
+
+  // 선택된 마커 정보
+  Map<String, dynamic>? _selectedMarkerInfo;
+  // 선택된 마커 위치
+  LatLng? _selectedMarkerPosition;
+
+  final List<Marker> _markers = [];
+  String? _selectedStorageId; //선택된 마커 아이디
+  String? _selectedName; // 선택된 마커의 이름
+  String? _selectedImageUrl; // 선택된 마커의 이미지 URL
+  List<String>? _selectedTags; // 선택된 마커의 태그
+  Offset? _markerScreenPosition; // 마커의 화면 좌표
+
   void initState() {
     super.initState();
     _requestLocationPermission();
     _addMarkers();
   }
-    // 위치 권한 요청 함수
-    void _requestLocationPermission() async {
-      if (await Permission.location.request().isGranted) {
-        // 권한이 부여됨
-        print("위치 권한이 부여되었습니다.");
-      } else {
-        // 권한이 거부됨
-        print("위치 권한이 거부되었습니다.");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("위치 권한이 필요합니다."),
-          ),
-        );
-      }
+  // 위치 권한 요청 함수
+  void _requestLocationPermission() async {
+    if (await Permission.location.request().isGranted) {
+      // 권한이 부여됨
+      print("위치 권한이 부여되었습니다.");
+    } else {
+      // 권한이 거부됨
+      print("위치 권한이 거부되었습니다.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("위치 권한이 필요합니다."),
+        ),
+      );
     }
+  }
+
+
+  // GoogleMap 위젯에서 카메라 제어
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
 
   // 검색 컨트롤러 초기화
   final TextEditingController _searchController = TextEditingController();
@@ -39,8 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // 초기 맵 위치 설정 (위도, 경도) - 사용자 현위치로 수정
   final LatLng _initialPosition = const LatLng(
       37.5045563, 126.9569379); // 중앙대 위치 넣음
-  //마커 표시(추후 수정할 것-보관소 추가할 때)
-  final Set<Marker> _markers = {};
+
 
   //마커 리스트
   List<Marker> _markerList = []; // 마커 리스트 저장
@@ -55,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
   TimeOfDay? _toTime;
   bool _isExpanded = false; // 검색창 확장 여부
 
-// dispose에서 컨트롤러 해제
+  // dispose에서 컨트롤러 해제
   @override
   void dispose() {
     _searchController.dispose();
@@ -98,7 +120,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
   }
-
 
     // 검색 기능
     void _searchMarkers(String query) {
@@ -175,12 +196,6 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-
-    // GoogleMap 위젯에서 카메라 제어
-    void _onMapCreated(GoogleMapController controller) {
-      mapController = controller;
-    }
-
     // 마커로 카메라 이동
     void _moveToMarker(Marker marker) {
       mapController.animateCamera(CameraUpdate.newLatLng(marker.position));
@@ -194,38 +209,95 @@ class _HomeScreenState extends State<HomeScreen> {
         'assets/images/box_icon.png', // 파일 경로
       );
 
+      //서버에서 마커 정보 가져오기!
+      List<Map<String, dynamic>> markerData = [
+        {"storageId": "1", "lat": 37.5665, "lng": 126.9780},
+        {"storageId": "2", "lat": 37.5651, "lng": 126.9895},
+      ];
+
+      //서버 데이터 기반으로 마커 추가
+      for (var data in markerData) {
+        _markers.add(
+          Marker(
+            markerId: MarkerId(data['storageId']),
+            position: LatLng(data['lat'], data['lng']),
+            onTap: () {
+              // 클릭된 마커의 storageId 저장
+              setState(() {
+                _selectedStorageId = data['storageId'];
+              });
+              // 서버에서 상세 정보 가져오기
+              _fetchStorageDetails(data['storageId']);
+            },
+          ),
+        );
+      }
 
       // 특정 위치에 마커 추가 1
-      final Marker marker = Marker(
+      final marker = Marker(
         markerId: MarkerId('chungang'),
-        position: _initialPosition,
+        position: LatLng(37.5045563, 126.9569379),
         infoWindow: InfoWindow(
-          title: '중앙대학교',
+          title: '중앙대학교 스토리지',
           snippet: '중앙대학교 보관소 입니다.',
         ),
-        icon: BitmapDescriptor.defaultMarker, // 기본 마커 아이콘
+        onTap: () async {
+          setState(() {
+            _selectedMarkerInfo = {
+              'name': '상도 스토리지',
+              'image': "https://via.placeholder.com/150", // 박스 이미지 경로
+              'tags': ['큰 보관', '냉장', '24시간'],
+            };
+          });
+          // 마커 위치를 화면 좌표로 변환
+          ScreenCoordinate screenCoordinate =
+          await mapController.getScreenCoordinate(_selectedMarkerPosition!);
+
+          setState(() {
+            _markerScreenPosition = Offset(
+              screenCoordinate.x.toDouble(),
+              screenCoordinate.y.toDouble(),
+            );
+          });
+
+        },
+        icon: bagIcon,
       );
 
-      // 특정 위치에 마커 추가 2
-      final marker2 = Marker(
-        markerId: MarkerId('example'),
-        position: LatLng(37.5700, 126.9830),
-        infoWindow: InfoWindow(
-          title: '종각역',
-          snippet: '종각역 보관소 입니다.',
-        ),
-        icon: bagIcon, // custom한 가방 아이콘 사용
-      );
-
-      setState(() {
-        _markers.add(marker); // 마커 추가
-        _markers.add(marker2); // 마커 추가
-        _markerList = _markers.toList(); // 마커 리스트로 저장
-        //_filteredMarkers = _markers.toList(); // 초기 검색 결과는 모든 마커
-      });
     }
 
-    @override
+  Future<void> _fetchStorageDetails(String storageId) async {
+    final response = await http.get(
+        Uri.parse('http://3.35.175.114:8080/$storageId'));
+
+    if (response.statusCode == 200) {
+      // 서버 응답을 JSON으로 디코딩
+      final data = jsonDecode(response.body);
+      setState(() {
+        _selectedMarkerInfo = data; // 상세 정보 저장
+      });
+    } else {
+      // 에러 처리
+      print("Failed to load storage details: ${response.statusCode}");
+    }
+
+  }
+
+  Future<void> _fetchMarkerData(String storageId) async {
+    // 마커 데이터 API 요청
+    final response = await http.get(Uri.parse('http://3.35.175.114:8080/$storageId'));
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        _selectedName = data['name'];
+        _selectedImageUrl = data['imageUrl'];
+        _selectedTags = List<String>.from(data['tags']);
+      });
+    }
+  }
+
+
+  @override
     Widget build(BuildContext context) {
       return Scaffold(
         body: Stack(
@@ -236,208 +308,44 @@ class _HomeScreenState extends State<HomeScreen> {
                 target: _initialPosition,
                 zoom: 14.0,
               ),
-              markers: _markers,
+              markers: Set.from(_markers),
+              onTap: (_) {
+                // 지도 클릭 시 선택된 정보 초기화
+                setState(() {
+                  _selectedName = null;
+                  _selectedImageUrl = null;
+                  _selectedTags = null;
+                  _selectedImageUrl = null;
+                  _selectedTags = null;
+                });
+              },
             ),
-            //상단 검색창
-            Positioned(
-              top: 20,
-              left: 15,
-              right: 15,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isExpanded = !_isExpanded;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 300),
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.location_on, color: Color(0xFF43CBBA)),
-                              SizedBox(width: 5),
-                              Text(
-                                "현위치",
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          IconButton(
-                            icon: Icon(
-                                Icons.filter_list, color: Color(0xFF43CBBA)),
-                            onPressed: _searchWithFilters, // 필터 적용 버튼
-                            // 필터 선택 로직 추가
-                          ),
-                        ],
-                      ),
-                      if (_isExpanded)
-                        Column(
-                          children: [
-                            Divider(color: Colors.grey),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.remove),
-                                      onPressed: () {
-                                        setState(() {
-                                          if (_selectedItems >
-                                              1) _selectedItems--;
-                                        });
-                                      },
-                                    ),
-                                    SizedBox(width: 5),
-                                    Icon(Icons.shopping_bag,
-                                        color: Color(0xFF43CBBA)),
-                                    Text("캐리어 $_selectedItems개",
-                                        style: TextStyle(fontSize: 16,
-                                            fontWeight: FontWeight.bold)),
-                                    SizedBox(width: 5),
-                                    IconButton(
-                                      icon: Icon(Icons.add),
-                                      onPressed: () {
-                                        setState(() {
-                                          _selectedItems++;
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.calendar_today,
-                                        color: Color(0xFF43CBBA)),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      _selectedDateRange == null
-                                          ? '날짜 선택'
-                                          : '${_selectedDateRange!.start
-                                          .toLocal()} - ${_selectedDateRange!
-                                          .end.toLocal()}',
-                                      style: TextStyle(fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: _pickDateRange,
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.access_time,
-                                        color: Color(0xFF43CBBA)),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      _fromTime == null || _toTime == null
-                                          ? '시간 선택'
-                                          : '${_fromTime!.format(
-                                          context)} - ${_toTime!.format(
-                                          context)}',
-                                      style: TextStyle(fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.schedule),
-                                  onPressed: _pickTimeRange,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            //하단 추천 리스트
-      /*
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: DraggableScrollableSheet(
-                initialChildSize: 0.1, // 얇은 바 높이
-                minChildSize: 0.1,
-                maxChildSize: 0.4, // 드래그하여 펼쳐질 최대 높이
-                builder: (context, scrollController) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                      boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8)],
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 5,
-                          margin: EdgeInsets.only(top: 10),
-                          decoration: BoxDecoration(
-                            color: Color(0xFF26D1BA),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        Flexible(
-                          child: ListView.builder(
-                            controller: scrollController,
-                            itemCount: _markerList.length,
-                            itemBuilder: (context, index) {
-                              final marker = _markerList[index];
-                              return SizedBox(
-                                height: 80,
-                                child: ListTile(
-                                  title: Text(marker.infoWindow.title ?? 'Unnamed'),
-                                  subtitle: Text(marker.infoWindow.snippet ?? '이게모야'),
-                                  onTap: () {
-                                    mapController.animateCamera(CameraUpdate.newLatLng(marker.position));
-                                  },
-                                ),
-                              );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
 
-               ),
-            */
-              ],
-             ),
-            );
-          }
-        }
+      // 마커 위 상세 정보 표시
+      if (_markerScreenPosition != null &&_selectedName != null &&_selectedImageUrl != null &&_selectedTags != null)
+      Positioned(
+          left: _markerScreenPosition!.dx - 150, // 위젯의 중앙 정렬
+          top: _markerScreenPosition!.dy - 120, // 마커 위쪽에 위치
+          child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => DetailPage(
+                    markerInfo: _selectedMarkerInfo!,
+                    ),
+                  ),
+                );
+              },
+              child: MarkerDetails(
+              name: _selectedName!,
+              imageUrl: _selectedImageUrl!,
+              tags: _selectedTags!,
+              ),
+
+            ),
+      ),
+      ]
+        ),
+      );
+  }
+}

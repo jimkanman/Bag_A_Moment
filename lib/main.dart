@@ -12,6 +12,7 @@ import 'package:bag_a_moment/screens/auth_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:bag_a_moment/api_response.dart';
+import 'widgets/marker_details_widget.dart';
 import 'theme.dart';
 
 class JimApp extends StatelessWidget {
@@ -77,7 +78,7 @@ class _InitialScreenState extends State<InitialScreen> {
       } else { // API에서 isSuccess가 false인 경우
         print('로그인 실패: 상태 코드 ${response.statusCode}, 응답 메시지: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('아이디 혹은 비밀번호가 잘못되었습니다.')),
+          SnackBar(content: Text('짐깐만 이용을 위해 로그인 해주세요.')),
           // 추가 작업 (예: JWT 저장 및 화면 이동)
         );
       }
