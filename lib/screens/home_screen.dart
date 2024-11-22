@@ -61,6 +61,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _requestLocationPermission();
+    _addInitialMarker(); // 프론트에서 할당한 초기 마커 추가
     _fetchNearbyStorages(); // 서버에서 storage 목록 가져오기
   }
 
@@ -220,6 +221,27 @@ class _HomeScreenState extends State<HomeScreen> {
       mapController.animateCamera(CameraUpdate.newLatLng(marker.position));
     }
 
+    /// 프론트에서 할당한 마커 추가
+    void _addInitialMarker() {
+      final marker = Marker(
+        markerId: MarkerId('chungang'),
+        position: LatLng(37.5045563, 126.9569379),
+        onTap: () {
+          setState(() {
+            _selectedMarkerInfo = {
+              'name': '기본 스토리지',
+              'image': 'https://via.placeholder.com/150',
+              'tags': ['큰 보관', '냉장', '24시간'],
+              'description': '중앙대학교 근처 보관소입니다.',
+            };
+          });
+        },
+      );
+      setState(() {
+        _markers.add(marker);
+      });
+    }
+
     //마커 추가
     Future<void> _addMarkers(List<dynamic> storages) async {
       print('Adding markers...');
@@ -244,6 +266,12 @@ class _HomeScreenState extends State<HomeScreen> {
           position: LatLng(storage['latitude'], storage['longitude']),
           icon: bagIcon,
           onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailPage(markerInfo: storage),
+              ),
+            );
             print("marker is clicked");
             // 디버깅용: 서버에서 받아온 데이터 출력
             print('Storage ID: ${storage['id']}');
@@ -259,55 +287,19 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           },
         );
-        _markers.add(marker);
+        setState(() {
+          _markers.add(marker);
+        }); // 상태 갱신
+
       }
 // 디버깅용: 전체 마커 개수 확인
       print('Total markers added: ${_markers.length}');
-
-      setState(() {}); // 상태 갱신
-
-
 
       // 만약 마커가 클릭되면, 클릭된 storageId와 함께 서버에 상세정보 요청을 GET 하기
       //_fetchStorageDetails()함수 이용
 
       //받은 정보로 마커 위에 정보를 보이기.
 
-
-      // 특정 위치에 마커 추가 1: 기본 테스트용 마커, 서버와 통신 한 것 x
-      final marker = Marker(
-        markerId: MarkerId('chungang'),
-        position: LatLng(37.5045563, 126.9569379),
-        onTap: () async {
-          setState(() {
-            _selectedMarkerInfo = {
-              'name': '기본 스토리지',
-              'image': "https://via.placeholder.com/150", // 박스 이미지 경로
-              'tags': ['큰 보관', '냉장', '24시간'],
-            };
-            // 클릭된 마커의 위치 저장
-            _selectedMarkerPosition = LatLng(37.5045563, 126.9569379);
-          });
-          //final storageInfo = await _fetchStorageDetails('1'); // 예제 storageId = '1'
-          final response = await http.get(
-            Uri.parse('http://3.35.175.114:8080/storages/1'),
-            headers: {'accept': 'application/json'}, // 필수 헤더
-            //당연히 에러. 서버에는 해당 위치 보관소 없음
-          );
-
-          // 클릭된 마커 위치를 화면 좌표로 변환 -> 상세 박스 표현
-          ScreenCoordinate screenCoordinate =
-          await mapController.getScreenCoordinate(_selectedMarkerPosition!);
-        },
-        icon: bagIcon,
-      );
-      // 마커 리스트를 setState로 업데이트
-      setState(() {
-        _markers.add(marker); // 마커 추가
-        //_markers.add(marker2); // 마커 추가
-        //_markerList = _markers.toList(); // 마커 리스트로 저장
-        //_filteredMarkers = _markers.toList(); // 초기 검색 결과는 모든 마커
-      });
 
 
     }
@@ -379,6 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
+    //이건 무슨 마커?
     if (_selectedMarkerInfo != null)
           Positioned(
           top: MediaQuery.of(context).size.height / 2 - 100,
@@ -451,7 +444,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             ),
           ),
-            // 마커 클릭 시 상세 정보 박스 표시
+            // 마커 클릭 시 상세 정보 박스 표시 : 서버에서 가져온 마커?
             if (_selectedMarkerInfo != null && _selectedMarkerPosition != null)
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 - 100,
@@ -514,9 +507,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               )
             else
-                Center(
+              Center(
                 child: Text('No marker selected'),
-                ),
+              ),
             //상단 검색창
             Positioned(
               top: 20,
