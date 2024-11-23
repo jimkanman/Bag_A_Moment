@@ -14,6 +14,11 @@ import 'package:http/http.dart' as http;
 import 'package:bag_a_moment/api_response.dart';
 import 'widgets/marker_details_widget.dart';
 import 'theme.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+// main.dart 또는 별도 파일
+final FlutterSecureStorage secureStorage = FlutterSecureStorage();
+
 
 class JimApp extends StatelessWidget {
   const JimApp({Key? key}) : super(key: key);
