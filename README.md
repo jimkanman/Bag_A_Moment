@@ -6,4 +6,4 @@
 Chung-ang University, Team Project
 
 
-![image](https://github.com/user-attachments/assets/18535f3b-2bd4-483b-8994-e9834eefd40a)
+![image](https://github.com/user-attachments/assets/cc219e41-7c7b-4196-a351-a62f6bdcd779)
