@@ -13,6 +13,12 @@ class MyPageMainScreen extends StatefulWidget {
 class _MyPageMainScreenState extends State<MyPageMainScreen> {
   Map<String, dynamic>? _userData;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData(); // 사용자 데이터를 초기화 시 로드
+  }
+
   Future<void> _loadUserData() async {
     final userData = await Userinfo.fetchUserData();
     if (userData != null) {
