@@ -52,13 +52,7 @@ class ValidationScreen extends StatelessWidget {
 
     final String url = 'http://3.35.175.114:8080/storages'; // 서버 API 주소
 
-    String _stringToTimeOfDay(TimeOfDay time) {
-      final hour = time.hour.toString().padLeft(2, '0');
-      final minute = time.minute.toString().padLeft(2, '0');
-      return "$hour:$minute";
-    }
-
-    // 시간 변환 함수
+    // 시간-string 변환 함수
     String _timeOfDayToString(TimeOfDay time) {
       final hour = time.hour.toString().padLeft(2, '0'); // 2자리 숫자로 변환
       final minute = time.minute.toString().padLeft(2, '0');
@@ -82,37 +76,32 @@ class ValidationScreen extends StatelessWidget {
       });
 
 
-      final Map<String, dynamic> requestBody = {
+
+      // 헤더 출력 (디버깅)
+      final headers = {
+        'Authorization': token,
+      };
+      print('Request Headers: $headers');
+      print('Request Body: ${request}');
+
+      // 본문 데이터 추가
+      request.fields.addAll({
         "registerName": name,
         "phoneNumber": phone,
         "description": description,
         "postalCode": postalCode,
         "detailedAddress": address,
-        "openingTime": openTime ?? (throw Exception('오픈 시간을 입력해주세요.')),
-        "closingTime": closeTime ?? (throw Exception('클로징 시간을 입력해주세요.')),
+        "openingTime": openTime ?? "",
+        "closingTime": closeTime ?? "",
+        "backpackPricePerHour": backpackPrice,
+        "carrierPricePerHour": carrierPrice,
+        "miscellaneousItemPricePerHour": miscellaneousPrice,
+      });
+      // `storageOptions` 필드를 배열 형태로 추가
+      for (var option in storageOptions) {
+        request.fields['storageOptions'] = option; // 배열 원소 하나씩 추가
+      }
 
-        "backpackPricePerHour": int.tryParse(backpackPrice),
-        // Assuming price is numeric
-        "carrierPricePerHour": int.tryParse(carrierPrice),
-        // Same price for all item types
-        "miscellaneousItemPricePerHour": int.tryParse(miscellaneousPrice),
-        "other_price_per_hour": 0, // 이 필드 뭐지?
-        "termsAndConditions": refundPolicy,
-        "storageImages": image != null
-            ? [
-          "data:image/jpeg;base64,${base64Encode(await image!.readAsBytes())}"
-        ]
-            : [],
-
-        "storageOptions": storageOptions,
-      };
-      // 헤더 출력 (디버깅)
-      final headers = {
-        'Content-Type': 'application/json',
-        'Authorization': token,
-      };
-      print('Request Headers: $headers');
-      print('Request Body: ${requestBody}');
 
 
       // 이미지 파일 추가 (선택적으로 추가)
@@ -121,23 +110,20 @@ class ValidationScreen extends StatelessWidget {
           await http.MultipartFile.fromPath('image', image!.path),
         );
       }
-
       // 약관 파일 추가 (선택적으로 추가)
       if (file != null) {
         request.files.add(
-          await http.MultipartFile.fromPath('termsFile', file!.path),
+          await http.MultipartFile.fromPath('termsAndConditions', file!.path),
         );
       }
 
+
       // POST request 보내기
-      final response = await http.post(
-        Uri.parse(url),
-        headers: headers,
-        body: jsonEncode(requestBody),
-      );
+      final response = await request.send();
       // 응답 확인
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
+        final responseBody = await response.stream.bytesToString();
+        final jsonResponse = jsonDecode(responseBody);
 
         if (jsonResponse['isSuccess'] == true) {
           // 응답 데이터 확인
@@ -178,7 +164,8 @@ class ValidationScreen extends StatelessWidget {
       } else {
         // HTTP 상태 코드가 200이 아닐 때 처리
         try {
-          final jsonResponse = jsonDecode(response.body);
+          final responseBody = await response.stream.bytesToString();
+          final jsonResponse = jsonDecode(responseBody);
           print('Server Error:');
           print('Status Code: ${response.statusCode}');
           print('Message: ${jsonResponse['message']}');
@@ -189,18 +176,20 @@ class ValidationScreen extends StatelessWidget {
           );
         } catch (e) {
           // JSON 파싱 실패 시 처리
-          print('Failed to parse server error response. Raw response: ${response
-              .body}');
+          final responseBody = await response.stream.bytesToString();
+          print('Server Response Body: $responseBody');
+          print('Failed to parse server error response. Raw response: ${responseBody}');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('서버 오류 발생: ${response.statusCode}')),
           );
         }
       }
-    } catch (e) {
-      // JSON 파싱 실패 시 처리
-      print('에러에러. Raw response');
-    }
-  }
+    } catch (e, stacktrace) {
+  print('Exception occurred: $e');
+  print('Stacktrace: $stacktrace');
+}
+
+}
 
   @override
   Widget build(BuildContext context) {

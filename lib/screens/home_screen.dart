@@ -26,8 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // 1-1. 초기 맵 위치 설정 (위도, 경도) - 사용자 현위치로 수정
-  final LatLng _initialPosition = const LatLng(
-      37.5045563, 126.9569379); // 중앙대 위치 넣음
+  final LatLng _initialPosition = const LatLng(37.5045563, 126.9569379); // 중앙대 위치 넣음
   final double _currentLatitude = 37.5045563; // 사용자의 현재 위도
   final double _currentLongitude = 126.9569379; // 사용자의 현재 경도
 
@@ -94,12 +93,12 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(response.body);
+        //final List<dynamic> storages = jsonResponse['data.id'];
 
-        final List<dynamic> storages = jsonResponse['data.id'];
         // 서버에서 성공 응답인지 확인
         if (jsonResponse['isSuccess'] == true) {
           final List<dynamic> storages = jsonResponse['data'];
-
           print('Storages fetched successfully: $storages');
           // TODO: 마커 추가 로직으로 데이터를 전달
           _addMarkers(storages); // 마커 추가
@@ -270,8 +269,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ImageConfiguration(size: Size(150, 150)), // 크기 설정
         'assets/images/box_icon3.png', // 파일 경로
       );
-
-
 
       //사용자 현위치 _initialPosition을 기반으로 주변 보관소 위치 GET 요청 날리기
 

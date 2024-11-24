@@ -26,7 +26,6 @@ class _StorageScreenState extends State<StorageScreen> {
   TimeOfDay? _closeTime;
   File? _selectedImage;
   File? _selectedFile;
-
   List<String> _storageOptions = [];
 
   Future<void> _pickTime(bool isOpeningTime) async {
@@ -208,6 +207,7 @@ class _StorageScreenState extends State<StorageScreen> {
                           openTime: _openTime?.format(context),
                           closeTime: _closeTime?.format(context),
                           image: _selectedImage,
+                          file: _selectedFile,
                           refundPolicy: _refundPolicyController.text,
                           storageOptions: _storageOptions,
                         ),
