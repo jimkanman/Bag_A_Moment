@@ -7,7 +7,7 @@ import 'package:bag_a_moment/screens/loading_screen.dart';
 import 'package:bag_a_moment/screens/home_screen.dart';
 import 'package:bag_a_moment/screens/reservation.dart';
 import 'package:bag_a_moment/screens/storage.dart';
-import 'package:bag_a_moment/screens/mypage.dart';
+import 'package:bag_a_moment/screens/myhome.dart';
 import 'package:bag_a_moment/screens/auth_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -137,7 +137,7 @@ class _MainScreenBottomState extends State<MainBottomScreen>
     HomeScreen(), // 홈 (지도 페이지)
     ReservationScreen(), // 예약 내역 페이지
     StorageScreen(), // 내보관소 페이지
-    ProfileScreen(), // 마이페이지
+    MyPageMainScreen(), // 마이페이지
   ];
   void _onItemTapped(int index) {
     setState(() {
