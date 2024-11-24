@@ -22,17 +22,15 @@ class ValidationScreen extends StatelessWidget {
   final List<String> storageOptions;
 
 
-
-
   const ValidationScreen({
     Key? key,
     required this.name,
     required this.phone,
     required this.address,
-    required this.postalCode, 
+    required this.postalCode,
     required this.description,
     required this.backpackPrice,
-    required this.carrierPrice, 
+    required this.carrierPrice,
     required this.miscellaneousPrice,
 
     this.openTime,
@@ -44,6 +42,13 @@ class ValidationScreen extends StatelessWidget {
   }) : super(key: key);
 
   Future<void> _submitData(BuildContext context) async {
+    // openingTime과 closingTime 필수 검사
+    if (openTime == null || closeTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('운영 시간을 입력해주세요.')),
+      );
+      return; // 종료
+    }
 
     final String url = 'http://3.35.175.114:8080/storages'; // 서버 API 주소
 
@@ -70,20 +75,21 @@ class ValidationScreen extends StatelessWidget {
         );
         return;
       }
-      // multipart 요청 생성
+      // Multipart Request 생성
       var request = http.MultipartRequest('POST', Uri.parse(url));
+      request.headers.addAll({
+        'Authorization': token, // 인증 토큰 추가
+      });
 
 
       final Map<String, dynamic> requestBody = {
         "registerName": name,
         "phoneNumber": phone,
         "description": description,
-        "postalCode": "00000",
-        // Replace with actual postal code if needed
+        "postalCode": postalCode,
         "detailedAddress": address,
-        "openingTime": openTime != null ? openTime : "",
-        // 이미 String인 경우 그대로 사용
-        "closingTime": closeTime != null ? closeTime : "",
+        "openingTime": openTime ?? (throw Exception('오픈 시간을 입력해주세요.')),
+        "closingTime": closeTime ?? (throw Exception('클로징 시간을 입력해주세요.')),
 
         "backpackPricePerHour": int.tryParse(backpackPrice),
         // Assuming price is numeric
@@ -211,7 +217,8 @@ class ValidationScreen extends StatelessWidget {
             SizedBox(height: 10),
             Text('주소: $address', style: TextStyle(fontSize: 16)),
             SizedBox(height: 10),
-            Text('운영 시간: $openTime ~ $closeTime', style: TextStyle(fontSize: 16)),
+            Text('운영 시간: $openTime ~ $closeTime',
+                style: TextStyle(fontSize: 16)),
             SizedBox(height: 10),
             Text('보관소 소개: $description', style: TextStyle(fontSize: 16)),
             SizedBox(height: 10),
@@ -219,11 +226,15 @@ class ValidationScreen extends StatelessWidget {
             SizedBox(height: 30),
             Text('가방 가격: $backpackPrice 원', style: TextStyle(fontSize: 16)),
             Text('캐리어 가격: $carrierPrice 원', style: TextStyle(fontSize: 16)),
-            Text('기타 물품 가격: $miscellaneousPrice 원', style: TextStyle(fontSize: 16)),
+            Text('기타 물품 가격: $miscellaneousPrice 원',
+                style: TextStyle(fontSize: 16)),
             SizedBox(height: 10),
             Text('환불 정책: $refundPolicy', style: TextStyle(fontSize: 16)),
             SizedBox(height: 10),
-            if (file != null) Text('약관 파일: ${file!.path.split('/').last}'),
+            if (file != null) Text('약관 파일: ${file!
+                .path
+                .split('/')
+                .last}'),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
@@ -244,3 +255,4 @@ class ValidationScreen extends StatelessWidget {
     );
   }
 }
+

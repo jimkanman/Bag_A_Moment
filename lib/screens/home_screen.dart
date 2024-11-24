@@ -82,6 +82,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+
+
+
   /// 1. 서버에서 사용자의 현재 위치 기반 storage 정보 가져오기
   Future<void> _fetchNearbyStorages() async {
     final String url = 'http://3.35.175.114:8080/storages/nearby?latitude=$_currentLatitude&longitude=$_currentLongitude&radius=1000';
@@ -89,17 +92,33 @@ class _HomeScreenState extends State<HomeScreen> {
       final response = await http.get(Uri.parse(url), headers: {
         'accept': 'application/json',
       });
-
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        final List<dynamic> storages = jsonResponse['data.id'];
 
-        _addMarkers(storages); // 마커 추가
+        final List<dynamic> storages = jsonResponse['data.id'];
+        // 서버에서 성공 응답인지 확인
+        if (jsonResponse['isSuccess'] == true) {
+          final List<dynamic> storages = jsonResponse['data'];
+
+          print('Storages fetched successfully: $storages');
+          // TODO: 마커 추가 로직으로 데이터를 전달
+          _addMarkers(storages); // 마커 추가
+        }
       } else {
         print("Failed to fetch nearby storages: ${response.statusCode}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('스토리지 로드 실패: ${jsonResponse['message']}')),
+        );
       }
     } catch (e) {
       print("Error fetching nearby storages: $e");
+      final response = await http.get(Uri.parse(url), headers: {
+        'accept': 'application/json',
+      });
+      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('서버 오류 발생: ${response.statusCode}')),
+      );
     }
   }
 
@@ -278,6 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
             print('Name: ${storage['name']}');
             print('Latitude: ${storage['latitude']}');
             print('Longitude: ${storage['longitude']}');
+
             _fetchStorageDetails(storage['id'].toString()); // 클릭한 마커의 상세 정보 가져오기
             setState(() {
               _selectedMarkerPosition = LatLng(
