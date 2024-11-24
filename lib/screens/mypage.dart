@@ -110,6 +110,7 @@ class _MyPageState extends State<MyPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(''),
+        backgroundColor: Color(0xFF49E0C0),
         actions: [
           IconButton(
             icon: Icon(Icons.logout), // 로그아웃 아이콘
@@ -138,20 +139,51 @@ class _MyPageState extends State<MyPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '회원 정보',
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          "${userData!['nickname']}님의",
+                          style: TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
+                        Text(
+                          '회원 정보',
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),),
                         SizedBox(height: 16),
                         SizedBox(height: 10),
-                        Text('ID: ${userData!['loginId']}', style: TextStyle(fontSize: 16)),
+                        Text('ID: ${userData!['loginId']}',  style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),),
                         SizedBox(height: 10),
-                        Text('닉네임: ${userData!['nickname']}', style: TextStyle(fontSize: 16)),
+                        Text('닉네임: ${userData!['nickname']}', style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),),
                         SizedBox(height: 10),
-                        Text('이름: ${userData!['username']}', style: TextStyle(fontSize: 16)),
+                        Text('이름: ${userData!['username']}', style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),),
                         SizedBox(height: 10),
-                        Text('이메일: ${userData!['email']}', style: TextStyle(fontSize: 16)),
+                        Text('이메일: ${userData!['email']}', style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),),
                         SizedBox(height: 10),
-                        Text('전화번호: ${userData!['phoneNumber']}', style: TextStyle(fontSize: 16)),
+                        Text('전화번호: ${userData!['phoneNumber']}', style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),),
                         SizedBox(height: 30),
                         ElevatedButton(
                           onPressed: () {
@@ -160,7 +192,11 @@ class _MyPageState extends State<MyPage> {
                               SnackBar(content: Text('회원 정보 수정 못합니다만?')),
                             );
                           },
-                          child: Text('회원정보 수정하기'),
+                          child: Text('회원정보 수정하기', style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          ),),
                     ),
                   ],
                 ),

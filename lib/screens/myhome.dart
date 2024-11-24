@@ -35,10 +35,6 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("마이페이지"),
-        backgroundColor: Colors.teal, // 앱바 색상
-      ),
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
@@ -52,15 +48,14 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),
-              color: Colors.teal, // 닉네임 배경 색상
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('닉네임: ${_userData!['nickname']}', style: TextStyle(fontSize: 16)),
+                  SizedBox(height: 16),
                   Text(
-                    "OO님,",
+                    "${_userData!['nickname']}님,",
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 38,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -68,7 +63,7 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
                   Text(
                     "짐깐만요!",
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 24,
                       fontWeight: FontWeight.w500,
                       color: Colors.white,
                     ),
