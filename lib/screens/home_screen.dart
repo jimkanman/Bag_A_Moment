@@ -6,6 +6,8 @@ import 'package:bag_a_moment/screens/detailed_page.dart';
 import 'package:bag_a_moment/widgets/marker_details_widget.dart';
 import 'package:http/http.dart' as http;
 
+import '../main.dart';
+
 //홈화면 클래스 생성
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -29,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final LatLng _initialPosition = const LatLng(37.5045563, 126.9569379); // 중앙대 위치 넣음
   final double _currentLatitude = 37.5045563; // 사용자의 현재 위도
   final double _currentLongitude = 126.9569379; // 사용자의 현재 경도
+  //현재는 우선 고정 위도 경도 사용함
 
 
   // 2. 선택된 마커 정보
@@ -86,40 +89,113 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// 1. 서버에서 사용자의 현재 위치 기반 storage 정보 가져오기
   Future<void> _fetchNearbyStorages() async {
+
+
+    //사용자 현위치 _initialPosition을 기반으로 주변 보관소 위치 GET 요청 날리기
     final String url = 'http://3.35.175.114:8080/storages/nearby?latitude=$_currentLatitude&longitude=$_currentLongitude&radius=1000';
+
+    final token = await secureStorage.read(key: 'auth_token');
+    // 로그인 토큰이 없으면 요청 중단
+      if (token == null) {
+        print("로그인 토큰이 없습니다. 로그인이 필요합니다.");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('로그인 토큰이 만료되었습니다. 다시 로그인해주세요.')),
+        );
+        return;
+      }
+    // 요청 헤더에 토큰 추가
+    final headers = {
+      'accept': 'application/json',
+      'Authorization': token, // 로그인 토큰 포함
+    };
+
+    // GET 요청 보내기, http응답 받아서 response에 저장
+    //     response.statusCode: HTTP 상태 코드 (예: 200, 400, 500 등).
+    //     response.body: 서버에서 반환된 응답 본문(문자열 형식).
+    //     response.headers: 서버 응답 헤더.
+    final response = await http.get(Uri.parse(url), headers: headers);
+    // UTF-8 디코딩
+    final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+
+    // 디버깅용: 응답 출력
+    print('HTTP Response Status Code: ${response.statusCode}');
+    print('jsonResponse Message: ${jsonResponse['message']}');
+    print('jsonResponse isSuccess:${jsonResponse['isSuccess']}');
+    print('jsonResponse Body Data ${jsonResponse['data']}');
+    //I/flutter ( 4234): jsonResponse [{id: 1, previewImagePath: https://jimkanman-bucket.s3.ap-northeast-2
+    // .amazonaws.com/defaults/jimkanman-default-preview-image.png, name: 중앙대학교 310관 보관소, storageOptions:
+    // [TWENTY_FOUR_HOURS], postalCode: 06974, detailedAddress: 서울특별시 흑석로 84 310관, latitude: 37.5047267237807,
+    // longitude: 126.953833907628, distance: 7546963.667196544, openingTime: 00:00, closingTime: 23:59, isOpen: true}]
+    print('jsonResponse Body: ${jsonResponse}');
+    //I/flutter ( 4234): jsonResponse Body: {isSuccess: true, code: 200, message: 요청이 성공했습니다.,
+    // data: [{id: 1, previewImagePath: https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman
+    // -default-preview-image.png, name: 중앙대학교 310관 보관소, storageOptions: [TWENTY_FOUR_HOURS],
+    // postalCode: 06974, detailedAddress: 서울특별시 흑석로 84 310관, latitude: 37.5047267237807,
+    // longitude: 126.953833907628, distance: 7546963.667196544, openingTime: 00:00, closingTime: 23:59, isOpen: true}]}
+
     try {
-      final response = await http.get(Uri.parse(url), headers: {
-        'accept': 'application/json',
-      });
-      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+      // Secure Storage에서 토큰 읽기
+      // 디버깅용: 응답 출력
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Status Message: ${jsonResponse['message']}');
+      //print('Response Body: ${response.body}'); <-이렇게하면 UTF 깨짐
+      print('Response Status Data: ${jsonResponse['data']}');
+
+
       if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        //final List<dynamic> storages = jsonResponse['data.id'];
 
         // 서버에서 성공 응답인지 확인
         if (jsonResponse['isSuccess'] == true) {
-          final List<dynamic> storages = jsonResponse['data'];
-          print('Storages fetched successfully: $storages');
-          // TODO: 마커 추가 로직으로 데이터를 전달
-          _addMarkers(storages); // 마커 추가
+          //받은 GET 정보 중 id, 위도 경도를 리스트에 저장하고,
+          // 그 위치에 마커를 표출해야함
+          // 'data' 필드에서 리스트 가져오기
+          print('jsonResponse Body Data: ${jsonResponse['data']}');
+          final List<dynamic> storages = jsonResponse['data'] ?? [];
+          for (var storage in storages) {
+            storage['storageOptions'] = List<String>.from(storage['storageOptions'] ?? []);
+          }
+
+
+          if (storages.isEmpty) {
+            print('No storages found nearby.');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('근처에 보관소가 없습니다.')),
+            );
+          } else {
+            _addMarkers(storages); // 마커 추가
+            print('Storages fetched successfully: $storages');
+            // 예시? 첫 번째 보관소의 ID 출력
+            for (var storage in storages) {
+              print('Storage ID: ${storage['id']}');
+            }
+            // TODO: 마커 추가 로직으로 데이터를 전달 (storage라는 리스트 전달)
+          }
+     } else { //isSuccess가 fail인 경우
+          print("Failed to fetch nearby storages: ${response.statusCode}");
+          print('서버 응답 실패: ${jsonResponse['message']}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('스토리지 로드 실패: ${jsonResponse['message']}')),
+          );
         }
-      } else {
-        print("Failed to fetch nearby storages: ${response.statusCode}");
-        ScaffoldMessenger.of(context).showSnackBar(
+      } else { //응답 상태코드 200 아닌 경우
+
+          print("Failed to fetch nearby storages: ${response.statusCode}");
+          ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('스토리지 로드 실패: ${jsonResponse['message']}')),
-        );
-      }
-    } catch (e) {
-      print("Error fetching nearby storages: $e");
-      final response = await http.get(Uri.parse(url), headers: {
-        'accept': 'application/json',
-      });
-      final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+          );
+        }
+    }  catch (e) {
+    print("Error fetching nearby storages: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('서버 오류 발생: ${response.statusCode}')),
       );
     }
+    return;
   }
+
+
+
+
 
 
     // 날짜 선택
@@ -270,19 +346,25 @@ class _HomeScreenState extends State<HomeScreen> {
         'assets/images/box_icon3.png', // 파일 경로
       );
 
-      //사용자 현위치 _initialPosition을 기반으로 주변 보관소 위치 GET 요청 날리기
-
-      // 받은 GET 정보를 리스트에 저장하고, 이에 따라 지도 상에 마커 표현하기
+      // 이에 따라 지도 상에 마커 표현하기
       for (var storage in storages) {
-        print('Adding marker for storage: ${storage['name']}'); // 각 마커 정보 출력
+        print('Adding marker for storage: ${storage['name']}'); // 각 마커별 이름을 출력
 
-
+        // 만약 마커가 클릭되면, 클릭된 storageId와 함께 서버에 상세정보 요청을 GET 하기
+        //_fetchStorageDetails()함수 이용
         final marker = Marker(
           markerId: MarkerId(storage['id'].toString()),
           position: LatLng(storage['latitude'], storage['longitude']),
           icon: bagIcon,
           onTap: () {
-            Navigator.push(
+            print("marker is clicked");
+            print('Storage ID: ${storage['id']}');
+            print('Name: ${storage['name']}');
+            print('Latitude: ${storage['latitude']}');
+            print('Longitude: ${storage['longitude']}');
+
+            print('Marker Info: ${storage}'); // storage는 Map<String, dynamic>
+            Navigator.push( //클릭한 storage 전달
               context,
               MaterialPageRoute(
                 builder: (context) => DetailPage(markerInfo: storage),
@@ -296,6 +378,10 @@ class _HomeScreenState extends State<HomeScreen> {
             print('Longitude: ${storage['longitude']}');
 
             _fetchStorageDetails(storage['id'].toString()); // 클릭한 마커의 상세 정보 가져오기
+            //여기서 문제생김, +이전 storage utf-8 적용할것
+            // ======== Exception caught by widgets library =======================================================
+            // The following _TypeError was thrown building DetailPage(dirty):
+            // type 'Null' is not a subtype of type 'List<String>' in type cast
             setState(() {
               _selectedMarkerPosition = LatLng(
                 storage['latitude'],
@@ -305,6 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
         setState(() {
+          //받은 정보로 마커 위에 정보를 보이기.
           _markers.add(marker);
         }); // 상태 갱신
 
@@ -312,34 +399,47 @@ class _HomeScreenState extends State<HomeScreen> {
 // 디버깅용: 전체 마커 개수 확인
       print('Total markers added: ${_markers.length}');
 
-      // 만약 마커가 클릭되면, 클릭된 storageId와 함께 서버에 상세정보 요청을 GET 하기
-      //_fetchStorageDetails()함수 이용
-
-      //받은 정보로 마커 위에 정보를 보이기.
-
-
-
     }
 
 
 
   /// 3. 선택된 마커의 상세 정보 가져오기
   Future<void> _fetchStorageDetails(String storageId) async {
-    final String url = 'http://3.35.175.114:8080/storages/$storageId';
+    final String url =
+        'http://3.35.175.114:8080/storages/nearby?latitude=$_currentLatitude&longitude=$_currentLongitude&radius=1000';
+
 
     try {
-      final response = await http.get(Uri.parse(url), headers: {
+      // Secure Storage에서 토큰 읽기
+      final token = await secureStorage.read(key: 'auth_token');
+      if (token == null) {
+        print("로그인 토큰이 없습니다. 로그인이 필요합니다.");
+        return;
+      }
+
+      // 요청 헤더에 토큰 추가
+      final headers = {
         'accept': 'application/json',
-      });
+        'Authorization': token,
+      };
+      // GET 요청 보내기
+      final response = await http.get(Uri.parse(url), headers: headers);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      print('Full Response: ${response.body}');
+      print('Data Array: ${jsonResponse['data']}');
+      print('Number of Storages: ${jsonResponse['data']?.length ?? 0}');
+
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         print('Server response: $jsonResponse'); // 전체 응답 출력
 
         // 서버 응답에서 `data` 필드 추출
         if (jsonResponse['isSuccess'] == true) {
-          final Map<String, dynamic> storageDetails = jsonResponse['data'];
-          print('Storage Details: $storageDetails'); // 데이터 필드 출력
+          //음 여기 뭔가 이상함
+          final Map<String, dynamic> storageDetails = jsonResponse['data']?? [];
+          print('Storage Details: $storageDetails');
+          // 데이터 필드 출력
 
           setState(() {
             _selectedMarkerInfo = {
@@ -442,7 +542,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   tag,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.green.shade800,
+                      color: Color(0xFF43CBBA),
                       ),
                     ),
                 ))
@@ -506,7 +606,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               tag,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: Colors.green.shade800,
+                                color: Color(0xFF43CBBA),
                               ),
                             ),
                           ),

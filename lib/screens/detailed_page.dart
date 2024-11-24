@@ -9,8 +9,14 @@ class DetailPage extends StatelessWidget {
 
   const DetailPage({Key? key, required this.markerInfo}) : super(key: key);
 
+
+
   @override
   Widget build(BuildContext context) {
+    // storageOptions를 List<String>으로 변환
+    final List<String> storageOptions = List<String>.from(markerInfo['storageOptions'] ?? []);
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text(markerInfo['name']),
@@ -23,6 +29,11 @@ class DetailPage extends StatelessWidget {
               markerInfo['name'],
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
+            Text('Name: ${markerInfo['name']}'),
+            Text('Address: ${markerInfo['detailedAddress']}'),
+            Text('Postal Code: ${markerInfo['postalCode']}'),
+            Text('Storage Options: ${storageOptions.join(', ')}'),
+            // 기타 정보 출력
             SizedBox(height: 20),
             Wrap(
               spacing: 10,
