@@ -1,6 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:bag_a_moment/screens/detailed_page.dart';
+import 'package:bag_a_moment/widgets/marker_details_widget.dart';
+import 'package:http/http.dart' as http;
+
+import '../main.dart';
 
 //홈화면 클래스 생성
 class HomeScreen extends StatefulWidget {
@@ -10,44 +16,42 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Google Map Controller
+
+  //@@@@변수@@@@
+  // 1. Google Map Controller
   late GoogleMapController mapController;
-  void initState() {
-    super.initState();
-    _requestLocationPermission();
-    _addMarkers();
+  // dispose에서 컨트롤러 해제
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
-    // 위치 권한 요청 함수
-    void _requestLocationPermission() async {
-      if (await Permission.location.request().isGranted) {
-        // 권한이 부여됨
-        print("위치 권한이 부여되었습니다.");
-      } else {
-        // 권한이 거부됨
-        print("위치 권한이 거부되었습니다.");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("위치 권한이 필요합니다."),
-          ),
-        );
-      }
-    }
 
-  // 검색 컨트롤러 초기화
-  final TextEditingController _searchController = TextEditingController();
+  // 1-1. 초기 맵 위치 설정 (위도, 경도) - 사용자 현위치로 수정
+  final LatLng _initialPosition = const LatLng(37.5045563, 126.9569379); // 중앙대 위치 넣음
+  final double _currentLatitude = 37.5045563; // 사용자의 현재 위도
+  final double _currentLongitude = 126.9569379; // 사용자의 현재 경도
+  //현재는 우선 고정 위도 경도 사용함
 
-  // 초기 맵 위치 설정 (위도, 경도) - 사용자 현위치로 수정
-  final LatLng _initialPosition = const LatLng(
-      37.5045563, 126.9569379); // 중앙대 위치 넣음
-  //마커 표시(추후 수정할 것-보관소 추가할 때)
-  final Set<Marker> _markers = {};
 
-  //마커 리스트
-  List<Marker> _markerList = []; // 마커 리스트 저장
+  // 2. 선택된 마커 정보
+  Map<String, dynamic>? _selectedMarkerInfo;
+  // 2-1. 선택된 마커 위치 (상세 탭 위젯에 사용)
+  LatLng? _selectedMarkerPosition;
+  // 3. 마커 리스트
+  final List<Marker> _markers = [];
   // 검색된 마커 리스트
   //List<Marker> _filteredMarkers = [];
+  String? _selectedStorageId; //선택된 마커 아이디
+  String? _selectedName; // 선택된 마커의 이름
+  String? _selectedImageUrl; // 선택된 마커의 이미지 URL
+  List<String>? _selectedTags; // 선택된 마커의 태그
+  Offset? _markerScreenPosition; // 마커의 화면상 좌표
 
-  //필터 변수값
+  // 4. 검색 컨트롤러 초기화
+  final TextEditingController _searchController = TextEditingController();
+
+  // 5. 검색 필터 변수
   String _location = "현위치";
   int _selectedItems = 1; // 초기값 설정
   DateTimeRange? _selectedDateRange;
@@ -55,50 +59,181 @@ class _HomeScreenState extends State<HomeScreen> {
   TimeOfDay? _toTime;
   bool _isExpanded = false; // 검색창 확장 여부
 
-// dispose에서 컨트롤러 해제
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
+// 초기화!
+  void initState() {
+    super.initState();
+    _requestLocationPermission();
+    _addInitialMarker(); // 프론트에서 할당한 초기 마커 추가
+    _fetchNearbyStorages(); // 서버에서 storage 목록 가져오기
   }
 
-  // 날짜 선택
-  void _pickDateRange() async {
-    DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(Duration(days: 365)),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDateRange = picked;
-      });
+  //함수
+  // 1.위치 권한 요청 함수
+  void _requestLocationPermission() async {
+    if (await Permission.location.request().isGranted) {
+      // 권한이 부여됨
+      print("위치 권한이 부여되었습니다.");
+    } else {
+      // 권한이 거부됨
+      print("위치 권한이 거부되었습니다.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("위치 권한이 필요합니다."),
+        ),
+      );
     }
   }
 
-  // 시간 선택
-  void _pickTimeRange() async {
-    // from 시간 선택
-    TimeOfDay? fromPicked = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.now(),
-    );
 
-    if (fromPicked != null) {
-      // to 시간 선택
-      TimeOfDay? toPicked = await showTimePicker(
-        context: context,
-        initialTime: fromPicked,
+
+
+  /// 1. 서버에서 사용자의 현재 위치 기반 storage 정보 가져오기
+  Future<void> _fetchNearbyStorages() async {
+
+
+    //사용자 현위치 _initialPosition을 기반으로 주변 보관소 위치 GET 요청 날리기
+    final String url = 'http://3.35.175.114:8080/storages/nearby?latitude=$_currentLatitude&longitude=$_currentLongitude&radius=1000';
+
+    final token = await secureStorage.read(key: 'auth_token');
+    // 로그인 토큰이 없으면 요청 중단
+      if (token == null) {
+        print("로그인 토큰이 없습니다. 로그인이 필요합니다.");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('로그인 토큰이 만료되었습니다. 다시 로그인해주세요.')),
+        );
+        return;
+      }
+    // 요청 헤더에 토큰 추가
+    final headers = {
+      'accept': 'application/json',
+      'Authorization': token, // 로그인 토큰 포함
+    };
+
+    // GET 요청 보내기, http응답 받아서 response에 저장
+    //     response.statusCode: HTTP 상태 코드 (예: 200, 400, 500 등).
+    //     response.body: 서버에서 반환된 응답 본문(문자열 형식).
+    //     response.headers: 서버 응답 헤더.
+    final response = await http.get(Uri.parse(url), headers: headers);
+    // UTF-8 디코딩
+    final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+
+    // 디버깅용: 응답 출력
+    print('HTTP Response Status Code: ${response.statusCode}');
+    print('jsonResponse Message: ${jsonResponse['message']}');
+    print('jsonResponse isSuccess:${jsonResponse['isSuccess']}');
+    print('jsonResponse Body Data ${jsonResponse['data']}');
+    //I/flutter ( 4234): jsonResponse [{id: 1, previewImagePath: https://jimkanman-bucket.s3.ap-northeast-2
+    // .amazonaws.com/defaults/jimkanman-default-preview-image.png, name: 중앙대학교 310관 보관소, storageOptions:
+    // [TWENTY_FOUR_HOURS], postalCode: 06974, detailedAddress: 서울특별시 흑석로 84 310관, latitude: 37.5047267237807,
+    // longitude: 126.953833907628, distance: 7546963.667196544, openingTime: 00:00, closingTime: 23:59, isOpen: true}]
+    print('jsonResponse Body: ${jsonResponse}');
+    //I/flutter ( 4234): jsonResponse Body: {isSuccess: true, code: 200, message: 요청이 성공했습니다.,
+    // data: [{id: 1, previewImagePath: https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman
+    // -default-preview-image.png, name: 중앙대학교 310관 보관소, storageOptions: [TWENTY_FOUR_HOURS],
+    // postalCode: 06974, detailedAddress: 서울특별시 흑석로 84 310관, latitude: 37.5047267237807,
+    // longitude: 126.953833907628, distance: 7546963.667196544, openingTime: 00:00, closingTime: 23:59, isOpen: true}]}
+
+    try {
+      // Secure Storage에서 토큰 읽기
+      // 디버깅용: 응답 출력
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Status Message: ${jsonResponse['message']}');
+      //print('Response Body: ${response.body}'); <-이렇게하면 UTF 깨짐
+      print('Response Status Data: ${jsonResponse['data']}');
+
+
+      if (response.statusCode == 200) {
+
+        // 서버에서 성공 응답인지 확인
+        if (jsonResponse['isSuccess'] == true) {
+          //받은 GET 정보 중 id, 위도 경도를 리스트에 저장하고,
+          // 그 위치에 마커를 표출해야함
+          // 'data' 필드에서 리스트 가져오기
+          print('jsonResponse Body Data: ${jsonResponse['data']}');
+          final List<dynamic> storages = jsonResponse['data'] ?? [];
+          for (var storage in storages) {
+            storage['storageOptions'] = List<String>.from(storage['storageOptions'] ?? []);
+          }
+
+
+          if (storages.isEmpty) {
+            print('No storages found nearby.');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('근처에 보관소가 없습니다.')),
+            );
+          } else {
+            _addMarkers(storages); // 마커 추가
+            print('Storages fetched successfully: $storages');
+            // 예시? 첫 번째 보관소의 ID 출력
+            for (var storage in storages) {
+              print('Storage ID: ${storage['id']}');
+            }
+            // TODO: 마커 추가 로직으로 데이터를 전달 (storage라는 리스트 전달)
+          }
+     } else { //isSuccess가 fail인 경우
+          print("Failed to fetch nearby storages: ${response.statusCode}");
+          print('서버 응답 실패: ${jsonResponse['message']}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('스토리지 로드 실패: ${jsonResponse['message']}')),
+          );
+        }
+      } else { //응답 상태코드 200 아닌 경우
+
+          print("Failed to fetch nearby storages: ${response.statusCode}");
+          ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('스토리지 로드 실패: ${jsonResponse['message']}')),
+          );
+        }
+    }  catch (e) {
+    print("Error fetching nearby storages: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('서버 오류 발생: ${response.statusCode}')),
       );
-      if (toPicked != null) {
+    }
+    return;
+  }
+
+
+
+
+
+
+    // 날짜 선택
+    void _pickDateRange() async {
+      DateTimeRange? picked = await showDateRangePicker(
+        context: context,
+        firstDate: DateTime.now(),
+        lastDate: DateTime.now().add(Duration(days: 365)),
+      );
+      if (picked != null) {
         setState(() {
-          _fromTime = fromPicked;
-          _toTime = toPicked;
+          _selectedDateRange = picked;
         });
       }
     }
-  }
 
+    // 시간 선택
+    void _pickTimeRange() async {
+      // from 시간 선택
+      TimeOfDay? fromPicked = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (fromPicked != null) {
+        // to 시간 선택
+        TimeOfDay? toPicked = await showTimePicker(
+          context: context,
+          initialTime: fromPicked,
+        );
+        if (toPicked != null) {
+          setState(() {
+            _fromTime = fromPicked;
+            _toTime = toPicked;
+          });
+        }
+      }
+    }
 
     // 검색 기능
     void _searchMarkers(String query) {
@@ -122,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }).toList();
 
       setState(() {
-        _markerList = results;
+       // _markerList = results;
       });
     }
 
@@ -175,57 +310,161 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-
-    // GoogleMap 위젯에서 카메라 제어
-    void _onMapCreated(GoogleMapController controller) {
-      mapController = controller;
-    }
-
     // 마커로 카메라 이동
     void _moveToMarker(Marker marker) {
       mapController.animateCamera(CameraUpdate.newLatLng(marker.position));
     }
 
-    //마커 추가
-    Future<void> _addMarkers() async {
-      // fromAssetImage를 사용하여 BitmapDescriptor 생성, 이미지로 아이콘 설정
-      final BitmapDescriptor bagIcon = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(150, 150)), // 크기 설정
-        'assets/images/box_icon.png', // 파일 경로
-      );
-
-
-      // 특정 위치에 마커 추가 1
-      final Marker marker = Marker(
+    /// 프론트에서 할당한 마커 추가
+    void _addInitialMarker() {
+      final marker = Marker(
         markerId: MarkerId('chungang'),
-        position: _initialPosition,
-        infoWindow: InfoWindow(
-          title: '중앙대학교',
-          snippet: '중앙대학교 보관소 입니다.',
-        ),
-        icon: BitmapDescriptor.defaultMarker, // 기본 마커 아이콘
+        position: LatLng(37.5045563, 126.9569379),
+        onTap: () {
+          setState(() {
+            _selectedMarkerInfo = {
+              'name': '기본 스토리지',
+              'image': 'https://via.placeholder.com/150',
+              'tags': ['큰 보관', '냉장', '24시간'],
+              'description': '중앙대학교 근처 보관소입니다.',
+            };
+          });
+        },
       );
-
-      // 특정 위치에 마커 추가 2
-      final marker2 = Marker(
-        markerId: MarkerId('example'),
-        position: LatLng(37.5700, 126.9830),
-        infoWindow: InfoWindow(
-          title: '종각역',
-          snippet: '종각역 보관소 입니다.',
-        ),
-        icon: bagIcon, // custom한 가방 아이콘 사용
-      );
-
       setState(() {
-        _markers.add(marker); // 마커 추가
-        _markers.add(marker2); // 마커 추가
-        _markerList = _markers.toList(); // 마커 리스트로 저장
-        //_filteredMarkers = _markers.toList(); // 초기 검색 결과는 모든 마커
+        _markers.add(marker);
       });
     }
 
-    @override
+    //마커 추가
+    Future<void> _addMarkers(List<dynamic> storages) async {
+      print('Adding markers...');
+      print('Storages received: $storages'); // 서버 응답 데이터 출력
+      // fromAssetImage를 사용하여 BitmapDescriptor 생성, 이미지로 아이콘 설정
+      final BitmapDescriptor bagIcon = await BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(size: Size(150, 150)), // 크기 설정
+        'assets/images/box_icon3.png', // 파일 경로
+      );
+
+      // 이에 따라 지도 상에 마커 표현하기
+      for (var storage in storages) {
+        print('Adding marker for storage: ${storage['name']}'); // 각 마커별 이름을 출력
+
+        // 만약 마커가 클릭되면, 클릭된 storageId와 함께 서버에 상세정보 요청을 GET 하기
+        //_fetchStorageDetails()함수 이용
+        final marker = Marker(
+          markerId: MarkerId(storage['id'].toString()),
+          position: LatLng(storage['latitude'], storage['longitude']),
+          icon: bagIcon,
+          onTap: () {
+            print("marker is clicked");
+            print('Storage ID: ${storage['id']}');
+            print('Name: ${storage['name']}');
+            print('Latitude: ${storage['latitude']}');
+            print('Longitude: ${storage['longitude']}');
+
+            print('Marker Info: ${storage}'); // storage는 Map<String, dynamic>
+            Navigator.push( //클릭한 storage 전달
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailPage(markerInfo: storage),
+              ),
+            );
+            print("marker is clicked");
+            // 디버깅용: 서버에서 받아온 데이터 출력
+            print('Storage ID: ${storage['id']}');
+            print('Name: ${storage['name']}');
+            print('Latitude: ${storage['latitude']}');
+            print('Longitude: ${storage['longitude']}');
+
+            _fetchStorageDetails(storage['id'].toString()); // 클릭한 마커의 상세 정보 가져오기
+            //여기서 문제생김, +이전 storage utf-8 적용할것
+            // ======== Exception caught by widgets library =======================================================
+            // The following _TypeError was thrown building DetailPage(dirty):
+            // type 'Null' is not a subtype of type 'List<String>' in type cast
+            setState(() {
+              _selectedMarkerPosition = LatLng(
+                storage['latitude'],
+                storage['longitude'],
+              );
+            });
+          },
+        );
+        setState(() {
+          //받은 정보로 마커 위에 정보를 보이기.
+          _markers.add(marker);
+        }); // 상태 갱신
+
+      }
+// 디버깅용: 전체 마커 개수 확인
+      print('Total markers added: ${_markers.length}');
+
+    }
+
+
+
+  /// 3. 선택된 마커의 상세 정보 가져오기
+  Future<void> _fetchStorageDetails(String storageId) async {
+    final String url =
+        'http://3.35.175.114:8080/storages/nearby?latitude=$_currentLatitude&longitude=$_currentLongitude&radius=1000';
+
+
+    try {
+      // Secure Storage에서 토큰 읽기
+      final token = await secureStorage.read(key: 'auth_token');
+      if (token == null) {
+        print("로그인 토큰이 없습니다. 로그인이 필요합니다.");
+        return;
+      }
+
+      // 요청 헤더에 토큰 추가
+      final headers = {
+        'accept': 'application/json',
+        'Authorization': token,
+      };
+      // GET 요청 보내기
+      final response = await http.get(Uri.parse(url), headers: headers);
+      final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      print('Full Response: ${response.body}');
+      print('Data Array: ${jsonResponse['data']}');
+      print('Number of Storages: ${jsonResponse['data']?.length ?? 0}');
+
+
+      if (response.statusCode == 200) {
+        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+        print('Server response: $jsonResponse'); // 전체 응답 출력
+
+        // 서버 응답에서 `data` 필드 추출
+        if (jsonResponse['isSuccess'] == true) {
+          //음 여기 뭔가 이상함
+          final Map<String, dynamic> storageDetails = jsonResponse['data']?? [];
+          print('Storage Details: $storageDetails');
+          // 데이터 필드 출력
+
+          setState(() {
+            _selectedMarkerInfo = {
+              'name': storageDetails['name'], // 보관소 이름
+              'image': (storageDetails['images'] as List).isNotEmpty
+                  ? storageDetails['images'][0] // 첫 번째 이미지 URL
+                  : '',
+              'tags': List<String>.from(storageDetails['storageOptions'] ?? []), // 태그
+              'description': storageDetails['description'], // 보관소 설명
+              'address': storageDetails['detailedAddress'], // 상세 주소
+            };
+          });
+        } else {
+          print("Server responded with error: ${jsonResponse['message']}");
+        }
+      } else {
+        print("Failed to load storage details: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching storage details: $e");
+    }
+  }
+
+
+  @override
     Widget build(BuildContext context) {
       return Scaffold(
         body: Stack(
@@ -236,8 +475,158 @@ class _HomeScreenState extends State<HomeScreen> {
                 target: _initialPosition,
                 zoom: 14.0,
               ),
-              markers: _markers,
+              markers: Set.from(_markers),
+              onTap: (_) {
+                // 지도 클릭 시 선택된 정보 초기화
+                setState(() {
+                  _selectedName = null;
+                  _selectedImageUrl = null;
+                  _selectedTags = null;
+                  _selectedImageUrl = null;
+                  _selectedTags = null;
+                });
+              },
             ),
+
+    //이건 무슨 마커?
+    if (_selectedMarkerInfo != null)
+          Positioned(
+          top: MediaQuery.of(context).size.height / 2 - 100,
+          left: MediaQuery.of(context).size.width / 2 - 150,
+            child: Container(
+              width: 300,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+                ),
+               ],
+            ),
+               child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                _selectedMarkerInfo!['name'] ?? '',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  ),
+                ),
+                  const SizedBox(height: 8),
+                Text(
+                _selectedMarkerInfo!['address'] ?? '',
+                style: TextStyle(fontSize: 14),
+                ),
+                  const SizedBox(height: 8),
+                  Text(
+                  _selectedMarkerInfo!['description'] ?? '',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                  children: (_selectedMarkerInfo!['tags'] as List<String>)
+                  .map((tag) => Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                child: Text(
+                  tag,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF43CBBA),
+                      ),
+                    ),
+                ))
+                    .toList(),
+                ),
+                  const SizedBox(height: 8),
+                  Image.network(
+                  _selectedMarkerInfo!['image'] ?? '',
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+
+              ],
+
+    ),
+
+            ),
+          ),
+            // 마커 클릭 시 상세 정보 박스 표시 : 서버에서 가져온 마커?
+            if (_selectedMarkerInfo != null && _selectedMarkerPosition != null)
+              Positioned(
+                top: MediaQuery.of(context).size.height / 2 - 100,
+                left: MediaQuery.of(context).size.width / 2 - 150,
+                child: Container(
+                  width: 300,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _selectedMarkerInfo!['name'] ?? '',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: (_selectedMarkerInfo!['tags'] as List<String>)
+                            .map(
+                              (tag) => Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.green.shade100,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              tag,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Color(0xFF43CBBA),
+                              ),
+                            ),
+                          ),
+                        )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 8),
+                      Image.network(
+                        _selectedMarkerInfo!['image'] ?? '',
+                        height: 100,
+                        fit: BoxFit.cover,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Center(
+                child: Text('No marker selected'),
+              ),
             //상단 검색창
             Positioned(
               top: 20,
@@ -381,63 +770,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            //하단 추천 리스트
-      /*
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: DraggableScrollableSheet(
-                initialChildSize: 0.1, // 얇은 바 높이
-                minChildSize: 0.1,
-                maxChildSize: 0.4, // 드래그하여 펼쳐질 최대 높이
-                builder: (context, scrollController) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                      boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 8)],
-                    ),
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 5,
-                          margin: EdgeInsets.only(top: 10),
-                          decoration: BoxDecoration(
-                            color: Color(0xFF26D1BA),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        Flexible(
-                          child: ListView.builder(
-                            controller: scrollController,
-                            itemCount: _markerList.length,
-                            itemBuilder: (context, index) {
-                              final marker = _markerList[index];
-                              return SizedBox(
-                                height: 80,
-                                child: ListTile(
-                                  title: Text(marker.infoWindow.title ?? 'Unnamed'),
-                                  subtitle: Text(marker.infoWindow.snippet ?? '이게모야'),
-                                  onTap: () {
-                                    mapController.animateCamera(CameraUpdate.newLatLng(marker.position));
-                                  },
-                                ),
-                              );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-
-               ),
-            */
-              ],
-             ),
-            );
-          }
-        }
+          ],
+        ),
+      );
+  }
+}
