@@ -129,36 +129,11 @@ class _HomeScreenState extends State<HomeScreen> {
           //서버에서 받은 주변 보관소 리스트에 따라
           // 그 위치에 마커를 표출해야 함
 
-          // ################이 부분에서 storages 리스트에 데이터 id, latitude, longitude 가 잘 들어가고 있는지?
+
           final List<dynamic> storages = (jsonResponse['data'] is List)
               ? jsonResponse['data'] // 이미 리스트라면 그대로 사용
-              : [jsonResponse['data']]; // Map이라면 리스트로 감싸기
-          //이 부분은 storages를 리스트로 변환한것.
-
-
-          // 이제 storage 하나가 각각 리스트인지 확인, 변환
-          for (var storage in storages) {
-            // 'storage'가 리스트인지 확인
-            if (storage is List) {  // 'storage'가 리스트인 경우, 그대로
-                _addMarkers(storage);
-                print('추가된 Storage ID: ${storage[0]}');
-
-            } else if (storage is Map) { // 'storage'가 Map인 경우, 리스트로 형변환 (현재 이거!)
-              List<dynamic> storageAsList = [storage];
-              _addMarkers(storageAsList);
-              print('추가된 Storage ID: ${storage['id']}');
-            } else { // 정체불명일 경우, 빈 리스트로 초기화
-              storage = [];
-              print('Invalid response format: ${jsonResponse['data']}');
-            }
-            storage['storageOptions'] = List<String>.from(storage['storageOptions'] ?? []);
-            // storage - storageOptions도 string으로 변환(json형식 응답 리스트-> string 타입으로 변환)
-            print('Listed Storage ID: ${storage['id']}');
-            //추가된 storage id 출력
-          }
-          //print('추가된 Storage ID: ${storage[0]}');
-              //둘 다 잘 들어가 있음 엥 이거 갑자기 왜 안나옴
-
+              : [jsonResponse['data']]; // Map이라면 리스트로 변환
+          //이 부분은 storages를 리스트로 변환한것. -> 여전히 내용물은 객체덩어리로 옴!
 
             if (storages.isEmpty) {
               print('근처에 보관소 없음!.');
@@ -166,11 +141,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 SnackBar(content: Text('근처에 보관소가 없습니다.')),
               );
             } else {
-              print('Storages fetched successfully: $storages');
-              // 리스트 돌면서 마커 추가 !!!
+              // storage마다 addMarker 실행
               for (var storage in storages) {
                 _addMarkers(storage);
-                print('추가된 Storage ID: ${storage[0]}');
+                print('storage id check, sent to addMarkers : ${storage['id']}');
               }
             }
 
@@ -317,9 +291,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
     //2. 마커 추가
-    Future<void> _addMarkers(List<dynamic> storage) async {
-      print('Adding markers...');
-      print('Received Storage Data: $storage'); // 서버 응답 데이터 출력
+    Future<void> _addMarkers(Map<String, dynamic> storage) async {
+      print('Adding marker for storage: ${storage['id']}');
 
       // fromAssetImage를 사용하여 BitmapDescriptor 생성, 이미지로 아이콘 설정
       final BitmapDescriptor bagIcon = await BitmapDescriptor.fromAssetImage(
@@ -328,59 +301,20 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       // 이에 따라 지도 상에 마커 표현하기
-      for (var data in storage) {
-        print('Adding marker for storage: ${data['name']}'); // 각 마커별 데이터를 출력
-
 
         final marker = Marker(
-          markerId: MarkerId(data['id'].toString()),
-          position: LatLng(data['latitude'], data['longitude']),
+          markerId: MarkerId(storage['id'].toString()),
+          position: LatLng(storage['latitude'], storage['longitude']),
           icon: bagIcon,
-          // onTap: () { // 만약 마커가 클릭되면, 클릭된 storageId와 함께 서버에 상세정보 요청을 GET 하기
-          //   print("One marker is clicked");
-          //   print('Clicked Storage ID: ${data['id']}');
-          //   print('Clicked Name: ${data['name']}');
-          //   print('Clicked Latitude: ${data['latitude']}');
-          //   print('Clicked Longitude: ${data['longitude']}');
-          //   print('Clicked Storage Options: ${data['storageOptions']}');
-          //
-          //   print('Marker Info: ${storage}'); // storage는 Map<String, dynamic>
-          //   Navigator.push( //클릭한 storage 전달
-          //     context,
-          //       MaterialPageRoute(
-          //         builder: (context) => DetailPage(
-          //           markerInfo: data,
-          //           // storageOptions 변환
-          //           storageOptions: List<String>.from(data['storageOptions'] ?? []),
-          //         ),
-          //       ),
-          //   );
-          //   // // 클릭한 마커의 상세 정보 가져오기
-          //   // _fetchStorageDetails(data['id'].toString());
-          //   // //여기서 문제생김, +이전 storage utf-8 적용할것
-          //   // // ======== Exception caught by widgets library =======================================================
-          //   // // The following _TypeError was thrown building DetailPage(dirty):
-          //   // // type 'Null' is not a subtype of type 'List<String>' in type cast
-          //   // setState(() {
-          //   //   _selectedMarkerPosition = LatLng(
-          //   //     data['latitude'],
-          //   //     data['longitude'],
-          //   //   );
-          //   // });
-          // },
         );
 
         setState(() {
           //받은 정보로 마커 위에 정보를 보이기.
           _markers.add(marker);
         }); // 상태 갱신
-
-      }
       // 디버깅용: 전체 마커 개수 확인
       print('Total markers added: ${_markers.length}');
-
-    }
-
+      }
 
 
 
