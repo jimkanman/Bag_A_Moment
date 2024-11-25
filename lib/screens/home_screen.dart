@@ -107,16 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
     };
     // GET 요청 보내기, http응답 받아서 response에 저장
 
-    //출력 예시
-    //I/flutter ( 4234): jsonResponse [{id: 1, previewImagePath: https://jimkanman-bucket.s3.ap-northeast-2
-    // .amazonaws.com/defaults/jimkanman-default-preview-image.png, name: 중앙대학교 310관 보관소, storageOptions:
-    // [TWENTY_FOUR_HOURS], postalCode: 06974, detailedAddress: 서울특별시 흑석로 84 310관, latitude: 37.5047267237807,
-    // longitude: 126.953833907628, distance: 7546963.667196544, openingTime: 00:00, closingTime: 23:59, isOpen: true}]
-
-    //print('Response Body: ${response.body}'); <-이렇게하면 UTF 깨짐!
-    // UTF-8로 디코딩하여 출력하는 법
-    // final decodedBody = utf8.decode(response.bodyBytes);
-    // print('Response Body: $decodedBody');
 
     try {
           final response = await http.get(Uri.parse(url), headers: headers);
@@ -170,19 +160,20 @@ class _HomeScreenState extends State<HomeScreen> {
               //둘 다 잘 들어가 있음 엥 이거 갑자기 왜 안나옴
 
 
-          if (storages.isEmpty) {
-            print('근처에 보관소 없음!.');
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('근처에 보관소가 없습니다.')),
-            );
-          } else {
-            print('Storages fetched successfully: $storages');
-            // 리스트 돌면서 마커 추가 !!!
-            for (var storage in storages) {
-              _addMarkers(storage);
-              print('추가된 Storage ID: ${storage[0]}');
+            if (storages.isEmpty) {
+              print('근처에 보관소 없음!.');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('근처에 보관소가 없습니다.')),
+              );
+            } else {
+              print('Storages fetched successfully: $storages');
+              // 리스트 돌면서 마커 추가 !!!
+              for (var storage in storages) {
+                _addMarkers(storage);
+                print('추가된 Storage ID: ${storage[0]}');
+              }
             }
-          }
+
      } else { //isSuccess가 fail인 경우
           print("Failed to fetch nearby storages: ${response.statusCode}");
           print('서버 응답 실패: ${jsonResponse['message']}');
@@ -323,26 +314,7 @@ class _HomeScreenState extends State<HomeScreen> {
       mapController.animateCamera(CameraUpdate.newLatLng(marker.position));
     }
 
-    /// 프론트에서 할당한 마커 추가
-    // //void _addInitialMarker() {
-    //   final marker = Marker(
-    //     markerId: MarkerId('chungang'),
-    //     position: LatLng(37.5045563, 126.9569379),
-    //     onTap: () {
-    //       setState(() {
-    //         _selectedMarkerInfo = {
-    //           'name': '기본 스토리지',
-    //           'image': 'https://via.placeholder.com/150',
-    //           'tags': ['큰 보관', '냉장', '24시간'],
-    //           'description': '중앙대학교 근처 보관소입니다.',
-    //         };
-    //       });
-    //     },
-    //   );
-    //   setState(() {
-    //     _markers.add(marker);
-    //   });
-    // }
+
 
     //2. 마커 추가
     Future<void> _addMarkers(List<dynamic> storage) async {
@@ -436,146 +408,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               },
             ),
-
-    //이건 무슨 마커?
-    if (_selectedMarkerInfo != null)
-          Positioned(
-          top: MediaQuery.of(context).size.height / 2 - 100,
-          left: MediaQuery.of(context).size.width / 2 - 150,
-            child: Container(
-              width: 300,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: Offset(0, 2),
-                ),
-               ],
-            ),
-               child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                _selectedMarkerInfo!['name'] ?? '',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  ),
-                ),
-                  const SizedBox(height: 8),
-                Text(
-                _selectedMarkerInfo!['address'] ?? '',
-                style: TextStyle(fontSize: 14),
-                ),
-                  const SizedBox(height: 8),
-                  Text(
-                  _selectedMarkerInfo!['description'] ?? '',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                  children: (_selectedMarkerInfo!['tags'] as List<String>)
-                  .map((tag) => Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(
-                  horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                child: Text(
-                  tag,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF43CBBA),
-                      ),
-                    ),
-                ))
-                    .toList(),
-                ),
-                  const SizedBox(height: 8),
-                  Image.network(
-                  _selectedMarkerInfo!['image'] ?? '',
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
-
-              ],
-
-    ),
-
-            ),
-          ),
-            // 마커 클릭 시 상세 정보 박스 표시 : 서버에서 가져온 마커?
-            if (_selectedMarkerInfo != null && _selectedMarkerPosition != null)
-              Positioned(
-                top: MediaQuery.of(context).size.height / 2 - 100,
-                left: MediaQuery.of(context).size.width / 2 - 150,
-                child: Container(
-                  width: 300,
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _selectedMarkerInfo!['name'] ?? '',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: (_selectedMarkerInfo!['tags'] as List<String>)
-                            .map(
-                              (tag) => Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade100,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              tag,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF43CBBA),
-                              ),
-                            ),
-                          ),
-                        )
-                            .toList(),
-                      ),
-                      const SizedBox(height: 8),
-                      Image.network(
-                        _selectedMarkerInfo!['image'] ?? '',
-                        height: 100,
-                        fit: BoxFit.cover,
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              Center(
-                child: Text('No marker selected'),
-              ),
             //상단 검색창
             Positioned(
               top: 20,
@@ -719,6 +551,81 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+          // 홈화면 마커 띄우기
+          if (_selectedMarkerInfo != null)
+          Positioned(
+          top: MediaQuery.of(context).size.height / 2 - 100,
+          left: MediaQuery.of(context).size.width / 2 - 150,
+            child: Container(
+              width: 300,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: Offset(0, 2),
+                ),
+               ],
+            ),
+               child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                _selectedMarkerInfo!['name'] ?? '',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  ),
+                ),
+                  const SizedBox(height: 8),
+                Text(
+                _selectedMarkerInfo!['address'] ?? '',
+                style: TextStyle(fontSize: 14),
+                ),
+                  const SizedBox(height: 8),
+                  Text(
+                  _selectedMarkerInfo!['description'] ?? '',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                  children: (_selectedMarkerInfo!['tags'] as List<String>)
+                  .map((tag) => Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                child: Text(
+                  tag,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF43CBBA),
+                      ),
+                    ),
+                ))
+                    .toList(),
+                ),
+                  const SizedBox(height: 8),
+                  Image.network(
+                  _selectedMarkerInfo!['image'] ?? '',
+                    height: 100,
+                    fit: BoxFit.cover,
+                  ),
+
+              ],
+
+    ),
+
+            ),
+          ),
+
+
           ],
         ),
       );
