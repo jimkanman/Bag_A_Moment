@@ -6,53 +6,39 @@ import 'dart:io';
 // 상세 페이지
 class DetailPage extends StatelessWidget {
   final Map<String, dynamic> markerInfo;
-
-  final List<String> storageOptions;
-  DetailPage({required this.markerInfo, required this.storageOptions});
-  //json에서 string 리스트로 변환된 storage 옵션 받아야함
-
-
+  DetailPage({required this.markerInfo});
 
 
   @override
   Widget build(BuildContext context) {
-    //options null 처리, null 아닐때만 string 변환하기!
-    final List<String> storageOptions = markerInfo['storageOptions'] != null
-        ? List<String>.from(markerInfo['storageOptions'])
-        : [];
-
-
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(markerInfo['name']),
-      ),
-      body: Center(
+      appBar: AppBar(title: Text(markerInfo['name'] ?? 'Detail')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              markerInfo['name'],
+              markerInfo['name'] ?? '',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            Text('Name: ${markerInfo['name']}'),
-            Text('Address: ${markerInfo['detailedAddress']}'),
-            Text('Postal Code: ${markerInfo['postalCode']}'),
-            Text('Storage Options: ${storageOptions.join(', ')}'),
-            // 기타 정보 출력
-            SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              children: (markerInfo['tags'] as List<String>)
-                  .map((tag) => Chip(
-                label: Text(tag),
-                backgroundColor: Colors.green[100],
-              ))
-                  .toList(),
-            ),
+            SizedBox(height: 8),
+            Text(markerInfo['address'] ?? ''),
+            SizedBox(height: 8),
+            Text(markerInfo['description'] ?? ''),
+            SizedBox(height: 16),
+            if (markerInfo['image'] != null)
+              Image.network(
+                markerInfo['image']!,
+                height: 200,
+                fit: BoxFit.cover,
+              ),
           ],
         ),
       ),
     );
   }
 }
+
+
+

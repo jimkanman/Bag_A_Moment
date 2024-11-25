@@ -306,6 +306,17 @@ class _HomeScreenState extends State<HomeScreen> {
           markerId: MarkerId(storage['id'].toString()),
           position: LatLng(storage['latitude'], storage['longitude']),
           icon: bagIcon,
+            onTap: () {
+              setState(() {
+                _selectedMarkerInfo = {
+                  'name': storage['name'],
+                  'address': storage['detailedAddress'],
+                  'description': storage['description'],
+                  'tags': List<String>.from(storage['storageOptions'] ?? []), // Assuming tags are in `storageOptions`
+                  'image': storage['previewImagePath'],
+                };
+              });
+            }
         );
 
         setState(() {
@@ -334,14 +345,100 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: (_) {
                 // 지도 클릭 시 선택된 정보 초기화
                 setState(() {
-                  _selectedName = null;
-                  _selectedImageUrl = null;
-                  _selectedTags = null;
-                  _selectedImageUrl = null;
-                  _selectedTags = null;
+                  _selectedMarkerInfo = null;
                 });
               },
             ),
+            // Info Box for Selected Marker
+            if (_selectedMarkerInfo != null)
+              Positioned(
+                top: MediaQuery.of(context).size.height / 2 - 100,
+                left: MediaQuery.of(context).size.width / 2 - 150,
+                child: GestureDetector(
+                  onTap: () {
+                    // Navigate to detail page
+                    Navigator.push(
+                      context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailPage(
+                            markerInfo: _selectedMarkerInfo!,
+                          ),
+                        )
+                    );
+                  },
+                  child: Container(
+                    width: 300,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _selectedMarkerInfo!['name'] ?? '',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _selectedMarkerInfo!['address'] ?? '',
+                          style: TextStyle(fontSize: 14),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _selectedMarkerInfo!['description'] ?? '',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 8),
+                        if (_selectedMarkerInfo!['tags'] != null)
+                          Row(
+                            children: (_selectedMarkerInfo!['tags'] as List<dynamic>)
+                                .map((tag) => Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                tag,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF43CBBA),
+                                ),
+                              ),
+                            ))
+                                .toList(),
+                          ),
+                        const SizedBox(height: 8),
+                        if (_selectedMarkerInfo!['image'] != null)
+                          Image.network(
+                            _selectedMarkerInfo!['image'] ?? '',
+                            height: 100,
+                            fit: BoxFit.cover,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+
+
             //상단 검색창
             Positioned(
               top: 20,
@@ -485,6 +582,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+
           // 홈화면 마커 띄우기
           if (_selectedMarkerInfo != null)
           Positioned(
