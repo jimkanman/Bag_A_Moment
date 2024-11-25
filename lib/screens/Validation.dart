@@ -39,7 +39,25 @@ class ValidationScreen extends StatelessWidget {
     required this.refundPolicy,
     this.storageOptions = const [], // 기본값 추가
     this.file,
+
   }) : super(key: key);
+
+  //시간 변환 함수
+  String _timeOfDayToString(String? time) {
+    if (time == null) return "00:00"; // 기본값 설정
+    try {
+      final TimeOfDay parsedTime = TimeOfDay(
+        hour: int.parse(time.split(":")[0]),
+        minute: int.parse(time.split(":")[1]),
+      );
+      final hour = parsedTime.hour.toString().padLeft(2, '0');
+      final minute = parsedTime.minute.toString().padLeft(2, '0');
+      return '$hour:$minute';
+    } catch (e) {
+      return "00:00"; // 파싱 실패 시 기본값 반환
+    }
+  }
+
 
   Future<void> _submitData(BuildContext context) async {
     // openingTime과 closingTime 필수 검사
@@ -52,12 +70,7 @@ class ValidationScreen extends StatelessWidget {
 
     final String url = 'http://3.35.175.114:8080/storages'; // 서버 API 주소
 
-    // 시간-string 변환 함수
-    String _timeOfDayToString(TimeOfDay time) {
-      final hour = time.hour.toString().padLeft(2, '0'); // 2자리 숫자로 변환
-      final minute = time.minute.toString().padLeft(2, '0');
-      return '$hour:$minute'; // 예: "22:12"
-    }
+
 
 
     try {
@@ -91,16 +104,19 @@ class ValidationScreen extends StatelessWidget {
         "description": description,
         "postalCode": postalCode,
         "detailedAddress": address,
-        "openingTime": openTime ?? "",
-        "closingTime": closeTime ?? "",
+        "openingTime": _timeOfDayToString(openTime),
+        "closingTime":  _timeOfDayToString(closeTime),
         "backpackPricePerHour": backpackPrice,
         "carrierPricePerHour": carrierPrice,
         "miscellaneousItemPricePerHour": miscellaneousPrice,
       });
-      // `storageOptions` 필드를 배열 형태로 추가
-      for (var option in storageOptions) {
-        request.fields['storageOptions'] = option; // 배열 원소 하나씩 추가
+      // `storageOptions` 필드를 JSON 배열로 추가
+      if (storageOptions.isNotEmpty) {
+        request.fields['storageOptions'] = jsonEncode(storageOptions);
       }
+      print('Selected Storage Options: $storageOptions');
+
+
 
 
 

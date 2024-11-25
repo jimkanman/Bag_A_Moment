@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
     //사용자 현위치 _initialPosition을 기반으로 주변 보관소 위치 GET 요청 날리기
-    final String url = 'http://3.35.175.114:8080/storages/nearby?latitude=$_currentLatitude&longitude=$_currentLongitude&radius=1000';
+    final String url = 'http://3.35.175.114:8080/storages/nearby?latitude=$_currentLatitude&longitude=$_currentLongitude&radius=10000';
 
     final token = await secureStorage.read(key: 'auth_token');
     // 로그인 토큰이 없으면 요청 중단
@@ -122,11 +122,22 @@ class _HomeScreenState extends State<HomeScreen> {
     print('jsonResponse Message: ${jsonResponse['message']}');
     print('jsonResponse isSuccess:${jsonResponse['isSuccess']}');
     print('jsonResponse Body Data ${jsonResponse['data']}');
+    //현재
+    // I/Google Android Maps SDK( 4568): Google Play services client version: 18020000
+    // I/flutter ( 4568): HTTP Response Status Code: 500
+    // I/flutter ( 4568): jsonResponse Message: Text '9:00 AM' could not be parsed at index 0
+    // I/flutter ( 4568): jsonResponse isSuccess:false
+    // I/flutter ( 4568): jsonResponse Body Data null
+    //예전거
     //I/flutter ( 4234): jsonResponse [{id: 1, previewImagePath: https://jimkanman-bucket.s3.ap-northeast-2
     // .amazonaws.com/defaults/jimkanman-default-preview-image.png, name: 중앙대학교 310관 보관소, storageOptions:
     // [TWENTY_FOUR_HOURS], postalCode: 06974, detailedAddress: 서울특별시 흑석로 84 310관, latitude: 37.5047267237807,
     // longitude: 126.953833907628, distance: 7546963.667196544, openingTime: 00:00, closingTime: 23:59, isOpen: true}]
+
+
     print('jsonResponse Body: ${jsonResponse}');
+    //I/flutter ( 4568): jsonResponse Body: {isSuccess: false, code: 500, message: Text '9:00 AM' could not be parsed at index 0, data: null}
+    //예전거
     //I/flutter ( 4234): jsonResponse Body: {isSuccess: true, code: 200, message: 요청이 성공했습니다.,
     // data: [{id: 1, previewImagePath: https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman
     // -default-preview-image.png, name: 중앙대학교 310관 보관소, storageOptions: [TWENTY_FOUR_HOURS],
@@ -406,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen> {
   /// 3. 선택된 마커의 상세 정보 가져오기
   Future<void> _fetchStorageDetails(String storageId) async {
     final String url =
-        'http://3.35.175.114:8080/storages/nearby?latitude=$_currentLatitude&longitude=$_currentLongitude&radius=1000';
+        'http://3.35.175.114:8080/storages/nearby?latitude=$_currentLatitude&longitude=$_currentLongitude&radius=10000';
 
 
     try {
