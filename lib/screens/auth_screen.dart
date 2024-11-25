@@ -127,9 +127,11 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(
-                'assets/images/mainLogo.png',
-                height: 100,
+              Flexible(
+                 child: Image.asset(
+                   'assets/images/mainLogo.png',
+                   height: 100,
+                 ),
               ),
               SizedBox(height: 40),
 
@@ -155,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
               ),
-              SizedBox(
+              Flexible(child: SizedBox(
                 width: 300,
                 height: 100,
                 child: TextField(
@@ -189,7 +191,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(fontSize: 16, color: Color(0xFF0C4944)), // 텍스트 스타일
 
                 ),
-              ),
+              ),),
+
               ElevatedButton(
                 onPressed: _login,
                 style: ElevatedButton.styleFrom(

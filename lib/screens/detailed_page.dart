@@ -7,14 +7,20 @@ import 'dart:io';
 class DetailPage extends StatelessWidget {
   final Map<String, dynamic> markerInfo;
 
-  const DetailPage({Key? key, required this.markerInfo}) : super(key: key);
+  final List<String> storageOptions;
+  DetailPage({required this.markerInfo, required this.storageOptions});
+  //json에서 string 리스트로 변환된 storage 옵션 받아야함
+
 
 
 
   @override
   Widget build(BuildContext context) {
-    // storageOptions를 List<String>으로 변환
-    final List<String> storageOptions = List<String>.from(markerInfo['storageOptions'] ?? []);
+    //options null 처리, null 아닐때만 string 변환하기!
+    final List<String> storageOptions = markerInfo['storageOptions'] != null
+        ? List<String>.from(markerInfo['storageOptions'])
+        : [];
+
 
 
     return Scaffold(

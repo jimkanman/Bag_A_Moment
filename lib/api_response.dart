@@ -38,9 +38,6 @@ class API_response {
 
 
 
-
-
-
 // //decoding 방법
 // Map apiMap = jsonDecode(jsonString);
 // var api = ApifromJson(userMap);
