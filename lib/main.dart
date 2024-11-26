@@ -93,7 +93,7 @@ class _InitialScreenState extends State<InitialScreen> {
     }
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => LoginScreen(),
-      )
+        )
       );
 
   }

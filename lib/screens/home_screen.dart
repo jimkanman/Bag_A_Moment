@@ -315,6 +315,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   'tags': List<String>.from(storage['storageOptions'] ?? []), // Assuming tags are in `storageOptions`
                   'image': storage['previewImagePath'],
                 };
+                _selectedMarkerPosition = LatLng(
+                  storage['latitude'],
+                  storage['longitude'],
+                );
+                // _selectedMarkerPosition 설정 후 확인 로그 추가
+                print('@@@@@@###########################################0');
+                print("Selected Marker Position: $_selectedMarkerPosition");
+                print("Selected Marker Position: $_selectedMarkerInfo");
               });
             }
         );
@@ -350,12 +358,14 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
             // Info Box for Selected Marker
-            if (_selectedMarkerInfo != null)
+            if (_selectedMarkerInfo != null && _selectedMarkerPosition != null)
               Positioned(
                 top: MediaQuery.of(context).size.height / 2 - 100,
                 left: MediaQuery.of(context).size.width / 2 - 150,
                 child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () {
+                    print('InfoBox clicked');
                     // Navigate to detail page
                     Navigator.push(
                       context,

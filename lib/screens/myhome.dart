@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bag_a_moment/screens/mypage.dart'; // 회원 정보 조회 페이지
 import 'package:bag_a_moment/userInfo.dart';
@@ -12,6 +15,21 @@ class MyPageMainScreen extends StatefulWidget {
 
 class _MyPageMainScreenState extends State<MyPageMainScreen> {
   Map<String, dynamic>? _userData;
+  static const platform=MethodChannel("com.example.example/message");
+
+  String _message="초기 메세지";
+  Future<void> _getVolume() async{
+    String message;
+    try{
+      message=await platform.invokeMethod('getVolumeAndroid');
+    } on PlatformException {
+      //TODO:에러 알림창 띄우기
+      message="error";
+    }
+    setState(() {
+      _message=message;
+    });
+  }
 
   @override
   void initState() {
@@ -90,10 +108,9 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
                   ),
                   _buildButton(context, "그동안 맡긴 기록 확인하기", () {
                     // TODO: 기록 확인 페이지로 이동
+
                   }),
-                  _buildButton(context, "짐 크기 확인하기", () {
-                    // TODO: 짐 크기 확인 페이지로 이동
-                  }),
+                  _buildButton(context, "짐 크기 확인하기",_getVolume),
                   _buildButton(context, "결제 수단 등록", () {
                     // TODO: 결제 수단 등록 페이지로 이동
                   }),

@@ -41,6 +41,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
       try {
         final response = await http.get(Uri.parse(url));
+        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         if (response.statusCode == 200) {
           final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
           if (jsonResponse['isSuccess'] == true) {
@@ -63,6 +64,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         } else {
           print("HTTP 상태 코드 에러: ${response.statusCode}");
           print("응답 본문: ${response.body}");
+          print('jsonResponse Message: ${jsonResponse['message']}');
           throw Exception('Server error');
         }
       } catch (e) {
