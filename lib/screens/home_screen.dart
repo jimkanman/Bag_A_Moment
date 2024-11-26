@@ -58,6 +58,8 @@ class _HomeScreenState extends State<HomeScreen> {
   TimeOfDay? _fromTime;
   TimeOfDay? _toTime;
   bool _isExpanded = false; // 검색창 확장 여부
+  // 6. 미니 상세탭 클릭용
+  bool _showExtraContainer = false;
 
 // 초기화!
   void initState() {
@@ -335,6 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return Scaffold(
         body: Stack(
           children: [
+            //1. 지도
             GoogleMap(
               onMapCreated: (controller) => mapController = controller,
               initialCameraPosition: CameraPosition(
@@ -350,34 +353,8 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-            if (_selectedMarkerInfo != null)
-            Positioned(
-            // 화면의 세로 중간에서 100픽셀 위쪽에 위젯을 배치
-            // 화면의 가로 중간에서 150픽셀 왼쪽에 위젯을 배치
-            top: MediaQuery.of(context).size.height / 2 - 100,
-            left: MediaQuery.of(context).size.width / 2 - 150,
-                child: GestureDetector(
-                  onTap: () {
-                  // Navigate to detail page
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DetailPage(
-                        markerInfo: _selectedMarkerInfo!,
-                       ),
-                      )
-                    );
-                  },
-                  child: Container( //랜덤한 박스. detail_page 오버플로우 방지용임
-                    width: 300,
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                    ),
-                ),
-              ),
-            ),
 
-            //상단 검색창
+            //2. 상단 검색창
             Positioned(
               top: 20,
               left: 15,
@@ -521,79 +498,85 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-          // 홈화면 마커 띄우기
+          // 3. 홈화면 마커의 세부정보 띄우기
           if (_selectedMarkerInfo != null)
           Positioned(
           top: MediaQuery.of(context).size.height / 2 - 100,
           left: MediaQuery.of(context).size.width / 2 - 150,
-            child: Container(
-              width: 300,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-                boxShadow: [
-                BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: Offset(0, 2),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: (){
+                print("widget tapped ! ");
+                setState(() {
+                  _showExtraContainer = !_showExtraContainer; // 상태 변경
+                });
+               },
+              child:  Container(
+                width: 300,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
-               ],
-            ),
-               child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                _selectedMarkerInfo!['name'] ?? '',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  ),
-                ),
-                  const SizedBox(height: 8),
-                Text(
-                _selectedMarkerInfo!['address'] ?? '',
-                style: TextStyle(fontSize: 14),
-                ),
-                  const SizedBox(height: 8),
-                  Text(
-                  _selectedMarkerInfo!['description'] ?? '',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                  children: (_selectedMarkerInfo!['tags'] as List<String>)
-                  .map((tag) => Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(
-                  horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                child: Text(
-                  tag,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF43CBBA),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedMarkerInfo!['name'] ?? '',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                ))
-                    .toList(),
+                    const SizedBox(height: 8),
+                    Text(
+                      _selectedMarkerInfo!['address'] ?? '',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _selectedMarkerInfo!['description'] ?? '',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: (_selectedMarkerInfo!['tags'] as List<String>)
+                          .map((tag) => Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          tag,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF43CBBA),
+                          ),
+                        ),
+                      ))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 8),
+                    Image.network(
+                      _selectedMarkerInfo!['image'] ?? '',
+                      height: 100,
+                      fit: BoxFit.cover,
+                    ),
+                  ],
                 ),
-                  const SizedBox(height: 8),
-                  Image.network(
-                  _selectedMarkerInfo!['image'] ?? '',
-                    height: 100,
-                    fit: BoxFit.cover,
-                  ),
-
-              ],
-
-    ),
-
+              ),
             ),
-          ),
+              )
           ],
         ),
       );
