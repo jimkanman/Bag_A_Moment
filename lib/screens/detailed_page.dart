@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:io';
 
 
-// 상세 페이지
+// 미니 상세 페이지
 class DetailPage extends StatelessWidget {
   final Map<String, dynamic> markerInfo;
   DetailPage({required this.markerInfo});
