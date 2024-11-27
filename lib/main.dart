@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:bag_a_moment/rounter/locations.dart';
+import 'package:bag_a_moment/screens/storageManage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/screens/loading_screen.dart';
@@ -136,7 +137,7 @@ class _MainScreenBottomState extends State<MainBottomScreen>
   final List<Widget> _pages = [
     HomeScreen(), // 홈 (지도 페이지)
     ReservationScreen(), // 예약 내역 페이지
-    StorageScreen(), // 내보관소 페이지
+    StorageManagementPage(), // 내보관소 페이지
     MyPageMainScreen(), // 마이페이지
   ];
   void _onItemTapped(int index) {

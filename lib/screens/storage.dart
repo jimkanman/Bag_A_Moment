@@ -64,7 +64,20 @@ class _StorageScreenState extends State<StorageScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('보관소 등록하기'),
+        centerTitle: true,
+        backgroundColor: Color(0xFF4DD9C6),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: SingleChildScrollView(
       padding: EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -212,7 +225,10 @@ class _StorageScreenState extends State<StorageScreen> {
                           storageOptions: _storageOptions,
                         ),
                       ),
-                    );
+                    ).then((_){
+                    // ValidationScreen에서 돌아왔을 때 실행
+                    Navigator.pop(context); // StorageScreen도 종료하고 보관소 관리 페이지로 돌아감
+                    });
                   }
                 },
                 child: Text('보관소 정보 입력 완료'),
@@ -220,6 +236,7 @@ class _StorageScreenState extends State<StorageScreen> {
             ],
           ),
         ),
-      );
+      ),
+    );
   }
 }
