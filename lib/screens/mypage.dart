@@ -189,7 +189,7 @@ class _MyPageState extends State<MyPage> {
                           onPressed: () {
                             // 로그아웃 또는 수정 버튼 추가할것
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('회원 정보 수정 못합니다만?')),
+                              SnackBar(content: Text('회원 정보 수정 기능')),
                             );
                           },
                           child: Text('회원정보 수정하기', style: TextStyle(

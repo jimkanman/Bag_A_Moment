@@ -7,12 +7,12 @@ Map<int, Color> color = {
   100: Color(0xFFB3EDE5),
   200: Color(0xFF80E3D6),
   300: Color(0xFF4DD9C6),
-  400: Color(0xFF26D1BA),
+  400: Color(0xFF1CAF9C),
   500: Color(primaryColor),  // 기본 색상
   600: Color(0xFF43CBBA),
   700: Color(0xFF3AC4B5),
   800: Color(0xFF31BEB0),
-  900: Color(0xFF21B2A6),
+  900: Color(0xFF0C4944),
 };
 
 final MaterialColor customSwatch = MaterialColor(primaryColor, color);
