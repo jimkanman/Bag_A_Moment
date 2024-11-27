@@ -217,6 +217,13 @@ class ValidationScreen extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFFFFFF)),
         ),
         backgroundColor: Color(0xFF4DD9C6),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -474,7 +481,7 @@ class ValidationScreen extends StatelessWidget {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context); // 뒤로 이동
+                      Navigator.pop(context); // 뒤로 이동, 뒤가 입력페이지인지 확인
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey,

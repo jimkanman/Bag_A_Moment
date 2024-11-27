@@ -3,6 +3,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+//해당 유저가 건 예약을 확인하는 페이지. 아직 구현x
+
 class ReservationScreen extends StatefulWidget {
   @override
   _ReservationScreenState createState() => _ReservationScreenState();
@@ -105,7 +107,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('나의 예약'),
-        backgroundColor: Colors.teal,
+        backgroundColor: Color(0xFF4DD9C6),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator()) // 로딩 중

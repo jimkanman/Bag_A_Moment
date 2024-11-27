@@ -65,6 +65,18 @@ class _StorageScreenState extends State<StorageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('보관소 등록하기'),
+        centerTitle: true,
+        backgroundColor: Color(0xFF4DD9C6),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: SingleChildScrollView(
       padding: EdgeInsets.all(16.0),
         child: Form(
