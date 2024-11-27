@@ -22,6 +22,7 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
     String message;
     try{
       message=await platform.invokeMethod('getVolumeAndroid');
+
     } on PlatformException {
       //TODO:에러 알림창 띄우기
       message="error";
@@ -29,6 +30,23 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
     setState(() {
       _message=message;
     });
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Volume Information'),
+          content: Text(_message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

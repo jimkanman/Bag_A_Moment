@@ -1,6 +1,7 @@
 package com.example.bag_a_moment.rawdepth;
 
 import android.content.Intent;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -8,6 +9,7 @@ import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
+
 
 public class BridgeActivity extends FlutterActivity {
     // Channel name
@@ -20,7 +22,7 @@ public class BridgeActivity extends FlutterActivity {
     private static final int REQUEST_CODE = 1234;
 
     // Invoked method
-    private void getMessageAndroid() {
+    private void getVolumeAndroid() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivityForResult(intent, REQUEST_CODE);
     }
@@ -37,9 +39,9 @@ public class BridgeActivity extends FlutterActivity {
                             myResult = result;
 
                             // Invoked method handling
-                            if (call.method.equals("getMessageAndroid")) {
+                            if (call.method.equals("getVolumeAndroid")) {
                                 try {
-                                    getMessageAndroid();
+                                    getVolumeAndroid();
                                 } catch (Exception e) {
                                     myResult.error("Unavailable", "Opennig SecondActivity is not available", null);
                                 }
@@ -57,10 +59,18 @@ public class BridgeActivity extends FlutterActivity {
 
         if (requestCode == REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                // Return flutter-side message
-                myResult.success(data.getData().toString());
+                if (data == null) {
+                    Log.e("Error", "data Intent is null");
+                } else {
+                    Log.d("Intent Data", "Width: " + data.getIntExtra("width", -1) +
+                            ", Height: " + data.getIntExtra("height", -1) +
+                            ", Depth: " + data.getIntExtra("depth", -1));
+                }
+                myResult.success("Width: " + data.getIntExtra("width", -1) +
+                        ", Height: " + data.getIntExtra("height", -1) +
+                        ", Depth: " + data.getIntExtra("depth", -1));
             } else {
-                myResult.error("Unavailable", "Opennig SecondActivity is not available", null);
+                myResult.error("Unavailable", "짐 크기 정보 획득에 실패", null);
             }
         }
     }

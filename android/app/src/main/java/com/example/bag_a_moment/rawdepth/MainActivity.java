@@ -1,5 +1,7 @@
 package com.example.bag_a_moment.rawdepth;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
@@ -7,7 +9,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -46,10 +52,16 @@ import java.util.Map;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class MainActivity extends AppCompatActivity implements GLSurfaceView.Renderer{
+
+public class MainActivity extends AppCompatActivity implements GLSurfaceView.Renderer {
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private GLSurfaceView surfaceView;
+    private LinearLayout guide_text_container;
+    private LinearLayout result_popup_container;
+    private TextView result_text;
+    private Button retrybtn;
+    private Button confirmbtn;
 
     private boolean installRequested;
 
@@ -61,29 +73,69 @@ public class MainActivity extends AppCompatActivity implements GLSurfaceView.Ren
     private final BackgroundRenderer backgroundRenderer = new BackgroundRenderer();
     private final BoxRenderer boxRenderer = new BoxRenderer();
 
+
     private static final int DEPTH_BUFFER_SIZE = 16;
 
     private AABB selectedCluster;
 
     private Camera lastCamera;
     private Frame lastFrame;
+    private FloatBuffer lastPoints;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         surfaceView = findViewById(R.id.surfaceview);
+        guide_text_container = findViewById(R.id.guide_text_container);
+        result_popup_container = findViewById(R.id.result_popup);
+        result_text = findViewById(R.id.result_body);
+        retrybtn = findViewById(R.id.retry_button);
+        confirmbtn = findViewById(R.id.confirm_button);
         displayRotationHelper = new DisplayRotationHelper(this);
+
 
         surfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                if(motionEvent.getAction()==MotionEvent.ACTION_DOWN){
+                int touchActiion = motionEvent.getAction();
+                if (touchActiion == MotionEvent.ACTION_DOWN) {
                     findClusterAtTouch(motionEvent.getX(), motionEvent.getY());
-                    view.performClick();
-                    return true;
+                } else if (touchActiion == MotionEvent.ACTION_MOVE) {
+                    handleTouchMove(motionEvent.getX(), motionEvent.getY());
                 }
-                return false;
+                return true;
+            }
+        });
+        retrybtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                selectedCluster = null;
+                guide_text_container.setVisibility(View.VISIBLE);
+                result_popup_container.setVisibility(View.GONE);
+            }
+        });
+        confirmbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (selectedCluster != null) {
+                    Log.d("selectedCluster Debug", "Width: " + selectedCluster.getWidthInCm() +
+                            ", Height: " + selectedCluster.getHeightInCm() +
+                            ", Depth: " + selectedCluster.getDepthInCm());
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("width", (int)selectedCluster.getWidthInCm());
+                    resultIntent.putExtra("height", (int)selectedCluster.getHeightInCm());
+                    resultIntent.putExtra("depth", (int)selectedCluster.getDepthInCm());
+                    resultIntent.setData(Uri.parse("Width: " + (int)selectedCluster.getWidthInCm() +
+                    ", Height: " + (int)selectedCluster.getHeightInCm() +
+                            ", Depth: " + (int)selectedCluster.getDepthInCm()));
+
+                    Log.d("Intent Debug", "Width: " + selectedCluster.getWidthInCm() +
+                            ", Height: " + selectedCluster.getHeightInCm() +
+                            ", Depth: " + selectedCluster.getDepthInCm());
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
+                }
             }
         });
 
@@ -179,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements GLSurfaceView.Ren
         // GLSurfaceView와 DisplayRotationHelper를 재개
         surfaceView.onResume();
         displayRotationHelper.onResume();
-        messageSnackbarHelper.showMessage(this, "데이터를 기다리는 중...");
+        guide_text_container.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -260,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements GLSurfaceView.Ren
             //현재 프레임을 가져오고 카메라 상태를 확인
             Frame frame = session.update();
             Camera camera = frame.getCamera();
-            lastFrame=frame;
+            lastFrame = frame;
             lastCamera = camera;
 
             //카메라 이미지를 opengl표면에 렌더링
@@ -268,14 +320,11 @@ public class MainActivity extends AppCompatActivity implements GLSurfaceView.Ren
 
             // 현재 프레임의 깊이 데이터를 가져옴
             FloatBuffer points = DepthData.create(frame, session.createAnchor(camera.getPose()));
+            lastPoints = points;
             if (points == null) {
                 return;
             }
 
-            //깊이 데이터가 생성되었으면 메세지를 숨김
-            if (messageSnackbarHelper.isShowing()) {
-                messageSnackbarHelper.hide(this);
-            }
 
             // 카메라 트레킹(카메라 이동에 대한 인식)이 되지 않으면 실패 이유를 보여줌
             if (camera.getTrackingState() == TrackingState.PAUSED) {
@@ -325,12 +374,23 @@ public class MainActivity extends AppCompatActivity implements GLSurfaceView.Ren
             if (selectedCluster != null) {
                 //터치로 선택된 박스를 렌더링
                 boxRenderer.drawSelected(selectedCluster, camera);
-                messageSnackbarHelper.showMessage(this,"클러스터 실제 크기: w:"+selectedCluster.getWidthInCm()+"h:"+selectedCluster.getHeightInCm()+"d:"+selectedCluster.getDepthInCm());
             }
         } catch (Throwable t) {
             Log.e(TAG, "Exception on the OpenGL thread", t);
         }
     }
+
+    private void handleTouchMove(float x, float y) {
+        if (selectedCluster != null && lastPoints != null) {
+            // 화면 좌표를 사용하여 새 위치를 계산
+//            float[] newWorldCoords = screenToWorldCoordinates(x, y,lastPoints );
+//            if (newWorldCoords != null) {
+//                // 새 위치로 selectedCluster 이동
+//                selectedCluster.setCenter(newWorldCoords[0], newWorldCoords[1], newWorldCoords[2]);
+//            }
+        }
+    }
+
 
     private void findClusterAtTouch(float touchX, float touchY) {
         if (session == null || lastCamera == null || lastFrame == null) {
@@ -366,17 +426,23 @@ public class MainActivity extends AppCompatActivity implements GLSurfaceView.Ren
             // 찾은 클러스터를 선택된 클러스터로 설정하고 렌더링합니다.
             selectedCluster = targetCluster;
             if (selectedCluster != null) {
-                Log.i(TAG, "Cluster found at touch location: " + selectedCluster);
+                messageSnackbarHelper.showMessage(this, "클러스터 선택됨fds");
+                guide_text_container.setVisibility(View.GONE);
+                result_popup_container.setVisibility(View.VISIBLE);
+                result_text.setText("가로" + (int) selectedCluster.getWidthInCm() + "세로" + (int) selectedCluster.getHeightInCm() + "높이" + (int) selectedCluster.getDepthInCm());
             } else {
-                Log.i(TAG, "No cluster found at touch location.");
+                messageSnackbarHelper.showMessage(this, "클러스터 선택 실패");
             }
         } catch (Exception e) {
-            Log.e(TAG, "Exception in findClusterAtTouch: ", e);
+            Log.e(TAG, "Exception in findClusterA`tTouch: ", e);
         }
     }
 
     // 화면 좌표를 사용하여 깊이 데이터에서 3D 포인트 추출
     private float[] screenToWorldCoordinates(float screenX, float screenY, FloatBuffer points) {
+        if (points == null) {
+            return null;
+        }
         //월드좌표 이용
         // NDC (Normalized Device Coordinates)로 변환
         float ndcX = (screenX / surfaceView.getWidth()) * 2.0f - 1.0f;
@@ -429,5 +495,4 @@ public class MainActivity extends AppCompatActivity implements GLSurfaceView.Ren
         }
         return closestPoint;
     }
-
 }
