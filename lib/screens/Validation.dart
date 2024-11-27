@@ -210,54 +210,315 @@ class ValidationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('입력 정보 확인')),
-      body: Padding(
+
+      appBar: AppBar(
+        title: Text(
+          '입력 정보 확인',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFFFFFF)),
+        ),
+        backgroundColor: Color(0xFF4DD9C6),
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('보관소명: $name', style: TextStyle(fontSize: 16)),
-            SizedBox(height: 10),
-            Text('전화번호: $phone', style: TextStyle(fontSize: 16)),
-            SizedBox(height: 10),
-            Text('주소: $address', style: TextStyle(fontSize: 16)),
-            SizedBox(height: 10),
-            Text('운영 시간: $openTime ~ $closeTime',
-                style: TextStyle(fontSize: 16)),
-            SizedBox(height: 10),
-            Text('보관소 소개: $description', style: TextStyle(fontSize: 16)),
-            SizedBox(height: 10),
-            if (image != null) Image.file(image!, height: 100, width: 100),
-            SizedBox(height: 30),
-            Text('가방 가격: $backpackPrice 원', style: TextStyle(fontSize: 16)),
-            Text('캐리어 가격: $carrierPrice 원', style: TextStyle(fontSize: 16)),
-            Text('기타 물품 가격: $miscellaneousPrice 원',
-                style: TextStyle(fontSize: 16)),
-            SizedBox(height: 10),
-            Text('환불 정책: $refundPolicy', style: TextStyle(fontSize: 16)),
-            SizedBox(height: 10),
-            if (file != null) Text('약관 파일: ${file!
-                .path
-                .split('/')
-                .last}'),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                _submitData(context); // 서버로 데이터 전송
-              },
-              child: Text('서버로 전송'),
+            Text(
+              '보관소명:',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
             ),
             SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // 뒤로 이동
-              },
-              child: Text('뒤로'),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), // 내부 여백
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300, // 연한 회색 배경
+                borderRadius: BorderRadius.circular(18), // 둥근 모서리
+              ),
+              child: Text(
+                name, // 사용자가 입력한 데이터
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFF0E2927), // 텍스트 색상
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            Divider(
+              color: Colors.grey, // 구분선 색상
+              thickness: 1,       // 구분선 두께
+              indent: 16,         // 구분선 왼쪽 여백
+              endIndent: 16,      // 구분선 오른쪽 여백
+            ),
+            SizedBox(height: 15),
+            Text(
+              '전화번호:',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
+            ),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Text(
+                phone,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFF0E2927),
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            Divider(
+              color: Colors.grey, // 구분선 색상
+              thickness: 1,       // 구분선 두께
+              indent: 16,         // 구분선 왼쪽 여백
+              endIndent: 16,      // 구분선 오른쪽 여백
+            ),
+            SizedBox(height: 15),
+            Text(
+              '주소:',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
+            ),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Text(
+                address,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFF0E2927),
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            Divider(
+              color: Colors.grey, // 구분선 색상
+              thickness: 1,       // 구분선 두께
+              indent: 16,         // 구분선 왼쪽 여백
+              endIndent: 16,      // 구분선 오른쪽 여백
+            ),
+            SizedBox(height: 15),
+            Text(
+              '운영 시간:',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
+            ),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300, // 연한 회색 배경
+                borderRadius: BorderRadius.circular(18), // 둥근 모서리
+              ),
+              child: Text(
+                '$openTime ~ $closeTime',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFF0E2927), // 텍스트 색상
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            Divider(
+              color: Colors.grey, // 구분선 색상
+              thickness: 1,       // 구분선 두께
+              indent: 16,         // 구분선 왼쪽 여백
+              endIndent: 16,      // 구분선 오른쪽 여백
+            ),
+            SizedBox(height: 15),
+            Text(
+              '보관소 소개:',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
+            ),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Text(
+                description,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFF0E2927),
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            Divider(
+              color: Colors.grey, // 구분선 색상
+              thickness: 1,       // 구분선 두께
+              indent: 16,         // 구분선 왼쪽 여백
+              endIndent: 16,      // 구분선 오른쪽 여백
+            ),
+            SizedBox(height: 15),
+            if (image != null)
+              Text(
+                '보관소 대표 이미지:',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
+              ),
+            SizedBox(height: 10),
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Image.file(
+                    image!,
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+
+            SizedBox(height: 15),
+            Divider(
+              color: Colors.grey, // 구분선 색상
+              thickness: 1,       // 구분선 두께
+              indent: 16,         // 구분선 왼쪽 여백
+              endIndent: 16,      // 구분선 오른쪽 여백
+            ),
+            SizedBox(height: 15),
+            Text(
+              '가격 정보:',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
+            ),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '가방: $backpackPrice 원',
+                    style: TextStyle(fontSize: 18, color: Color(0xFF0E2927)),
+                  ),
+                  Text(
+                    '캐리어: $carrierPrice 원',
+                    style: TextStyle(fontSize: 18, color: Color(0xFF0E2927)),
+                  ),
+                  Text(
+                    '기타 물품: $miscellaneousPrice 원',
+                    style: TextStyle(fontSize: 18, color: Color(0xFF0E2927)),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 15),
+            Divider(
+              color: Colors.grey, // 구분선 색상
+              thickness: 1,       // 구분선 두께
+              indent: 16,         // 구분선 왼쪽 여백
+              endIndent: 16,      // 구분선 오른쪽 여백
+            ),
+            SizedBox(height: 15),
+            Text(
+              '환불 정책:',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
+            ),
+            SizedBox(height: 10),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Text(
+                refundPolicy,
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Color(0xFF0E2927),
+                ),
+              ),
+            ),
+            SizedBox(height: 15),
+            Divider(
+              color: Colors.grey, // 구분선 색상
+              thickness: 1,       // 구분선 두께
+              indent: 16,         // 구분선 왼쪽 여백
+              endIndent: 16,      // 구분선 오른쪽 여백
+            ),
+            SizedBox(height: 15),
+            if (file != null)
+              Text(
+                '약관 파일:',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
+              ),
+            if (file != null)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Text(
+                  file!.path.split('/').last,
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Color(0xFF0E2927),
+                  ),
+                ),
+              ),
+            SizedBox(height: 20),
+            Center(
+              child: Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // 뒤로 이동
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    child: Text(
+                      ' 뒤로 ',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                  SizedBox(height: 10, width:80 ),
+                Row(
+                mainAxisAlignment: MainAxisAlignment.end, // 우측 정렬
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      _submitData(context); // 서버로 데이터 전송
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF31BEB0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    child: Text(
+                      '   서버로 전송   ',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                  ),
+                  ],
+                ),
+
+                ],
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
 }
 
