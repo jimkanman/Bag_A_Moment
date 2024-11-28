@@ -69,7 +69,7 @@ class MarkerDetails extends StatelessWidget {
                       tag,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.green.shade800,
+                        color: Color(0xFF80E3D6),
                       ),
                     ),
                   ))

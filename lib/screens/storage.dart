@@ -53,6 +53,10 @@ class _StorageScreenState extends State<StorageScreen> {
     }
   }
 
+
+
+
+
   Future<void> _pickFile() async {
     final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
     if (result != null) {
@@ -204,6 +208,23 @@ class _StorageScreenState extends State<StorageScreen> {
                       return; // 검증 실패 시 실행 중단
                     }
 
+                    // Debugging: Print each value to verify input
+                    print('디버깅디버깅디버깅디버깅디버깅');
+                    print('Name: ${_nameController.text}');
+                    print('Phone: ${_phoneController.text}');
+                    print('Address: ${_addressController.text}');
+                    print('Postal Code: ${_postalCodeController.text}');
+                    print('Description: ${_descriptionController.text}');
+                    print('Backpack Price: ${_backpackPriceController.text}');
+                    print('Carrier Price: ${_carrierPriceController.text}');
+                    print('Miscellaneous Price: ${_miscellaneousPriceController.text}');
+                    print('Opening Time: ${_openTime?.format(context)}');
+                    print('Closing Time: ${_closeTime?.format(context)}');
+                    print('Selected Image: ${_selectedImage?.path}');
+                    print('Selected File: ${_selectedFile?.path}');
+                    print('Refund Policy: ${_refundPolicyController.text}');
+                    print('Storage Options: $_storageOptions');
+
                     // 서버에 전송
                     Navigator.push(
                       context,
@@ -225,10 +246,8 @@ class _StorageScreenState extends State<StorageScreen> {
                           storageOptions: _storageOptions,
                         ),
                       ),
-                    ).then((_){
-                    // ValidationScreen에서 돌아왔을 때 실행
-                    Navigator.pop(context); // StorageScreen도 종료하고 보관소 관리 페이지로 돌아감
-                    });
+
+                  );
                   }
                 },
                 child: Text('보관소 정보 입력 완료'),

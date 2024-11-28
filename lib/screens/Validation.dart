@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:bag_a_moment/main.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:intl/intl.dart';
+
 
 class ValidationScreen extends StatelessWidget {
   final String name;
@@ -17,8 +20,8 @@ class ValidationScreen extends StatelessWidget {
   final String? openTime;
   final String? closeTime;
   final File? image;
-  final String refundPolicy; //환불정책 string?
   final File? file;
+  final String refundPolicy; //환불정책 string?
   final List<String> storageOptions;
 
 
@@ -36,27 +39,44 @@ class ValidationScreen extends StatelessWidget {
     this.openTime,
     this.closeTime,
     this.image,
+    this.file,
     required this.refundPolicy,
     this.storageOptions = const [], // 기본값 추가
-    this.file,
+
 
   }) : super(key: key);
 
+
+
   //시간 변환 함수
+
   String _timeOfDayToString(String? time) {
     if (time == null) return "00:00"; // 기본값 설정
     try {
-      final TimeOfDay parsedTime = TimeOfDay(
-        hour: int.parse(time.split(":")[0]),
-        minute: int.parse(time.split(":")[1]),
-      );
-      final hour = parsedTime.hour.toString().padLeft(2, '0');
-      final minute = parsedTime.minute.toString().padLeft(2, '0');
-      return '$hour:$minute';
+      if (time.contains("AM") || time.contains("PM")) {
+        // 12시간 형식
+        final DateFormat inputFormat = DateFormat("h:mm a");
+        final DateFormat outputFormat = DateFormat("HH:mm");
+        final DateTime parsedTime = inputFormat.parse(time);
+        return outputFormat.format(parsedTime);
+      } else {
+        // 24시간 형식
+        final parts = time.split(":");
+        if (parts.length != 2) return "00:00";
+
+        final hour = int.parse(parts[0]);
+        final minute = int.parse(parts[1]);
+        if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return "00:00";
+
+        return '${hour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')}';
+      }
     } catch (e) {
-      return "00:00"; // 파싱 실패 시 기본값 반환
+      print("Time parsing error: $e");
+      return "00:00";
     }
   }
+
+
 
 
   Future<void> _submitData(BuildContext context) async {
@@ -70,7 +90,26 @@ class ValidationScreen extends StatelessWidget {
 
     final String url = 'http://3.35.175.114:8080/storages'; // 서버 API 주소
 
-
+        {
+      // 디버깅용 print문
+      print("=== ValidationScreen에 전달된 데이터 ===");
+      print("이름: $name");
+      print("전화번호: $phone");
+      print("주소: $address");
+      print("우편번호: $postalCode");
+      print("설명: $description");
+      print("가방 요금: $backpackPrice");
+      print("캐리어 요금: $carrierPrice");
+      print("기타 물품 요금: $miscellaneousPrice");
+      print("영업 시작 시간: $openTime");
+      print("영업 종료 시간: $closeTime");
+      print("선택된 이미지 경로: ${image?.path}");
+      print("선택된 파일 경로: ${file?.path}");
+      print("환불 정책: $refundPolicy");
+      print("보관 옵션: $storageOptions");
+      print("=================================");
+      //여기까지는 시간, 이미지 정상
+    }
 
 
     try {
@@ -86,6 +125,7 @@ class ValidationScreen extends StatelessWidget {
       var request = http.MultipartRequest('POST', Uri.parse(url));
       request.headers.addAll({
         'Authorization': token, // 인증 토큰 추가
+        'Content-Type': 'multipart/form-data', // 명시적으로 Content-Type 추가
       });
 
 
@@ -96,6 +136,7 @@ class ValidationScreen extends StatelessWidget {
       };
       print('Request Headers: $headers');
       print('Request Body: ${request}');
+
 
       // 본문 데이터 추가
       request.fields.addAll({
@@ -117,15 +158,33 @@ class ValidationScreen extends StatelessWidget {
       print('Selected Storage Options: $storageOptions');
 
 
-
+      //이미지 파일 디버깅
+      if (image == null) {
+        print("@@@@@@@@No image selected.");
+      } else {
+        print("@@@@@@@@Image path: ${image!.path}");
+      }
 
 
       // 이미지 파일 추가 (선택적으로 추가)
+      // 이미지 파일 추가 (필드 이름을 'images'로 변경)
       if (image != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath('image', image!.path),
-        );
+        final fileExists = await File(image!.path).exists();
+        print("Image file exists: $fileExists");
+        if (fileExists) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'images', // Ensure this matches the server's expected field
+              image!.path,
+              contentType: MediaType('image', 'jpeg'), // Specify content type
+            ),
+          );
+          print("################# 제발제발 Image added to request under 'images' field: ${image!.path}");
+        } else {
+          print("Selected image file does not exist: ${image!.path}");
+        }
       }
+
       // 약관 파일 추가 (선택적으로 추가)
       if (file != null) {
         request.files.add(
@@ -160,8 +219,7 @@ class ValidationScreen extends StatelessWidget {
           print("Closing Time: ${data['closingTime']}");
           print("Backpack Price Per Hour: ${data['backpackPricePerHour']}");
           print("Carrier Price Per Hour: ${data['carrierPricePerHour']}");
-          print(
-              "Miscellaneous Item Price Per Hour: ${data['miscellaneousItemPricePerHour']}");
+          print("Miscellaneous Item Price Per Hour: ${data['miscellaneousItemPricePerHour']}");
           print("Terms and Conditions: ${data['termsAndConditions']}");
           print("Images: ${data['images']}");
           print("Storage Options: ${data['storageOptions']}");

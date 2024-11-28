@@ -315,7 +315,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   'address': storage['detailedAddress'],
                   'description': storage['description'],
                   'tags': List<String>.from(storage['storageOptions'] ?? []), // Assuming tags are in `storageOptions`
-                  'image': storage['previewImagePath'],
+                  'image': storage['images'] ?? 'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png',
+                  'opentime': storage['openingTime'],
+                  'closetime' :storage['closingTime'],
                 };
               });
             }
@@ -327,6 +329,8 @@ class _HomeScreenState extends State<HomeScreen> {
         }); // 상태 갱신
       // 디버깅용: 전체 마커 개수 확인
       print('Total markers added: ${_markers.length}');
+      print(storage['previewImagePath']); //얘는 대체 어디서 온거? - 서버 기본 이미지
+      print(storage['images']);
       }
 
 
