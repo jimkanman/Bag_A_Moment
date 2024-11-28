@@ -10,8 +10,23 @@ class StorageManagementPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('보관소 관리'),
-        centerTitle: true,
+        title: Text(
+          '보관소 관리',
+          style: TextStyle(
+            color: Colors.white, // 글씨 색상을 흰색으로 설정
+            fontWeight: FontWeight.bold, // 글씨를 볼드체로 설정
+            fontSize: 20, // 글씨 크기를 설정
+          ),
+        ),
+        centerTitle: true, // 제목을 중앙 정렬
+        backgroundColor: Color(0xFF4DD9C6), // 민트색 배경
+        elevation: 0, // 앱바 그림자 제거
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black), // 뒤로가기 버튼
+          onPressed: () {
+            Navigator.pop(context); // 뒤로가기 동작
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -185,14 +200,15 @@ class StorageManagementPage extends StatelessWidget {
                                 MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    '집깐만 사용자${index + 1}님',
+                                    'Doldom 님의 새로운 예약!',
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   Text(
-                                    '가방 x${index + 2} 캐리어 y${index}개',
+                                    //'가방 x${index + 2} 캐리어 y${index}개',
+                                    '가방 2개, 캐리어 1개',
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey,
@@ -203,7 +219,8 @@ class StorageManagementPage extends StatelessWidget {
                               const SizedBox(height: 8),
                               // 예약 상세
                               Text(
-                                '보관소 ${index + 1}',
+                                //'보관소 ${index + 1}',
+                                'Lemon Tree 보관소',
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: Colors.black,
@@ -212,7 +229,7 @@ class StorageManagementPage extends StatelessWidget {
                               const SizedBox(height: 4),
                               Text(
                                 '24.09.${27 + index} ~ 24.09.${28 + index}\n'
-                                    '13시부터 19시까지\n13000원 (예정)',
+                                    '13시-  19시 \n13,000원 (예상 금액)',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey,

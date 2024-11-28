@@ -166,8 +166,9 @@ class _MainScreenBottomState extends State<MainBottomScreen>
             label: '예약',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.storage),
+            icon: Icon(Icons.table_rows),
             label: '내 보관소',
+
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -176,6 +177,7 @@ class _MainScreenBottomState extends State<MainBottomScreen>
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Color(0xFF21B2A6),
+        unselectedItemColor: Colors.grey.shade600, // 클릭되지 않은 탭 색상 (회색)
         onTap: _onItemTapped, // 탭 변경 시 호출
       ),
     );

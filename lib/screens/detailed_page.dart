@@ -228,7 +228,7 @@ class DetailPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PaymentPage(
+                      builder: (context) => ReservationScreen(
                         info: markerInfo,
                       ),
                     ),
@@ -246,7 +246,7 @@ class DetailPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PaymentPage(
+                      builder: (context) => ReservationScreen(
                         info: markerInfo,
                       ),
                     ),
