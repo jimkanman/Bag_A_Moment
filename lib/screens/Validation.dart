@@ -167,14 +167,14 @@ class ValidationScreen extends StatelessWidget {
 
 
       // 이미지 파일 추가 (선택적으로 추가)
-      // 이미지 파일 추가 (필드 이름을 'images'로 변경)
+      // 이미지 파일 추가 (필드 이름을 '"storageImages'로 변경)
       if (image != null) {
         final fileExists = await File(image!.path).exists();
         print("Image file exists: $fileExists");
         if (fileExists) {
           request.files.add(
             await http.MultipartFile.fromPath(
-              'images', // Ensure this matches the server's expected field
+              'storageImages', // Ensure this matches the server's expected field
               image!.path,
               contentType: MediaType('image', 'jpeg'), // Specify content type
             ),
