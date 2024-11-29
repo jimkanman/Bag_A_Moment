@@ -139,7 +139,7 @@ class _StorageScreenState extends State<StorageScreen> {
               _selectedImage != null
                   ? Image.file(_selectedImage!, height: 100, width: 100)
                   : IconButton(
-                icon: Icon(Icons.add_a_photo),
+                    icon: Icon(Icons.add_a_photo),
                 onPressed: _pickImage,
               ),
               SizedBox(height: 10),

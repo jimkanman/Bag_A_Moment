@@ -135,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final List<dynamic> storages = (jsonResponse['data'] is List)
               ? jsonResponse['data'] // 이미 리스트라면 그대로 사용
               : [jsonResponse['data']]; // Map이라면 리스트로 변환
+
           //이 부분은 storages를 리스트로 변환한것. -> 여전히 내용물은 객체덩어리로 옴!
 
             if (storages.isEmpty) {
@@ -146,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
               // storage마다 addMarker 실행
               for (var storage in storages) {
                 _addMarkers(storage);
-                print('storage id check, sent to addMarkers : ${storage['id']}');
+                print('storage id checked, sent to addMarkers : ${storage['id']}');
               }
             }
 
@@ -310,12 +311,15 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: bagIcon,
             onTap: () {
               setState(() {
+                print('스토리지 ${storage}');
+                print('스토리지 이미지 ${storage['previewImagePath']}');
                 _selectedMarkerInfo = {
                   'name': storage['name'],
                   'address': storage['detailedAddress'],
                   'description': storage['description'],
                   'tags': List<String>.from(storage['storageOptions'] ?? []), // Assuming tags are in `storageOptions`
-                  'image': storage['images'] ?? 'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png',
+                  //이미지 디버깅
+                  'previewImagePath': storage['previewImagePath'] ?? 'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png',
                   'opentime': storage['openingTime'],
                   'closetime' :storage['closingTime'],
                 };
@@ -329,8 +333,10 @@ class _HomeScreenState extends State<HomeScreen> {
         }); // 상태 갱신
       // 디버깅용: 전체 마커 개수 확인
       print('Total markers added: ${_markers.length}');
-      print(storage['previewImagePath']); //얘는 대체 어디서 온거? - 서버 기본 이미지
-      print(storage['images']);
+      print('Storage id: ${storage['id']}');
+      print('기본 이미지: ${storage['previewImagePath']}'); //얘는 대체 어디서 온거? - 서버 기본 이미지
+      print('스토리지 이미지: ${storage['previewImagePath']}'); //여기가 널로 나옴
+      print('----------------------');
       }
 
 
@@ -511,6 +517,7 @@ class _HomeScreenState extends State<HomeScreen> {
               behavior: HitTestBehavior.translucent,
               onTap: (){
                 print("widget tapped ! ");
+                print('마커가 눌렸노라');
                 setState(() {
                   _showExtraContainer = !_showExtraContainer; // 상태 변경
                 });
@@ -537,7 +544,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8), // 둥근 모서리 처리
                       child: Image.network(
-                        _selectedMarkerInfo!['image'] ?? '', // 이미지 URL
+                        _selectedMarkerInfo!['previewImagePath'] ?? 'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png', // 이미지 URL
                         width: 80, // 고정된 너비
                         height: 80, // 고정된 높이
                         fit: BoxFit.cover, // 이미지 크기 조정
@@ -565,9 +572,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               _selectedMarkerInfo!['name'] ?? '',
                               style: TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Paperlogy',
+                                fontWeight: FontWeight.w400, // Regular
                                 color: Colors.black,
                               ),
+                              overflow: TextOverflow.ellipsis, // 넘칠 경우 "..." 표시
+                              maxLines: 1, // 최대 한 줄로 제한
                             ),
                           ),
                           const SizedBox(height: 4), // 제목과 영업중 사이 간격
@@ -576,6 +586,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             "영업중",
                             style: TextStyle(
                               fontSize: 12,
+                              fontFamily: 'Paperlogy',
+                              fontWeight: FontWeight.w400, // Regular
                               color: Colors.green,
                             ),
                           ),
@@ -596,6 +608,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 tag,
                                 style: TextStyle(
                                   fontSize: 12,
+                                  fontFamily: 'Paperlogy',
+                                  fontWeight: FontWeight.w400, // Regular
                                   color: Color(0xFFE0F7F5),
                                 ),
                               ),

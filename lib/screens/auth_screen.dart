@@ -143,15 +143,15 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                         labelText: 'ID 입력',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(4.0),
+                          borderRadius: BorderRadius.circular(8.0),
                           borderSide: BorderSide.none,
                         ),
                       labelStyle: TextStyle(
-                          color: Color(0xFFE0F7F5),
-                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0C4944),
+
                         ),
                       filled: true,
-                      fillColor: Color(0xFF80E3D6),
+                      fillColor: Colors.white,
                     ),
                     style: TextStyle(fontSize: 16, color: Color(0xFF0C4944)), // 텍스트 스타일
                   ),
@@ -166,15 +166,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   decoration: InputDecoration(
                     labelText: '비밀번호',
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(4.0),
+                      borderRadius: BorderRadius.circular(8.0),
                       borderSide: BorderSide.none,
                     ),
                     labelStyle: TextStyle(
-                      color: Color(0xFFE0F7F5),
-                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0C4944),
+
                     ),
                     filled: true,
-                    fillColor: Color(0xFF80E3D6),
+                    fillColor: Colors.white,
                     suffixIcon: IconButton(
                       icon: Icon(
                         _isPasswordVisible
