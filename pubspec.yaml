@@ -81,7 +81,7 @@ flutter:
     - assets/images/box_icon3.png
     - assets/images/background.png
   fonts:
-    - family: Schyler
+    - family: Paperlogy
       fonts:
         - asset: assets/fonts/Paperlogy-1Thin.ttf
           weight: 100

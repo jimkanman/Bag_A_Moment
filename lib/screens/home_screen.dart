@@ -311,13 +311,14 @@ class _HomeScreenState extends State<HomeScreen> {
           icon: bagIcon,
             onTap: () {
               setState(() {
+                //여기는 출력 잘 됨
                 print('스토리지 ${storage}');
                 print('스토리지 이미지 ${storage['previewImagePath']}');
                 _selectedMarkerInfo = {
                   'name': storage['name'],
                   'address': storage['detailedAddress'],
                   'description': storage['description'],
-                  'tags': List<String>.from(storage['storageOptions'] ?? []), // Assuming tags are in `storageOptions`
+                  'tags': List<String>.from(storage['storageOptions'] ?? []),
                   //이미지 디버깅
                   'previewImagePath': storage['previewImagePath'] ?? 'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png',
                   'opentime': storage['openingTime'],
@@ -509,124 +510,146 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
           // 3. 홈화면 마커의 세부정보 띄우기
-          if (_selectedMarkerInfo != null)
-          Positioned(
-          top: MediaQuery.of(context).size.height / 2 - 20,
-          left: MediaQuery.of(context).size.width / 2 - 150,
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: (){
-                print("widget tapped ! ");
-                print('마커가 눌렸노라');
-                setState(() {
-                  _showExtraContainer = !_showExtraContainer; // 상태 변경
-                });
-               },
-              child:  Container(
-                width: 320,
-                height: 100,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start, //좌측정렬
-                  children: [
-                    // 왼쪽: 사진
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8), // 둥근 모서리 처리
-                      child: Image.network(
-                        _selectedMarkerInfo!['previewImagePath'] ?? 'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png', // 이미지 URL
-                        width: 80, // 고정된 너비
-                        height: 80, // 고정된 높이
-                        fit: BoxFit.cover, // 이미지 크기 조정
-                      ),
-                    ),
-                    const SizedBox(width: 16), // 사진과 텍스트 사이 간격
-                    // 오른쪽: 텍스트와 태그
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start, // 좌측 정렬
-                        children: [
-                          // 보관소 제목
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => DetailPage(
-                                    markerInfo: _selectedMarkerInfo!,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              _selectedMarkerInfo!['name'] ?? '',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontFamily: 'Paperlogy',
-                                fontWeight: FontWeight.w400, // Regular
-                                color: Colors.black,
-                              ),
-                              overflow: TextOverflow.ellipsis, // 넘칠 경우 "..." 표시
-                              maxLines: 1, // 최대 한 줄로 제한
-                            ),
-                          ),
-                          const SizedBox(height: 4), // 제목과 영업중 사이 간격
-                          // 영업중 텍스트
-                          Text(
-                            "영업중",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Paperlogy',
-                              fontWeight: FontWeight.w400, // Regular
-                              color: Colors.green,
-                            ),
-                          ),
-                          const SizedBox(height: 8), // 태그와 간격
-                          // 태그 리스트
-                          Wrap(
-                            spacing: 8, // 태그 사이 간격
-                            runSpacing: 4, // 줄 간격
-                            children: (_selectedMarkerInfo!['tags'] as List<String>)
-                                .map((tag) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Color(0xFF3AC4B5),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                tag,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontFamily: 'Paperlogy',
-                                  fontWeight: FontWeight.w400, // Regular
-                                  color: Color(0xFFE0F7F5),
-                                ),
-                              ),
-                            ))
-                                .toList(),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          _selectedMarkerInfo != null
+          ? Positioned(
+            top: MediaQuery.of(context).size.height / 2 - 20,
+            left: MediaQuery.of(context).size.width / 2 - 150,
+            width: 320, // 명시적 너비
+            height: 100, // 명시적 높이
+            child: _buildMarkerInfoWidget(context),
+          )
+            :SizedBox.shrink(),
           ],
         ),
       );
+  }
+
+
+
+
+  Widget _buildMarkerInfoWidget(BuildContext context){
+    return GestureDetector(
+      //behavior: HitTestBehavior.opaque,
+      behavior: HitTestBehavior.opaque,
+      onTap: (){
+        print("widget tapped ! ");
+        print('마커가 눌렸노라');
+        print('@@@@@@@@@@@@@@@@@@@##^%########## 왜안보이지');
+        setState(() {
+          _showExtraContainer = !_showExtraContainer; // 상태 변경
+        });
+      },
+      child:  Container(
+        width: 320,
+        height: 100,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start, //좌측정렬
+          children: [
+            // 왼쪽: 사진
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8), // 둥근 모서리 처리
+              child: Image.network(
+                _selectedMarkerInfo!['previewImagePath'] ?? 'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png', // 이미지 URL
+                width: 80, // 고정된 너비
+                height: 80, // 고정된 높이
+                fit: BoxFit.cover, // 이미지 크기 조정
+              ),
+            ),
+            const SizedBox(width: 8), // 사진과 텍스트 사이 간격
+            // 오른쪽: 텍스트와 태그
+            Expanded(
+              child: Container(
+                width: 100,
+                height: 100,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start, // 좌측 정렬
+                children: [
+                    // 보관소 제목
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StorageDetailPage(storageId: _selectedMarkerInfo!['id']),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        _selectedMarkerInfo!['name'] ?? '',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontSize: 18,
+                          fontFamily: 'Paperlogy',
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                        overflow: TextOverflow.ellipsis, // 넘칠 경우 "..." 표시
+                        maxLines: 1, // 최대 한 줄로 제한
+                      ),
+                    ),
+
+                  const SizedBox(height: 8),
+
+
+                    // 영업중 텍스트
+                    Text(
+                      "영업중",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'Paperlogy',
+                        fontWeight: FontWeight.w400, // Regular
+                        color: Colors.green,
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                    // 태그 리스트
+                    Wrap(
+                      spacing: 8, // 태그 사이 간격
+                      runSpacing: 4, // 줄 간격
+                      children: (_selectedMarkerInfo!['tags'] as List<String>)
+                          .map((tag) => Container(
+                        width: 50,
+                        height: 20,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Color(0xFF3AC4B5),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          tag == 'TWENTY_FOUR_HOURS' ? '24시간' : tag,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: 'Paperlogy',
+                            fontWeight: FontWeight.w400, // Regular
+                            color: Color(0xFFE0F7F5),
+                          ),
+                        ),
+                      ))
+                          .toList(),
+                    ),
+
+                ],
+              ),
+            ),
+            )
+          ],
+
+        ),
+      ),
+    );
   }
 }
 

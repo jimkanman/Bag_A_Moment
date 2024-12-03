@@ -102,11 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('로그인',
-        style: TextStyle(
-          color: Color(0xFFE0F7F5),
-          fontWeight: FontWeight.bold,
-        ),),
         backgroundColor: Color(0xFF49E0C0), actions: [
         ],
       ),
@@ -198,12 +193,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF80E3D6),
                   foregroundColor: Color(0xFFE0F7F5),
-                  elevation: 5,
                 ),
                 child: Text('로그인',
-                  style: TextStyle(
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                    color: Colors.white,
                 ),
               ),
               ),
@@ -216,12 +211,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF80E3D6),
                   foregroundColor: Color(0xFFE0F7F5),
-                  elevation: 5,
                 ),
                   child: Text('회원가입',
-                  style: TextStyle(
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
               ),
