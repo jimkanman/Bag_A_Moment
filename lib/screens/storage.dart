@@ -21,7 +21,7 @@ class _StorageScreenState extends State<StorageScreen> {
   final TextEditingController _carrierPriceController = TextEditingController(); // 추가된 필드
   final TextEditingController _miscellaneousPriceController = TextEditingController(); // 추가된 필드
   final TextEditingController _refundPolicyController = TextEditingController();
-  final List<String> _availableOptions = ["PARKING", "DELIVERY_SERVICE",
+  final List<String> _availableOptions = ["PARKING",
     "CART", "BOX", "CCTV", "INSURANCE", "REFRIGERATION", "VALUABLES", "OTHER"];
   final Map<String, String> optionTranslations = {
     'PARKING': '주차 가능',
@@ -34,6 +34,8 @@ class _StorageScreenState extends State<StorageScreen> {
     'VALUABLES': '귀중품 보관',
     'OTHER': '기타',
   };
+  // 배송 서비스 여부를 저장하는 boolean 변수
+  bool _deliveryService = false;
 
 
   TimeOfDay? _openTime;
@@ -204,6 +206,26 @@ class _StorageScreenState extends State<StorageScreen> {
                     child: Text('파일 선택'),
               ),
               SizedBox(height: 10),
+
+              // 배송 서비스 체크박스
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '배송 서비스 제공 여부',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  Checkbox(
+                    value: _deliveryService,
+                    onChanged: (value) {
+                      setState(() {
+                        _deliveryService = value!;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
               Text('보관소 옵션 선택'),
               Wrap(
                 spacing: 10,
@@ -288,6 +310,7 @@ class _StorageScreenState extends State<StorageScreen> {
                           file: _selectedFile,
                           refundPolicy: _refundPolicyController.text,
                           storageOptions: _storageOptions,
+                          deliveryService: _deliveryService,
                         ),
                       ),
 

@@ -1,6 +1,8 @@
 import 'package:bag_a_moment/screens/storage.dart';
 import 'package:flutter/material.dart';
 
+import 'detailed_page.dart';
+
 class StorageManagementPage extends StatelessWidget {
 
 
@@ -124,24 +126,40 @@ class StorageManagementPage extends StatelessWidget {
                                 ),
                               ),
                               // 상태 텍스트
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
+                                  // 첫 번째 버튼: 상세보기
                                   TextButton(
-                                    onPressed: () {
+                                    onPressed: index % 2 == 0
+                                        ? () {
                                       print('상세보기 클릭됨');
-                                    },
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => StorageDetailPage(storageId: 1), // storageId 전달
+                                        ),
+                                      );
+                                    }
+                                        : null, // '점검중'일 경우 버튼 비활성화
                                     child: Text(
-                                      index % 2 == 0 ? '상세보기' : '점검중',
+                                      '상세보기',
                                       style: TextStyle(
-                                        color: index % 2 == 0
-                                            ? Colors.blue
-                                            : Colors.red,
+                                        color: index % 2 == 0 ? Colors.blue : Colors.grey, // '점검중'일 경우 비활성화 색상
                                       ),
+                                    ),
+                                  ),
+                                  // 두 번째 버튼: 점검중
+                                  Text(
+                                    index % 2 == 0 ? '' : '점검중', // 두 번째 칸은 '점검중' 표시
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
                               ),
+
                             ],
                           ),
                         );

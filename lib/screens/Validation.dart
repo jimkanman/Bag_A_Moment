@@ -23,6 +23,7 @@ class ValidationScreen extends StatelessWidget {
   final File? file;
   final String refundPolicy; //환불정책 string?
   final List<String> storageOptions;
+  final bool deliveryService;
 
 
   const ValidationScreen({
@@ -35,6 +36,7 @@ class ValidationScreen extends StatelessWidget {
     required this.backpackPrice,
     required this.carrierPrice,
     required this.miscellaneousPrice,
+    required this.deliveryService,
 
     this.openTime,
     this.closeTime,
@@ -42,6 +44,7 @@ class ValidationScreen extends StatelessWidget {
     this.file,
     required this.refundPolicy,
     this.storageOptions = const [], // 기본값 추가
+
 
 
   }) : super(key: key);
@@ -150,6 +153,7 @@ class ValidationScreen extends StatelessWidget {
         "backpackPricePerHour": backpackPrice,
         "carrierPricePerHour": carrierPrice,
         "miscellaneousItemPricePerHour": miscellaneousPrice,
+        "hasDelivery": deliveryService.toString(), // bool 값을 문자열로 변환
       });
       // `storageOptions` 필드를 JSON 배열로 추가
       if (storageOptions.isNotEmpty) {
