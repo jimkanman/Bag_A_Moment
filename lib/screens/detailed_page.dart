@@ -19,8 +19,29 @@ class StorageDetailPage extends StatefulWidget {
 }
 
 class _StorageDetailPageState extends State<StorageDetailPage> {
-//Map<String, dynamic>? storageDetail; //storageDetails 변수가 storageDetail 타입 객체로 변환 과정 잘못됨
-  StorageDetail? storageDetails;
+//Map<String, dynamic>? storageDetail;
+// storageDetails 변수가 storageDetail 타입 객체로 변환 과정 잘못됨
+  // 초기화된 StorageDetail 객체
+  StorageDetail? storageDetails = StorageDetail(
+    id: 0,
+    name: '',
+    ownerId: 0,
+    phoneNumber: '',
+    description: '',
+    notice: '',
+    postalCode: '',
+    detailedAddress: '',
+    latitude: 0.0,
+    longitude: 0.0,
+    openingTime: '',
+    closingTime: '',
+    backpackPricePerHour: 0,
+    carrierPricePerHour: 0,
+    miscellaneousItemPricePerHour: 0,
+    termsAndConditions: null,
+    images: [],
+    storageOptions: [],
+  );
 
   bool isLoading = true;
 
@@ -51,9 +72,11 @@ Future<void> fetchStorageDetails() async {
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes));
       final decodedData = json.decode(utf8.decode(response.bodyBytes));
+      print('해당 데이터값: ${data['data']}');
       setState(() {
         storageDetails = StorageDetail.fromJson(data['data']); // 데이터를 모델로 변환. 이 부분 잘 모르겠음
         isLoading = false;
+        print('현재 storageDEtailes에 저장된것${storageDetails}');
       });
     } else {
       print('Failed to fetch storage details. Status Code: ${response.statusCode}');
@@ -61,6 +84,7 @@ Future<void> fetchStorageDetails() async {
     }
   } catch (error) {
     print('Error fetching storage details: $error');
+    //지금 여기
   }
 }
 
@@ -73,7 +97,7 @@ Future<void> fetchStorageDetails() async {
       appBar: AppBar(
         title: isLoading
             ? Text('Loading...') // 로딩 중일 때
-            : Text('Name: ${storageDetails?.name ?? 'Unknown'}'),
+            : Text('${storageDetails?.name ?? 'Unknown'}'),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -96,9 +120,24 @@ Future<void> fetchStorageDetails() async {
             Container(
               height: 200,
               width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300, // Placeholder 색상
-                borderRadius: BorderRadius.circular(8),
+              child: (storageDetails?.images?.isNotEmpty ?? false)
+                  ? PageView.builder(
+                itemCount: storageDetails!.images?.length, // `!`로 null이 아님을 보장
+                itemBuilder: (context, index) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(8), // 둥근 모서리 처리
+                    child: Image.network(
+                      storageDetails!.images![index],
+                      fit: BoxFit.cover, // 이미지 크기 조정
+                    ),
+                  );
+                },
+              )
+                  : Center(
+                     child: Text(
+                  "No Image Available",
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                ),
               ),
 
             ),
@@ -119,7 +158,7 @@ Future<void> fetchStorageDetails() async {
               SizedBox(width: 20),
 
               Expanded( // Text가 화면 너비를 차지하도록 제한
-                child:Text('주소: ${storageDetails?.detailedAddress ?? 'Unknown'}',
+                child:Text('${storageDetails?.detailedAddress ?? 'Unknown'}',
 
                 style: TextStyle(fontSize: 18, color: Colors.black),
               ),
@@ -127,17 +166,8 @@ Future<void> fetchStorageDetails() async {
             ],
             ),
 
-            SizedBox(height: 20),
-
-            Text(
-              '공지사항',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
-            ),
             SizedBox(height: 18),
+
 
 
             // 공지사항
@@ -153,18 +183,18 @@ Future<void> fetchStorageDetails() async {
                 children: [
 
                   Text(
-                    '${storageDetails?.notice ?? '정해진 시간을 지켜주세요'}',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                    '${storageDetails?.notice ?? '공지사항'}',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
                   SizedBox(height: 8),
                   Text(
-                   '${storageDetails?.postalCode}'?? '새로 오픈했습니다! ',
+                   '${storageDetails?.description}'?? '새로 오픈했습니다! ',
                     style: TextStyle(fontSize: 14, color: Colors.black),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 30),
+            SizedBox(height: 18),
 
             // 운영 정보: 세부 정보 표현할것
             SizedBox(height: 8),
@@ -194,7 +224,12 @@ Future<void> fetchStorageDetails() async {
                         children: [
                           Icon(Icons.access_time, color: Colors.black), // 운영 시간 아이콘
                           SizedBox(width: 8), // 간격
-                          //text
+                          Text(
+                            '${storageDetails?.openingTime} - ${storageDetails?.closingTime}',
+                            style: TextStyle(fontSize: 16, color: Colors.black54), // 동일한 크기 적용
+                          ),
+                          ]//text
+                      ),
                       SizedBox(height: 8), // 각 항목 간 간격
                       Row(
                         children: [
@@ -202,24 +237,24 @@ Future<void> fetchStorageDetails() async {
                           SizedBox(width: 8),
                           Text(
                             '휴무일: ${storageDetails?.closingTime ?? '연중무휴'}',
-                            style: TextStyle(fontSize: 16, color: Colors.red), // 동일한 크기 적용
+                            style: TextStyle(fontSize: 16, color: Colors.black54), // 동일한 크기 적용
                           ),
                         ],
                       ),
                         SizedBox(height: 8), // 각 항목 간 간격
                         Row(
                           children: [
-                            Icon(Icons.emoji_emotions, size: 16, color: Colors.black26), // 환영 메시지 아이콘
+                            Icon(Icons.emoji_emotions, size: 16, color: Colors.black54), // 환영 메시지 아이콘
                             SizedBox(width: 8),
                             Text(
                               '보관소 소개: ${storageDetails?.description ?? '환영합니다'}',
-                              style: TextStyle(fontSize: 16, color: Colors.grey), // 동일한 크기 적용
+                              style: TextStyle(fontSize: 16, color: Colors.black54), // 동일한 크기 적용
                             ),
                           ],
                         ),
                     ],
-                  ),
-                ],
+
+
                 ),
       )
               ],
@@ -235,10 +270,21 @@ Future<void> fetchStorageDetails() async {
               children: (storageDetails?.storageOptions ?? []).map((option) {
                 return Chip(
                   label: Text(
-                    option, // 각 옵션을 표시
-                    style: TextStyle(fontSize: 14),
+                    option == 'TWENTY_FOUR_HOURS' ? '24시간' : option, // "24hours"는 "24시간"으로 표시
+                    style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                      fontFamily: 'Paperlogy',
                   ),
-                  backgroundColor: Colors.green.shade100,
+
+                  ),
+                  backgroundColor: Color(0xFF4DD9C6),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // 둥근 모서리
+                    side: BorderSide.none, // 외곽선 제거
+                  ),
                 );
               }).toList(),
             ),
@@ -246,6 +292,7 @@ Future<void> fetchStorageDetails() async {
 
 
           SizedBox(height: 80),
+
 
           // 하단 버튼들
           Row(
@@ -265,10 +312,15 @@ Future<void> fetchStorageDetails() async {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFB3EDE5),
+                  minimumSize: Size(160, 50), // 버튼의 최소 크기 (너비, 높이)
                   padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // 둥근 모서리 설정 (12px)
+                  ),
                 ),
-                child: Text('배송', style: TextStyle(color: Color(0xFF43CBBA), fontSize: 16)),
+                child: Text('배송', style: TextStyle(color: Color(0xFF43CBBA), fontSize: 20, fontFamily: 'Paperlogy',)),
               ),
+              SizedBox(width: 10,),
               ElevatedButton(
                 onPressed: () {
                   print('보관 버튼 클릭');
@@ -283,9 +335,14 @@ Future<void> fetchStorageDetails() async {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF4DD9C6),
+                  minimumSize: Size(160, 50), // 버튼의 최소 크기 (너비, 높이)
                   padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12), // 둥근 모서리 설정 (12px)
+                  ),
                 ),
-                child: Text('보관', style: TextStyle(color: Colors.white, fontSize: 16)),
+                child: Text('보관',
+                    style: TextStyle(color: Colors.white, fontSize: 20, fontFamily: 'Paperlogy',)),
               ),
               // ... (Other sections)
             ],

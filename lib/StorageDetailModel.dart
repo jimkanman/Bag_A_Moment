@@ -3,8 +3,8 @@ class StorageDetail {
   final String name;
   final int ownerId;
   final String phoneNumber;
-  final String description;
-  final String notice;
+  final String? description;
+  final String? notice;
   final String postalCode;
   final String detailedAddress;
   final double latitude;
@@ -15,16 +15,16 @@ class StorageDetail {
   final int carrierPricePerHour;
   final int miscellaneousItemPricePerHour;
   final String? termsAndConditions;
-  final List<String> images;
-  final List<String> storageOptions;
+  final List<String>? images;
+  final List<String>? storageOptions;
 
   StorageDetail({
     required this.id,
     required this.name,
     required this.ownerId,
     required this.phoneNumber,
-    required this.description,
-    required this.notice,
+    this.description,
+    this.notice,
     required this.postalCode,
     required this.detailedAddress,
     required this.latitude,
@@ -36,7 +36,7 @@ class StorageDetail {
     required this.miscellaneousItemPricePerHour,
     this.termsAndConditions,
     required this.images,
-    required this.storageOptions,
+    this.storageOptions,
   });
 
   factory StorageDetail.fromJson(Map<String, dynamic> json) {

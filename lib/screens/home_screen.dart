@@ -315,6 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 print('스토리지 ${storage}');
                 print('스토리지 이미지 ${storage['previewImagePath']}');
                 _selectedMarkerInfo = {
+                  'id': storage['id'],
                   'name': storage['name'],
                   'address': storage['detailedAddress'],
                   'description': storage['description'],
@@ -535,6 +536,7 @@ class _HomeScreenState extends State<HomeScreen> {
         print("widget tapped ! ");
         print('마커가 눌렸노라');
         print('@@@@@@@@@@@@@@@@@@@##^%########## 왜안보이지');
+        print('마커 눌린 storageId: ${_selectedMarkerInfo!['id']}');
         setState(() {
           _showExtraContainer = !_showExtraContainer; // 상태 변경
         });
@@ -577,9 +579,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start, // 좌측 정렬
                 children: [
+
                     // 보관소 제목
                     GestureDetector(
                       onTap: () {
+                        print('제목 눌린 storageId: ${_selectedMarkerInfo!['id']}');
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -620,12 +624,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       runSpacing: 4, // 줄 간격
                       children: (_selectedMarkerInfo!['tags'] as List<String>)
                           .map((tag) => Container(
-                        width: 50,
+                        width: 60,
                         height: 20,
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Color(0xFF3AC4B5),
+                          color: Color(0xFF3AC4B0),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(

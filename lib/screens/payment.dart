@@ -112,25 +112,48 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   Chip(
                     label: Row(
                       children: [
-                        Icon(Icons.thumb_up, color: Colors.green),
+                        Icon(Icons.check, color: Colors.green),
                         SizedBox(width: 5),
-                        Text('좋은 평가'),
+                        Text('인증된 사용자',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            fontFamily: 'Paperlogy',
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  SizedBox(width: 10),
+                  SizedBox(width: 30),
                   Chip(
                     label: Row(
                       children: [
-                        Icon(Icons.check, color: Colors.green),
-                        SizedBox(width: 5),
-                        Text('보장 보험'),
+                        Icon(Icons.camera, color: Colors.green),
+                        SizedBox(width: 10),
+                        Text('AR 짐 크기측정',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            fontFamily: 'Paperlogy',
+                          ),
+                        ),
+
                       ],
                     ),
                   ),
                 ],
               ),
               SizedBox(height: 20),
+              Text('맡길 짐 수정하기',
+                style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+                fontFamily: 'Paperlogy',
+              ),
+              ),
               Divider(),
               // 가방 개수 선택 섹션
               Column(
@@ -184,14 +207,19 @@ class _ReservationScreenState extends State<ReservationScreen> {
           onPressed: _submitData,
           style: ElevatedButton.styleFrom(
             backgroundColor: Color(0xFF4DD9C6),
-            minimumSize: Size(double.infinity, 50), // 버튼이 가로로 꽉 차도록 설정
+            minimumSize: Size(double.infinity, 50), // 버튼의 최소 크기 (너비, 높이)
+            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12), // 둥근 모서리 설정 (12px)
+            ),
           ),
           child: Text(
             '결제하기',
             style: TextStyle(color: Colors.white, fontSize: 18),
           ),
+          ),
+
         ),
-      ),
       );
   }
 

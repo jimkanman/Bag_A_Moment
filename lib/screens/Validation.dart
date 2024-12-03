@@ -308,13 +308,7 @@ class ValidationScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 15),
-            Divider(
-              color: Colors.grey, // 구분선 색상
-              thickness: 1,       // 구분선 두께
-              indent: 16,         // 구분선 왼쪽 여백
-              endIndent: 16,      // 구분선 오른쪽 여백
-            ),
-            SizedBox(height: 15),
+
             Text(
               '전화번호:',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
@@ -333,13 +327,6 @@ class ValidationScreen extends StatelessWidget {
                   color: Color(0xFF0E2927),
                 ),
               ),
-            ),
-            SizedBox(height: 15),
-            Divider(
-              color: Colors.grey, // 구분선 색상
-              thickness: 1,       // 구분선 두께
-              indent: 16,         // 구분선 왼쪽 여백
-              endIndent: 16,      // 구분선 오른쪽 여백
             ),
             SizedBox(height: 15),
             Text(
@@ -362,13 +349,6 @@ class ValidationScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 15),
-            Divider(
-              color: Colors.grey, // 구분선 색상
-              thickness: 1,       // 구분선 두께
-              indent: 16,         // 구분선 왼쪽 여백
-              endIndent: 16,      // 구분선 오른쪽 여백
-            ),
-            SizedBox(height: 15),
             Text(
               '운영 시간:',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
@@ -389,13 +369,7 @@ class ValidationScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 15),
-            Divider(
-              color: Colors.grey, // 구분선 색상
-              thickness: 1,       // 구분선 두께
-              indent: 16,         // 구분선 왼쪽 여백
-              endIndent: 16,      // 구분선 오른쪽 여백
-            ),
-            SizedBox(height: 15),
+
             Text(
               '보관소 소개:',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
@@ -416,13 +390,7 @@ class ValidationScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 15),
-            Divider(
-              color: Colors.grey, // 구분선 색상
-              thickness: 1,       // 구분선 두께
-              indent: 16,         // 구분선 왼쪽 여백
-              endIndent: 16,      // 구분선 오른쪽 여백
-            ),
-            SizedBox(height: 15),
+
             if (image != null)
               Text(
                 '보관소 대표 이미지:',
@@ -441,13 +409,7 @@ class ValidationScreen extends StatelessWidget {
                 ),
               ),
 
-            SizedBox(height: 15),
-            Divider(
-              color: Colors.grey, // 구분선 색상
-              thickness: 1,       // 구분선 두께
-              indent: 16,         // 구분선 왼쪽 여백
-              endIndent: 16,      // 구분선 오른쪽 여백
-            ),
+
             SizedBox(height: 15),
             Text(
               '가격 정보:',
@@ -479,18 +441,12 @@ class ValidationScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 15),
-            Divider(
-              color: Colors.grey, // 구분선 색상
-              thickness: 1,       // 구분선 두께
-              indent: 16,         // 구분선 왼쪽 여백
-              endIndent: 16,      // 구분선 오른쪽 여백
-            ),
-            SizedBox(height: 15),
+
             Text(
               '환불 정책:',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 15),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
@@ -506,13 +462,7 @@ class ValidationScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 15),
-            Divider(
-              color: Colors.grey, // 구분선 색상
-              thickness: 1,       // 구분선 두께
-              indent: 16,         // 구분선 왼쪽 여백
-              endIndent: 16,      // 구분선 오른쪽 여백
-            ),
-            SizedBox(height: 15),
+
             if (file != null)
               Text(
                 '약관 파일:',
@@ -555,7 +505,8 @@ class ValidationScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 10, width:80 ),
                 Row(
-                mainAxisAlignment: MainAxisAlignment.end, // 우측 정렬
+                mainAxisAlignment: MainAxisAlignment.center,
+
                 children: [
                   ElevatedButton(
                     onPressed: () {
@@ -563,13 +514,14 @@ class ValidationScreen extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFF31BEB0),
+                      minimumSize: Size(double.infinity, 50), // 버튼의 최소 크기 (너비, 높이)
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
                       padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                     child: Text(
-                      '   서버로 전송   ',
+                      '입력한 정보가 모두 맞아요!',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
