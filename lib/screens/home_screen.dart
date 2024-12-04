@@ -6,6 +6,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:bag_a_moment/screens/detailed_page.dart';
 import 'package:bag_a_moment/widgets/marker_details_widget.dart';
 import 'package:http/http.dart' as http;
+import 'package:bag_a_moment/model/searchModel.dart';
+import 'package:bag_a_moment/service/storageService.dart';
 
 import '../main.dart';
 
@@ -21,6 +23,14 @@ class _HomeScreenState extends State<HomeScreen> {
   //@@@@변수@@@@
   // 1. Google Map Controller
   late GoogleMapController mapController;
+  //2. 검색용
+  final StorageService _storageService = StorageService();
+  List<searchModel> _storages = [];
+  final TextEditingController _searchController = TextEditingController();
+  bool _isLoading = false;
+  bool _isSearchActive = false;
+
+
   // dispose에서 컨트롤러 해제
   @override
   void dispose() {
@@ -51,8 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String>? _selectedTags; // 선택된 마커의 태그
   Offset? _markerScreenPosition; // 마커의 화면상 좌표
 
-  // 4. 검색 컨트롤러 초기화
-  final TextEditingController _searchController = TextEditingController();
 
   // 5. 검색 필터 변수
   String _location = "현위치";
@@ -266,6 +274,31 @@ class _HomeScreenState extends State<HomeScreen> {
         //_markerList = results;
       });
     }
+  Future<void> _searchStorages(String query) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final storages = await _storageService.fetchStorages(
+        latitude: _currentPosition.latitude,
+        longitude: _currentPosition.longitude,
+        radius: 1000,
+        searchTerm: query,
+      );
+      setState(() {
+        _storages = storages;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
     // 필터 조건에 맞는 검색 로직
     void _searchWithFilters() {
@@ -413,6 +446,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               },
             ),
+            //2. 현위치 버튼
             Positioned(
               bottom: 20,
               right: 50,
@@ -435,7 +469,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
 
-            //2. 상단 검색창
+            //3. 상단 검색창
             Positioned(
               top: 20,
               left: 15,
@@ -462,28 +496,76 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(Icons.location_on, color: Color(0xFF43CBBA)),
-                              SizedBox(width: 5),
-                              Text(
-                                "현위치",
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              // 검색 창 또는 "현위치" 표시
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _isSearchActive = true; // 검색창 활성화
+                                    });
+                                  },
+                                  child: _isSearchActive
+                                      ? Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _searchController,
+                                          autofocus: true,
+                                          decoration: InputDecoration(
+                                            hintText: '검색어를 입력하세요',
+                                            border: InputBorder.none,
+                                          ),
+                                          onSubmitted: (value) {
+                                            _searchStorages(value); // 검색 수행
+                                            setState(() {
+                                              _isSearchActive = false; // 검색창 비활성화
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: Icon(Icons.close, color: Color(0xFF43CBBA)),
+                                        onPressed: () {
+                                          setState(() {
+                                            _isSearchActive = false; // 검색창 비활성화
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  )
+                                      : Row(
+                                    children: [
+                                      Icon(Icons.location_on, color: Color(0xFF43CBBA)),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        "현위치",
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.filter_list, color: Color(0xFF43CBBA)),
+                                onPressed: _searchWithFilters, // 필터 적용 버튼
                               ),
                             ],
                           ),
-                          IconButton(
-                            icon: Icon(
-                                Icons.filter_list, color: Color(0xFF43CBBA)),
-                            onPressed: _searchWithFilters, // 필터 적용 버튼
-                            // 필터 선택 로직 추가
-                          ),
+                          // 필요한 경우 추가 UI 요소
                         ],
                       ),
+
+
                       if (_isExpanded)
                         Column(
                           children: [
