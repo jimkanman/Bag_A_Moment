@@ -80,6 +80,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchNearbyStorages(); // 서버에서 storage 목록 가져오기
   }
 
+  //상단 검색창 확장
+  void _toggleExpansion() {
+    setState(() {
+      _isExpanded = !_isExpanded; // 버튼 누르면 상태 토글
+    });
+  }
+
   // 현재 위치 가져오기
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled;
@@ -644,7 +651,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 검색창 또는 "현위치" 표시
+            // 검색창 또는 현위치 표시
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -668,40 +675,40 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(Icons.close, color: Color(0xFF43CBBA)),
-                        onPressed: () {
-                          setState(() {
-                            _isSearchActive = false; // 검색창 비활성화
-                          });
-                        },
-                      ),
+                        IconButton(
+                          icon: Icon(Icons.close, color: Color(0xFF43CBBA)),
+                          onPressed: () {
+                            setState(() {
+                              _isSearchActive = false; // 검색창 비활성화
+                            });
+                          },
+                        ),
                     ],
                   )
                       : GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _isSearchActive = true; // 검색창 활성화
-                      });
-                    },
-                    child: Row(
-                      children: [
-                        Icon(Icons.location_on, color: Color(0xFF43CBBA)),
-                        SizedBox(width: 5),
-                        Text(
-                          "현위치",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                        onTap: () {
+                          setState(() {
+                            _isSearchActive = true; // 검색창 활성화
+                          });
+                       },
+                          child: Row(
+                            children: [
+                              Icon(Icons.location_on, color: Color(0xFF43CBBA)),
+                              SizedBox(width: 5),
+                              Text(
+                                "현위치",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
                 IconButton(
                   icon: Icon(Icons.filter_list, color: Color(0xFF43CBBA)),
-                  onPressed: _searchWithFilters, // 필터 적용 버튼
+                  onPressed: _toggleExpansion, // 상태 토글 함수 호출
                 ),
               ],
             ),
