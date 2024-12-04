@@ -15,6 +15,7 @@ class _StorageScreenState extends State<StorageScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _postalCodeController = TextEditingController(); // 추가된 필드
+
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _backpackPriceController = TextEditingController(); // 추가된 필드
   final TextEditingController _carrierPriceController = TextEditingController(); // 추가된 필드
