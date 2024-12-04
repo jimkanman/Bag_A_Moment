@@ -182,26 +182,34 @@ class _StorageRegisterScreenState extends State<StorageRegistraterScreen> {
                           children: [
                             Container(
                               width: 18,
-                              height: 18,
+                              height: 25,
                               clipBehavior: Clip.antiAlias,
                               decoration: BoxDecoration(),
                               child: FlutterLogo(),
                             ),
                             const SizedBox(width: 8),
+                            SizedBox(height: 8),
+                          Row(
+                          children: [
+                            Icon(Icons.info, color: Color(0xFF4DD9C6)),
+                            SizedBox(width: 8),
                             Text(
-                              '자세히 적어주실수록 방문율이 높아져요',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Color(0xFF2CB598),
-                                fontSize: 12,
-                                fontFamily: 'Inter',
-                                fontWeight: FontWeight.w600,
-                                height: 0.15,
+                                '자세히 적어주실수록 방문율이 높아져요',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Color(0xFF2CB598),
+                                  fontSize: 12,
+                                  fontFamily: 'Inter',
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.15,
+                                ),
                               ),
-                            ),
+                            ],
+                        ),
                           ],
                         ),
                       ),
+                      SizedBox(height: 16),
 
                       //사진 추가
                       Text(
@@ -224,8 +232,8 @@ class _StorageRegisterScreenState extends State<StorageRegistraterScreen> {
                             ),
                           )
                               : Container(
-                            height: 80,
-                            width: 80,
+                            height: 150,
+                            width: 150,
                             decoration: BoxDecoration(
                               color: Colors.grey[200],
                               borderRadius: BorderRadius.circular(8),
@@ -237,6 +245,7 @@ class _StorageRegisterScreenState extends State<StorageRegistraterScreen> {
                                   size: 40,
                                 ),
                           ),
+                          SizedBox(height: 12),
                           // 오른쪽: 사진 첨부 버튼
                           GestureDetector(
                             onTap: _pickImage, // 이미지를 선택하는 함수 호출
@@ -284,8 +293,12 @@ class _StorageRegisterScreenState extends State<StorageRegistraterScreen> {
                       Row(
                         children: [
                           Checkbox(
-                            value: true, // 기본 체크 상태
-                            onChanged: null, // 수정 불가 상태
+                            value: _deliveryService, // 기본 체크 상태
+                            onChanged: (value) {
+                              setState(() {
+                                _deliveryService = value!;
+                              });
+                            },
                           ),
                           Text(
                             '배송 서비스를 제공합니다',
@@ -318,26 +331,15 @@ class _StorageRegisterScreenState extends State<StorageRegistraterScreen> {
                                   ),
                                 ),
                                 SizedBox(width: 16),
-                                Expanded(
-                                  child: TextField(
-                                    decoration: InputDecoration(
-                                      hintText: '시작시간',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
+                                Text('운영 시간: '),
+                                TextButton(
+                                  onPressed: () => _pickTime(true),
+                                  child: Text(_openTime == null ? '시작 시간 선택' : _openTime!.format(context)),
                                 ),
                                 SizedBox(width: 16),
-                                Expanded(
-                                  child: TextField(
-                                    decoration: InputDecoration(
-                                      hintText: '종료시간',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
+                                TextButton(
+                                  onPressed: () => _pickTime(false),
+                                  child: Text(_closeTime == null ? '종료 시간 선택' : _closeTime!.format(context)),
                                 ),
                               ],
                             ),
