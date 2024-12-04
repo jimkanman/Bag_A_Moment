@@ -416,9 +416,21 @@ class _HomeScreenState extends State<HomeScreen> {
             Positioned(
               bottom: 20,
               right: 50,
-              child: FloatingActionButton(
-                onPressed: _goToCurrentLocation,
-                child: const Icon(Icons.my_location),
+                child: Container(
+                    decoration: BoxDecoration(
+                    shape: BoxShape.circle, // 버튼을 동그라미로 설정
+                    border: Border.all(
+                    color: Color(0xFF4DD9C6), // 외곽선 색상
+                    width: 2.0, // 외곽선 두께
+                    ),
+                    color: Colors.white, // 버튼 배경색
+                  ),
+                child: FloatingActionButton(
+                  onPressed: _goToCurrentLocation,
+                  backgroundColor: Colors.white, // 배경을 투명하게 설정 (Container 배경 활용)
+                  elevation: 0,
+                  child: const Icon(Icons.my_location, color: Color(0xFF4DD9C6)),
+                ),
               ),
             ),
 
