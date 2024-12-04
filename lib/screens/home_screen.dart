@@ -474,194 +474,10 @@ class _HomeScreenState extends State<HomeScreen> {
               top: 20,
               left: 15,
               right: 15,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isExpanded = !_isExpanded;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 300),
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              // 검색 창 또는 "현위치" 표시
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _isSearchActive = true; // 검색창 활성화
-                                    });
-                                  },
-                                  child: _isSearchActive
-                                      ? Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _searchController,
-                                          autofocus: true,
-                                          decoration: InputDecoration(
-                                            hintText: '검색어를 입력하세요',
-                                            border: InputBorder.none,
-                                          ),
-                                          onSubmitted: (value) {
-                                            _searchStorages(value); // 검색 수행
-                                            setState(() {
-                                              _isSearchActive = false; // 검색창 비활성화
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                      IconButton(
-                                        icon: Icon(Icons.close, color: Color(0xFF43CBBA)),
-                                        onPressed: () {
-                                          setState(() {
-                                            _isSearchActive = false; // 검색창 비활성화
-                                          });
-                                        },
-                                      ),
-                                    ],
-                                  )
-                                      : Row(
-                                    children: [
-                                      Icon(Icons.location_on, color: Color(0xFF43CBBA)),
-                                      SizedBox(width: 5),
-                                      Text(
-                                        "현위치",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.filter_list, color: Color(0xFF43CBBA)),
-                                onPressed: _searchWithFilters, // 필터 적용 버튼
-                              ),
-                            ],
-                          ),
-                          // 필요한 경우 추가 UI 요소
-                        ],
-                      ),
-
-
-                      if (_isExpanded)
-                        Column(
-                          children: [
-                            Divider(color: Colors.grey),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.remove),
-                                      onPressed: () {
-                                        setState(() {
-                                          if (_selectedItems >
-                                              1) _selectedItems--;
-                                        });
-                                      },
-                                    ),
-                                    SizedBox(width: 5),
-                                    Icon(Icons.shopping_bag,
-                                        color: Color(0xFF43CBBA)),
-                                    Text("캐리어 $_selectedItems개",
-                                        style: TextStyle(fontSize: 16,
-                                            fontWeight: FontWeight.bold)),
-                                    SizedBox(width: 5),
-                                    IconButton(
-                                      icon: Icon(Icons.add),
-                                      onPressed: () {
-                                        setState(() {
-                                          _selectedItems++;
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.calendar_today,
-                                        color: Color(0xFF43CBBA)),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      _selectedDateRange == null
-                                          ? '날짜 선택'
-                                          : '${_selectedDateRange!.start
-                                          .toLocal()} - ${_selectedDateRange!
-                                          .end.toLocal()}',
-                                      style: TextStyle(fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: _pickDateRange,
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.access_time,
-                                        color: Color(0xFF43CBBA)),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      _fromTime == null || _toTime == null
-                                          ? '시간 선택'
-                                          : '${_fromTime!.format(
-                                          context)} - ${_toTime!.format(
-                                          context)}',
-                                      style: TextStyle(fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.schedule),
-                                  onPressed: _pickTimeRange,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+              child: _buildSearchBar(context),
             ),
 
-          // 3. 홈화면 마커의 세부정보 띄우기
+          // 4. 홈화면 마커의 세부정보 띄우기
           _selectedMarkerInfo != null
           ? Positioned(
             top: MediaQuery.of(context).size.height / 2 - 20,
@@ -806,6 +622,196 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  Widget _buildSearchBar(BuildContext context){
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 5,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // 검색 창 또는 "현위치" 표시
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isSearchActive = true; // 검색창 활성화
+                          });
+                        },
+                        child: _isSearchActive
+                            ? Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _searchController,
+                                autofocus: true,
+                                decoration: InputDecoration(
+                                  hintText: '검색어를 입력하세요',
+                                  border: InputBorder.none,
+                                ),
+                                onSubmitted: (value) {
+                                  _searchStorages(value); // 검색 수행
+                                  setState(() {
+                                    _isSearchActive = false; // 검색창 비활성화
+                                  });
+                                },
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.close, color: Color(0xFF43CBBA)),
+                              onPressed: () {
+                                setState(() {
+                                  _isSearchActive = false; // 검색창 비활성화
+                                });
+                              },
+                            ),
+                          ],
+                        )
+                            : Row(
+                          children: [
+                            Icon(Icons.location_on, color: Color(0xFF43CBBA)),
+                            SizedBox(width: 5),
+                            Text(
+                              "현위치",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.filter_list, color: Color(0xFF43CBBA)),
+                      onPressed: _searchWithFilters, // 필터 적용 버튼
+                    ),
+                  ],
+                ),
+                // 필요한 경우 추가 UI 요소
+              ],
+            ),
+
+
+            if (_isExpanded)
+              Column(
+                children: [
+                  Divider(color: Colors.grey),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.remove),
+                            onPressed: () {
+                              setState(() {
+                                if (_selectedItems >
+                                    1) _selectedItems--;
+                              });
+                            },
+                          ),
+                          SizedBox(width: 5),
+                          Icon(Icons.shopping_bag,
+                              color: Color(0xFF43CBBA)),
+                          Text("캐리어 $_selectedItems개",
+                              style: TextStyle(fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
+                          SizedBox(width: 5),
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: () {
+                              setState(() {
+                                _selectedItems++;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today,
+                              color: Color(0xFF43CBBA)),
+                          SizedBox(width: 5),
+                          Text(
+                            _selectedDateRange == null
+                                ? '날짜 선택'
+                                : '${_selectedDateRange!.start
+                                .toLocal()} - ${_selectedDateRange!
+                                .end.toLocal()}',
+                            style: TextStyle(fontSize: 16,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.date_range),
+                        onPressed: _pickDateRange,
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.access_time,
+                              color: Color(0xFF43CBBA)),
+                          SizedBox(width: 5),
+                          Text(
+                            _fromTime == null || _toTime == null
+                                ? '시간 선택'
+                                : '${_fromTime!.format(
+                                context)} - ${_toTime!.format(
+                                context)}',
+                            style: TextStyle(fontSize: 16,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.schedule),
+                        onPressed: _pickTimeRange,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
 }
 
 
