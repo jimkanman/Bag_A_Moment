@@ -95,7 +95,7 @@ class ValidationScreen extends StatelessWidget {
 
         {
       // 디버깅용 print문
-      print("=== ValidationScreen에 전달된 데이터 ===");
+      print("=== storage.dart에서 ValidationScreen에 전달된 데이터 ===");
       print("이름: $name");
       print("전화번호: $phone");
       print("주소: $address");
@@ -110,6 +110,7 @@ class ValidationScreen extends StatelessWidget {
       print("선택된 파일 경로: ${file?.path}");
       print("환불 정책: $refundPolicy");
       print("보관 옵션: $storageOptions");
+      print("배송 옵션: $deliveryService");
       print("=================================");
       //여기까지는 시간, 이미지 정상
     }
@@ -227,6 +228,7 @@ class ValidationScreen extends StatelessWidget {
           print("Terms and Conditions: ${data['termsAndConditions']}");
           print("Images: ${data['images']}");
           print("Storage Options: ${data['storageOptions']}");
+          print("Delivery Options: ${data['hasDeliveryService']}");
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('보관소 등록이 완료되었습니다!')),
@@ -276,7 +278,7 @@ class ValidationScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           '입력 정보 확인',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFFFFFF)),
+              style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFFFFFF)),
         ),
         backgroundColor: Color(0xFF4DD9C6),
         elevation: 0,
@@ -442,6 +444,21 @@ class ValidationScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 18, color: Color(0xFF0E2927)),
                   ),
                 ],
+              ),
+            ),
+            SizedBox(height: 15),
+
+            Checkbox(
+              value: deliveryService, // `deliveryService` 값으로 체크 여부 결정
+              onChanged: null, // null로 설정하여 체크박스 수정 불가
+              activeColor: Colors.green, // 체크박스의 활성화 색상
+            ),
+            Text(
+              '배송 서비스 제공 여부',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
               ),
             ),
             SizedBox(height: 15),

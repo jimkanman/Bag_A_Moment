@@ -1,4 +1,6 @@
+import 'package:bag_a_moment/screens/addStorage.dart';
 import 'package:bag_a_moment/screens/storage.dart';
+import 'package:bag_a_moment/screens/registerStorage.dart';
 import 'package:flutter/material.dart';
 
 import 'detailed_page.dart';
@@ -137,7 +139,7 @@ class StorageManagementPage extends StatelessWidget {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => StorageDetailPage(storageId: 1), // storageId 전달
+                                          builder: (context) => StorageRegistraterScreen(), // storageId 전달
                                         ),
                                       );
                                     }
