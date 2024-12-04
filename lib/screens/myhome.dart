@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bag_a_moment/screens/mypage.dart'; // 회원 정보 조회 페이지
 import 'package:bag_a_moment/userInfo.dart';
@@ -12,6 +15,24 @@ class MyPageMainScreen extends StatefulWidget {
 
 class _MyPageMainScreenState extends State<MyPageMainScreen> {
   Map<String, dynamic>? _userData;
+  Map<String, int> _volumeData = {};
+  static const platform=MethodChannel("com.example.example/message");
+
+  Future<void> _fetchVolumeData() async{
+    try {
+      final Map<dynamic, dynamic> result = await platform.invokeMethod(
+          'getVolumeAndroid');
+      setState(() {
+        _volumeData = {
+          'width': result['width'],
+          'height': result['height'],
+          'depth': result['depth'],
+        };
+      });
+    } on PlatformException catch (e) {
+      print("Failed to get volume: '${e.message}'.");
+    }
+  }
 
   @override
   void initState() {
@@ -90,10 +111,12 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
                   ),
                   _buildButton(context, "그동안 맡긴 기록 확인하기", () {
                     // TODO: 기록 확인 페이지로 이동
+
                   }),
-                  _buildButton(context, "짐 크기 확인하기", () {
-                    // TODO: 짐 크기 확인 페이지로 이동
-                  }),
+                  _buildButton(context, "짐 크기 확인하기",_fetchVolumeData),
+                  _volumeData.isNotEmpty
+                      ? Text('Width: ${_volumeData['width']}, Height: ${_volumeData['height']}, Depth: ${_volumeData['depth']}')
+                      : Text('No data available'),
                   _buildButton(context, "결제 수단 등록", () {
                     // TODO: 결제 수단 등록 페이지로 이동
                   }),

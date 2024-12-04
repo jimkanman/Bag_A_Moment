@@ -409,6 +409,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   'opentime': storage['openingTime'],
                   'closetime' :storage['closingTime'],
                 };
+                _selectedMarkerPosition = LatLng(
+                  storage['latitude'],
+                  storage['longitude'],
+                );
+                // _selectedMarkerPosition 설정 후 확인 로그 추가
+                print('@@@@@@###########################################0');
+                print("Selected Marker Position: $_selectedMarkerPosition");
+                print("Selected Marker Position: $_selectedMarkerInfo");
               });
             }
         );
