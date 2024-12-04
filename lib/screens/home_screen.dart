@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:bag_a_moment/screens/detailed_page.dart';
@@ -28,7 +29,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // 1-1. 초기 맵 위치 설정 (위도, 경도) - 사용자 현위치로 수정
+  late GoogleMapController _mapController;
   final LatLng _initialPosition = const LatLng(37.5045563, 126.9569379); // 중앙대 위치 넣음
+  LatLng _currentPosition = const LatLng(37.5045563, 126.9569379);
   final double _currentLatitude = 37.5045563; // 사용자의 현재 위도
   final double _currentLongitude = 126.9569379; // 사용자의 현재 경도
   //현재는 우선 고정 위도 경도 사용함
@@ -65,8 +68,49 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _requestLocationPermission();
+    _getCurrentLocation();
     _fetchNearbyStorages(); // 서버에서 storage 목록 가져오기
   }
+
+  // 현재 위치 가져오기
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // 위치 서비스 사용 가능한지 확인
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // 위치 서비스가 비활성화된 경우 사용자에게 알림
+      return Future.error('위치 서비스가 꺼져 있습니다.');
+    }
+
+    // 위치 권한 확인
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('위치 권한이 거부되었습니다.');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error('위치 권한이 영구적으로 거부되었습니다.');
+    }
+
+    // 현재 위치 가져오기
+    Position position = await Geolocator.getCurrentPosition();
+    setState(() {
+      _currentPosition = LatLng(position.latitude, position.longitude);
+    });
+  }
+
+  // 지도 이동 함수
+  void _goToCurrentLocation() {
+    _mapController.animateCamera(
+      CameraUpdate.newLatLng(_currentPosition),
+    );
+  }
+
 
   //함수
   // 1.위치 권한 요청 함수
@@ -351,7 +395,12 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             //1. 지도
             GoogleMap(
-              onMapCreated: (controller) => mapController = controller,
+              onMapCreated: (GoogleMapController controller) {
+                _mapController = controller;
+              },
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+
               initialCameraPosition: CameraPosition(
                 target: _initialPosition,
                 zoom: 14.0,
@@ -363,6 +412,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   _selectedMarkerInfo = null;
                 });
               },
+            ),
+            Positioned(
+              bottom: 20,
+              right: 50,
+              child: FloatingActionButton(
+                onPressed: _goToCurrentLocation,
+                child: const Icon(Icons.my_location),
+              ),
             ),
 
 
