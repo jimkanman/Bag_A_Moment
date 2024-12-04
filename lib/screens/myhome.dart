@@ -15,38 +15,23 @@ class MyPageMainScreen extends StatefulWidget {
 
 class _MyPageMainScreenState extends State<MyPageMainScreen> {
   Map<String, dynamic>? _userData;
+  Map<String, int> _volumeData = {};
   static const platform=MethodChannel("com.example.example/message");
 
-  String _message="초기 메세지";
-  Future<void> _getVolume() async{
-    String message;
-    try{
-      message=await platform.invokeMethod('getVolumeAndroid');
-
-    } on PlatformException {
-      //TODO:에러 알림창 띄우기
-      message="error";
+  Future<void> _fetchVolumeData() async{
+    try {
+      final Map<dynamic, dynamic> result = await platform.invokeMethod(
+          'getVolumeAndroid');
+      setState(() {
+        _volumeData = {
+          'width': result['width'],
+          'height': result['height'],
+          'depth': result['depth'],
+        };
+      });
+    } on PlatformException catch (e) {
+      print("Failed to get volume: '${e.message}'.");
     }
-    setState(() {
-      _message=message;
-    });
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Volume Information'),
-          content: Text(_message),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -128,7 +113,10 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
                     // TODO: 기록 확인 페이지로 이동
 
                   }),
-                  _buildButton(context, "짐 크기 확인하기",_getVolume),
+                  _buildButton(context, "짐 크기 확인하기",_fetchVolumeData),
+                  _volumeData.isNotEmpty
+                      ? Text('Width: ${_volumeData['width']}, Height: ${_volumeData['height']}, Depth: ${_volumeData['depth']}')
+                      : Text('No data available'),
                   _buildButton(context, "결제 수단 등록", () {
                     // TODO: 결제 수단 등록 페이지로 이동
                   }),
