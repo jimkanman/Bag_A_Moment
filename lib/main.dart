@@ -28,9 +28,48 @@ class JimApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: InitialScreen(),
+      theme: ThemeData(
+        //텍스트 스타일 지정
+        textTheme: TextTheme(
+          // 1. 기본 제목 서체 + 색상
+          bodyLarge: TextStyle(
+            fontFamily: 'Paperlogy',
+            fontWeight: FontWeight.w400,
+            fontSize: 16,
+            color: Colors.black,
+          ),
+          bodyMedium: TextStyle(
+            fontFamily: 'Paperlogy',
+            fontWeight: FontWeight.w300,
+            fontSize: 14,
+          ),
+          bodySmall: TextStyle(
+            fontFamily: 'Paperlogy',
+            fontWeight: FontWeight.w200,
+            fontSize: 12,
+          ),
+          titleLarge: TextStyle(
+            fontFamily: 'Paperlogy',
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
+          titleMedium: TextStyle(
+            fontFamily: 'Paperlogy',
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+          titleSmall: TextStyle(
+            fontFamily: 'Paperlogy',
+            fontWeight: FontWeight.w500,
+            fontSize: 16,
+          ),
+        ),
+      ),
+
     );
   }
 }
+
 
 class InitialScreen extends StatefulWidget {
   @override
@@ -166,8 +205,9 @@ class _MainScreenBottomState extends State<MainBottomScreen>
             label: '예약',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.storage),
+            icon: Icon(Icons.table_rows),
             label: '내 보관소',
+
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
@@ -176,6 +216,7 @@ class _MainScreenBottomState extends State<MainBottomScreen>
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Color(0xFF21B2A6),
+        unselectedItemColor: Colors.grey.shade600, // 클릭되지 않은 탭 색상 (회색)
         onTap: _onItemTapped, // 탭 변경 시 호출
       ),
     );
