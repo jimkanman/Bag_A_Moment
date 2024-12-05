@@ -1,10 +1,15 @@
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:bag_a_moment/screens/auth_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:bag_a_moment/screens/mypage.dart'; // 회원 정보 조회 페이지
 import 'package:bag_a_moment/userInfo.dart';
+
+import '../core/app_colors.dart';
+import '../main.dart';
 
 class MyPageMainScreen extends StatefulWidget {
   @override
@@ -39,7 +44,7 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
   }
 
   Future<void> _loadUserData() async {
-    final userData = await Userinfo.fetchUserData();
+    final userData = await (Userinfo.fetchUserData());
     if (userData != null) {
       setState(() {
         _userData = userData;
@@ -61,16 +66,16 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
               left: 12,
               right: 12,
             ),
-            child: const Column(
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                myhome_bar(),
-                userbox(),
-                gympay_box(),
-                SizedBox(height: 20),
-                settingbox(),
+                myhome_bar(userData: _userData),
+                const userbox(),
+                const gympay_box(),
+                const SizedBox(height: 20),
+                const settingbox(),
               ],
             )));
   }
@@ -99,9 +104,8 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
 }
 
 class myhome_bar extends StatelessWidget {
-  const myhome_bar({
-    super.key,
-  });
+  final Map<String, dynamic>? userData;
+  const myhome_bar({Key? key, this.userData}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +124,7 @@ class myhome_bar extends StatelessWidget {
             TextSpan(
               children: [
                 TextSpan(
-                  text: '현재환',
+                  text: userData?["nickname"],
                   style: TextStyle(
                     color: Color(0xFF2CB598),
                     fontSize: 20,
@@ -299,13 +303,13 @@ class settingbox extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '회원정보',
+                  '비밀번호 변경',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.black,
                     fontSize: 15,
                     fontFamily: 'Pretendard',
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                     height: 0.09,
                     letterSpacing: -0.50,
                   ),
@@ -330,7 +334,7 @@ class settingbox extends StatelessWidget {
                     color: Colors.black,
                     fontSize: 15,
                     fontFamily: 'Pretendard',
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                     height: 0.09,
                     letterSpacing: -0.50,
                   ),
@@ -355,12 +359,47 @@ class settingbox extends StatelessWidget {
                     color: Colors.black,
                     fontSize: 15,
                     fontFamily: 'Pretendard',
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w500,
                     height: 0.09,
                     letterSpacing: -0.50,
                   ),
                 ),
               ],
+            ),
+          ),
+          InkWell(
+            onTap: () {
+              Userinfo.logout();
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    (Route<dynamic> route) => false, // 모든 이전 경로 제거
+              );
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              clipBehavior: Clip.antiAlias,
+              decoration: const BoxDecoration(
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    '로그아웃',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 15,
+                      fontFamily: 'Pretendard',
+                      fontWeight: FontWeight.w500,
+                      height: 0.09,
+                      letterSpacing: -0.50,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
