@@ -30,40 +30,41 @@ class JimApp extends StatelessWidget {
       home: InitialScreen(),
       theme: ThemeData(
         //텍스트 스타일 지정
-        textTheme: TextTheme(
-          // 1. 기본 제목 서체 + 색상
-          bodyLarge: TextStyle(
-            fontFamily: 'Paperlogy',
-            fontWeight: FontWeight.w400,
-            fontSize: 16,
-            color: Colors.black,
-          ),
-          bodyMedium: TextStyle(
-            fontFamily: 'Paperlogy',
-            fontWeight: FontWeight.w300,
-            fontSize: 14,
-          ),
-          bodySmall: TextStyle(
-            fontFamily: 'Paperlogy',
-            fontWeight: FontWeight.w200,
-            fontSize: 12,
-          ),
-          titleLarge: TextStyle(
-            fontFamily: 'Paperlogy',
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-          ),
-          titleMedium: TextStyle(
-            fontFamily: 'Paperlogy',
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
-          titleSmall: TextStyle(
-            fontFamily: 'Paperlogy',
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-          ),
-        ),
+        fontFamily: "Pretendard"
+        // textTheme: TextTheme(
+        //   // 1. 기본 제목 서체 + 색상
+        //   bodyLarge: TextStyle(
+        //     fontFamily: 'Paperlogy',
+        //     fontWeight: FontWeight.w400,
+        //     fontSize: 16,
+        //     color: Colors.black,
+        //   ),
+        //   bodyMedium: TextStyle(
+        //     fontFamily: 'Paperlogy',
+        //     fontWeight: FontWeight.w300,
+        //     fontSize: 14,
+        //   ),
+        //   bodySmall: TextStyle(
+        //     fontFamily: 'Paperlogy',
+        //     fontWeight: FontWeight.w200,
+        //     fontSize: 12,
+        //   ),
+        //   titleLarge: TextStyle(
+        //     fontFamily: 'Paperlogy',
+        //     fontWeight: FontWeight.w700,
+        //     fontSize: 20,
+        //   ),
+        //   titleMedium: TextStyle(
+        //     fontFamily: 'Paperlogy',
+        //     fontWeight: FontWeight.w600,
+        //     fontSize: 18,
+        //   ),
+        //   titleSmall: TextStyle(
+        //     fontFamily: 'Paperlogy',
+        //     fontWeight: FontWeight.w500,
+        //     fontSize: 16,
+        //   ),
+        // ),
       ),
 
     );
