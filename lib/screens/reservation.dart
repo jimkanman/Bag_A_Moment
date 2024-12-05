@@ -25,7 +25,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         return;
       }
 
-      final String url = 'http://3.35.175.114:8080/reservations/1'; // 서버 API
+      final String url = 'http://3.35.175.114:8080/reservations/2';
 
       // 요청 헤더에 토큰 추가
       final response = await http.get(
@@ -37,11 +37,14 @@ class _ReservationScreenState extends State<ReservationScreen> {
       );
       print("HTTP 응답 상태 코드: ${response.statusCode}");
 
+
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
         if (jsonResponse['isSuccess'] == true) {
           setState(() {
             _reservations = List<Map<String, dynamic>>.from(jsonResponse['data']);
+            print("#######################");
+            print("서버 응답 data: ${_reservations}");
             _isLoading = false;
           });
         } else {
@@ -108,14 +111,14 @@ class _ReservationScreenState extends State<ReservationScreen> {
       body: _isLoading
           ? Center(child: CircularProgressIndicator()) // 로딩 중
           : Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           // 예약 개수 표시
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
                 Text(
                   '${_reservations.length}',
                   style: TextStyle(
@@ -145,77 +148,77 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
           // 예약 리스트 표시
           Expanded(
-            child: _reservations.isEmpty
-                    ? Center(
-                  child: Text(
-                    '현재 예약된 짐이 없습니다.',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                )
-                : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _reservations.length,
-              itemBuilder: (context, index) {
-                final reservation = _reservations[index];
-                final remainingTime = DateTime.parse(
-                    reservation['end_date'])
-                    .difference(DateTime.now());
+              child: _reservations.isEmpty
+                      ? Center(
+                    child: Text(
+                      '현재 예약된 짐이 없습니다.',
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                  )
+                  : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: _reservations.length,
+                itemBuilder: (context, index) {
+                  final reservation = _reservations[index];
+                  final remainingTime = DateTime.parse(
+                      reservation['end_date'])
+                      .difference(DateTime.now());
 
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(reservation['status']),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(reservation['status']),
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Image.network(
-                              reservation['previewImagePath'] ?? '',
-                              height: 50,
-                              width: 50,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error,
-                                  stackTrace) =>
-                                  Icon(Icons.image),
-                            ),
-                            SizedBox(width: 16),
-                            Text(
-                              '보관소 ${reservation['storage_id']}',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                            Row(
+                              children: [
+                                Image.network(
+                                  reservation['previewImagePath'] ?? '',
+                                  height: 50,
+                                  width: 50,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error,
+                                      stackTrace) =>
+                                      Icon(Icons.image),
+                                ),
+                                SizedBox(width: 16),
+                              Text(
+                                '보관소 ${reservation['storage_id']}',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              remainingTime.isNegative
-                                  ? '초과 시간: ${remainingTime.inHours.abs()}:${(remainingTime.inMinutes.abs() % 60).toString().padLeft(2, '0')}'
-                                  : '남은 시간: ${remainingTime.inHours}:${(remainingTime.inMinutes % 60).toString().padLeft(2, '0')}',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: remainingTime.isNegative
-                                    ? Colors.red
-                                    : Colors.green,
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                remainingTime.isNegative
+                                    ? '초과 시간: ${remainingTime.inHours.abs()}:${(remainingTime.inMinutes.abs() % 60).toString().padLeft(2, '0')}'
+                                    : '남은 시간: ${remainingTime.inHours}:${(remainingTime.inMinutes % 60).toString().padLeft(2, '0')}',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: remainingTime.isNegative
+                                      ? Colors.red
+                                      : Colors.green,
+                                ),
                               ),
-                            ),
                             ElevatedButton(
                               onPressed: () {
                                 // 추가 작업 처리
