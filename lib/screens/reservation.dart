@@ -1,5 +1,10 @@
+import 'package:bag_a_moment/main.dart';
+import 'package:bag_a_moment/models/storage_reservation.dart';
+import 'package:bag_a_moment/services/api_service.dart';
+import 'package:bag_a_moment/services/websocket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -12,6 +17,11 @@ class _ReservationScreenState extends State<ReservationCheckScreen> {
   List<dynamic> _reservations = [];
   bool _isLoading = true;
   final FlutterSecureStorage _storage = FlutterSecureStorage();
+
+  // 재환 추가
+  late int userId;
+  final ApiService _apiService = ApiService();
+  final WebSocketService _webSocketService = WebSocketService();
 
   // 서버에서 예약 데이터를 가져오는 함수
   Future<void> _fetchReservations() async {
@@ -78,10 +88,35 @@ class _ReservationScreenState extends State<ReservationCheckScreen> {
     }
   }
 
+  Future<void> _jaehwanFetchReservations() async {
+    // 로그인 처리
+    final token = await _storage.read(key: 'auth_token');
+    if (token == null) {
+      print("로그인 토큰이 없습니다.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인이 필요합니다.')),
+      );
+      return;
+    }
+    String? savedUserId = await secureStorage.read(key: 'user_id');
+    userId = int.parse(savedUserId!);
+
+    // API 요청
+    List<StorageReservation> reservations = await _apiService.get(
+        "users/$userId/reservations",
+        fromJson: (data) => (data as List<dynamic>)
+        .map((d) => StorageReservation.fromJson(d))
+        .toList()
+    );
+    print(reservations);
+  }
+
   @override
   void initState() {
     super.initState();
     _fetchReservations(); // 데이터 가져오기
+    _jaehwanFetchReservations();
+
   }
 
   @override
@@ -138,13 +173,25 @@ class _ReservationScreenState extends State<ReservationCheckScreen> {
               ],
             ),
           ),
-            Divider(
-              color: Colors.grey.shade400, // 옅은 회색
-              thickness: 1, // 선의 두께
-              height: 20, // 위아래 간격
-              indent: 16, // 왼쪽 여백
-              endIndent: 16, // 오른쪽 여백
+          Divider(
+            color: Colors.grey.shade400, // 옅은 회색
+            thickness: 1, // 선의 두께
+            height: 20, // 위아래 간격
+            indent: 16, // 왼쪽 여백
+            endIndent: 16, // 오른쪽 여백
+          ),
+
+          GestureDetector(
+            onTap: () {
+              _jaehwanFetchReservations();
+            },
+            child: Container(
+              height: 100,
+              width: 100,
+              color: Colors.red,
+              child: const Text("push me"),
             ),
+          ),
 
           // 예약 리스트 표시
           Expanded(

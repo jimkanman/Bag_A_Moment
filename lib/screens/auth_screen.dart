@@ -50,7 +50,6 @@ class _LoginScreenState extends State<LoginScreen> {
       // 디버깅 메시지 출력
       print('Token 저장 완료: key: auth_token, value: $token');
       print('사용자 ID 저장 완료. user_id:${jsonResponse['data']['id']}');
-
       // 로그인 성공 메시지 출력
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('로그인 성공!')),
@@ -189,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(fontSize: 16, color: Color(0xFF0C4944)), // 텍스트 스타일
 
                 ),
-              ),),
+              ),
 
               ElevatedButton(
                 onPressed: _login,
