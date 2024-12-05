@@ -243,4 +243,141 @@ class userbox extends StatelessWidget {
     );
   }
 }
+class settingbox extends StatelessWidget {
+  const settingbox({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      clipBehavior: Clip.antiAlias,
+      decoration: ShapeDecoration(
+        color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(
+              Radius.circular(16)
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                  bottom: BorderSide(
+                    color: Color(0xFFF2F3F6),
+                    width: 2,
+                  )
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '내 정보',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                    height: 0.10,
+                    letterSpacing: -0.50,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            height: 44,
+            padding: const EdgeInsets.all(12),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(color: Colors.white),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '비밀번호 변경',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 15,
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                    height: 0.09,
+                    letterSpacing: -0.50,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            height: 44,
+            padding: const EdgeInsets.all(12),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(color: Colors.white),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '자주묻는 질문',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 15,
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                    height: 0.09,
+                    letterSpacing: -0.50,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            height: 44,
+            padding: const EdgeInsets.all(12),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(color: Colors.white),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '약관 및 정책',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 15,
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                    height: 0.09,
+                    letterSpacing: -0.50,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
