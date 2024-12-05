@@ -101,3 +101,83 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
     );
   }
 }
+
+class myhome_bar extends StatelessWidget {
+  const myhome_bar({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '현재환',
+                  style: TextStyle(
+                    color: Color(0xFF2CB598),
+                    fontSize: 20,
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                    height: 0.05,
+                    letterSpacing: -0.50,
+                  ),
+                ),
+                TextSpan(
+                  text: '님, 안녕하세요!',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                    height: 0.05,
+                    letterSpacing: -0.50,
+                  ),
+                ),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(width: 8),
+          Container(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(),
+                  child: FlutterLogo(),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 24,
+                  height: 24,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(),
+                  child: FlutterLogo(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
