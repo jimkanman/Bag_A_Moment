@@ -1,0 +1,23 @@
+import 'package:flutter/material.dart';
+
+class AppColors {
+  AppColors._(); // 생성자 감추기
+  
+  // 주된 색
+  static const Color primary = Color(0xFF49E0C0);
+  static const Color primaryDark = Color(0xFF2CB598);
+  static const Color primaryLight = Color(0xFF93EDD9);
+  static const Color primaryVeryLight = Color(0xFFC8F4E9);
+
+  // 배경 색
+  static const Color backgroundLight = Color(0xFFECFFFA);
+  static const Color backgroundLightRed = Color(0xFFFA9E9E);
+  static const Color backgroundGray = Color(0xFFF8F8F8);
+  static const Color backgroundDarkBlack = Color(0xFF555555);
+
+  // 텍스트 색
+  static const Color textDark = Color(0xFF2CB598);
+  static const Color textLight = Color(0xFFC8F4E9);
+  static const Color textGray = Color(0xFF898181);
+  static const Color textRed = Color(0xFFC92603);
+}
