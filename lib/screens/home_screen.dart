@@ -6,6 +6,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:bag_a_moment/screens/detailed_page.dart';
 import 'package:bag_a_moment/widgets/marker_details_widget.dart';
 import 'package:http/http.dart' as http;
+import 'package:bag_a_moment/model/searchModel.dart';
+import 'package:bag_a_moment/service/storageService.dart';
 
 import '../main.dart';
 
@@ -21,6 +23,14 @@ class _HomeScreenState extends State<HomeScreen> {
   //@@@@변수@@@@
   // 1. Google Map Controller
   late GoogleMapController mapController;
+  //2. 검색용
+  final StorageService _storageService = StorageService();
+  List<searchModel> _storages = [];
+  final TextEditingController _searchController = TextEditingController();
+  bool _isLoading = false;
+  bool _isSearchActive = false;
+
+
   // dispose에서 컨트롤러 해제
   @override
   void dispose() {
@@ -51,8 +61,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String>? _selectedTags; // 선택된 마커의 태그
   Offset? _markerScreenPosition; // 마커의 화면상 좌표
 
-  // 4. 검색 컨트롤러 초기화
-  final TextEditingController _searchController = TextEditingController();
 
   // 5. 검색 필터 변수
   String _location = "현위치";
@@ -70,6 +78,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _requestLocationPermission();
     _getCurrentLocation();
     _fetchNearbyStorages(); // 서버에서 storage 목록 가져오기
+  }
+
+  //상단 검색창 확장
+  void _toggleExpansion() {
+    setState(() {
+      _isExpanded = !_isExpanded; // 버튼 누르면 상태 토글
+    });
   }
 
   // 현재 위치 가져오기
@@ -266,6 +281,31 @@ class _HomeScreenState extends State<HomeScreen> {
         //_markerList = results;
       });
     }
+  Future<void> _searchStorages(String query) async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final storages = await _storageService.fetchStorages(
+        latitude: _currentPosition.latitude,
+        longitude: _currentPosition.longitude,
+        radius: 1000,
+        searchTerm: query,
+      );
+      setState(() {
+        _storages = storages;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
     // 필터 조건에 맞는 검색 로직
     void _searchWithFilters() {
@@ -369,6 +409,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   'opentime': storage['openingTime'],
                   'closetime' :storage['closingTime'],
                 };
+                _selectedMarkerPosition = LatLng(
+                  storage['latitude'],
+                  storage['longitude'],
+                );
+                // _selectedMarkerPosition 설정 후 확인 로그 추가
+                print('@@@@@@###########################################0');
+                print("Selected Marker Position: $_selectedMarkerPosition");
+                print("Selected Marker Position: $_selectedMarkerInfo");
               });
             }
         );
@@ -413,6 +461,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               },
             ),
+            //2. 현위치 버튼
             Positioned(
               bottom: 20,
               right: 50,
@@ -435,151 +484,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
 
-            //2. 상단 검색창
+            //3. 상단 검색창
             Positioned(
               top: 20,
               left: 15,
               right: 15,
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _isExpanded = !_isExpanded;
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 300),
-                  padding: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.location_on, color: Color(0xFF43CBBA)),
-                              SizedBox(width: 5),
-                              Text(
-                                "현위치",
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          IconButton(
-                            icon: Icon(
-                                Icons.filter_list, color: Color(0xFF43CBBA)),
-                            onPressed: _searchWithFilters, // 필터 적용 버튼
-                            // 필터 선택 로직 추가
-                          ),
-                        ],
-                      ),
-                      if (_isExpanded)
-                        Column(
-                          children: [
-                            Divider(color: Colors.grey),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: Icon(Icons.remove),
-                                      onPressed: () {
-                                        setState(() {
-                                          if (_selectedItems >
-                                              1) _selectedItems--;
-                                        });
-                                      },
-                                    ),
-                                    SizedBox(width: 5),
-                                    Icon(Icons.shopping_bag,
-                                        color: Color(0xFF43CBBA)),
-                                    Text("캐리어 $_selectedItems개",
-                                        style: TextStyle(fontSize: 16,
-                                            fontWeight: FontWeight.bold)),
-                                    SizedBox(width: 5),
-                                    IconButton(
-                                      icon: Icon(Icons.add),
-                                      onPressed: () {
-                                        setState(() {
-                                          _selectedItems++;
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.calendar_today,
-                                        color: Color(0xFF43CBBA)),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      _selectedDateRange == null
-                                          ? '날짜 선택'
-                                          : '${_selectedDateRange!.start
-                                          .toLocal()} - ${_selectedDateRange!
-                                          .end.toLocal()}',
-                                      style: TextStyle(fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.date_range),
-                                  onPressed: _pickDateRange,
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.access_time,
-                                        color: Color(0xFF43CBBA)),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      _fromTime == null || _toTime == null
-                                          ? '시간 선택'
-                                          : '${_fromTime!.format(
-                                          context)} - ${_toTime!.format(
-                                          context)}',
-                                      style: TextStyle(fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.schedule),
-                                  onPressed: _pickTimeRange,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+              child: _buildSearchBar(context),
             ),
 
-          // 3. 홈화면 마커의 세부정보 띄우기
+          // 4. 홈화면 마커의 세부정보 띄우기
           _selectedMarkerInfo != null
           ? Positioned(
             top: MediaQuery.of(context).size.height / 2 - 20,
@@ -724,6 +637,187 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  Widget _buildSearchBar(BuildContext context) {
+    return Positioned(
+      top: 20,
+      left: 15,
+      right: 15,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 300),
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 5,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 검색창 또는 현위치 표시
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: _isSearchActive
+                      ? Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: '검색어를 입력하세요',
+                            border: InputBorder.none,
+                          ),
+                          onSubmitted: (value) {
+                            _searchStorages(value); // 검색 수행
+                            setState(() {
+                              _isSearchActive = false; // 검색창 비활성화
+                            });
+                          },
+                        ),
+                      ),
+                        IconButton(
+                          icon: Icon(Icons.close, color: Color(0xFF43CBBA)),
+                          onPressed: () {
+                            setState(() {
+                              _isSearchActive = false; // 검색창 비활성화
+                            });
+                          },
+                        ),
+                    ],
+                  )
+                      : GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isSearchActive = true; // 검색창 활성화
+                          });
+                       },
+                          child: Row(
+                            children: [
+                              Icon(Icons.location_on, color: Color(0xFF43CBBA)),
+                              SizedBox(width: 5),
+                              Text(
+                                "현위치",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.filter_list, color: Color(0xFF43CBBA)),
+                  onPressed: _toggleExpansion, // 상태 토글 함수 호출
+                ),
+              ],
+            ),
+
+            // 확장 가능한 필터 섹션
+            if (_isExpanded)
+              Column(
+                children: [
+                  Divider(color: Colors.grey),
+                  _buildFilterOptions(), // 필터 옵션 빌더 함수로 분리
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterOptions() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.remove),
+                  onPressed: () {
+                    setState(() {
+                      if (_selectedItems > 1) _selectedItems--;
+                    });
+                  },
+                ),
+                SizedBox(width: 5),
+                Icon(Icons.shopping_bag, color: Color(0xFF43CBBA)),
+                Text(
+                  "캐리어 $_selectedItems개",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(width: 5),
+                IconButton(
+                  icon: Icon(Icons.add),
+                  onPressed: () {
+                    setState(() {
+                      _selectedItems++;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.calendar_today, color: Color(0xFF43CBBA)),
+                SizedBox(width: 5),
+                Text(
+                  _selectedDateRange == null
+                      ? '날짜 선택'
+                      : '${_selectedDateRange!.start.toLocal()} - ${_selectedDateRange!.end.toLocal()}',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            IconButton(
+              icon: Icon(Icons.date_range),
+              onPressed: _pickDateRange,
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.access_time, color: Color(0xFF43CBBA)),
+                SizedBox(width: 5),
+                Text(
+                  _fromTime == null || _toTime == null
+                      ? '시간 선택'
+                      : '${_fromTime!.format(context)} - ${_toTime!.format(context)}',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            IconButton(
+              icon: Icon(Icons.schedule),
+              onPressed: _pickTimeRange,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+
+
 }
 
 

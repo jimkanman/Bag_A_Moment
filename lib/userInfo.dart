@@ -52,7 +52,8 @@ class Userinfo {
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body)['data'] as Map<String, dynamic>;
+        final decodedBody = utf8.decode(response.bodyBytes);
+        return jsonDecode(decodedBody)['data'] as Map<String, dynamic>;
       } else {
         throw Exception('Failed to fetch user data: ${response.body}');
       }
@@ -60,5 +61,10 @@ class Userinfo {
       print('Error fetching user data: $e');
       return null;
     }
+  }
+
+  //로그아웃
+  static Future<void> logout() async {
+    await _storage.delete(key: 'auth_token');
   }
 }
