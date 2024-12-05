@@ -3,12 +3,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-class ReservationScreen extends StatefulWidget {
+class ReservationCheckScreen extends StatefulWidget {
   @override
   _ReservationScreenState createState() => _ReservationScreenState();
 }
 
-class _ReservationScreenState extends State<ReservationScreen> {
+class _ReservationScreenState extends State<ReservationCheckScreen> {
   List<dynamic> _reservations = [];
   bool _isLoading = true;
   final FlutterSecureStorage _storage = FlutterSecureStorage();

@@ -61,4 +61,12 @@ class StorageDetail {
       storageOptions: List<String>.from(json['storageOptions']),
     );
   }
+
+  get distance => null;
+
+  get address => null;
+
+  //get distance => null;
+
+ // get address => null;
 }
