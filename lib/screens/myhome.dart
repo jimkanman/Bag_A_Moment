@@ -19,7 +19,7 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
   Future<void> _fetchVolumeData() async {
     try {
       final Map<dynamic, dynamic> result =
-          await platform.invokeMethod('getVolumeAndroid');
+      await platform.invokeMethod('getVolumeAndroid');
       setState(() {
         _volumeData = {
           'width': result['width'],
@@ -56,7 +56,6 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
     return Scaffold(
         backgroundColor: Color(0xffF7F8FA),
         body: Container(
-            width: MediaQuery.of(context).size.width,
             padding: const EdgeInsets.only(
               top: 48,
               left: 12,
@@ -65,23 +64,20 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
             child: const Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Flexible(
-                  fit: FlexFit.loose,
-                  child: myhome_bar(),
-                ),
-                Flexible(
-                    fit: FlexFit.loose,
-                    child: userbox()
-                ),
-                Flexible(child: settingbox())
+                myhome_bar(),
+                userbox(),
+                gympay_box(),
+                SizedBox(height: 20),
+                settingbox(),
               ],
             )));
   }
 
   // 버튼 위젯 생성 함수
-  Widget _buildButton(
-      BuildContext context, String title, VoidCallback onPressed) {
+  Widget _buildButton(BuildContext context, String title,
+      VoidCallback onPressed) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ElevatedButton(
@@ -179,6 +175,7 @@ class myhome_bar extends StatelessWidget {
     );
   }
 }
+
 class userbox extends StatelessWidget {
   const userbox({
     super.key,
@@ -188,7 +185,6 @@ class userbox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 180,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
@@ -196,7 +192,6 @@ class userbox extends StatelessWidget {
         children: [
           Container(
             width: double.infinity,
-            height: 88,
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
             clipBehavior: Clip.antiAlias,
             decoration: ShapeDecoration(
@@ -243,6 +238,7 @@ class userbox extends StatelessWidget {
     );
   }
 }
+
 class settingbox extends StatelessWidget {
   const settingbox({super.key});
 
@@ -250,9 +246,8 @@ class settingbox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 8),
       clipBehavior: Clip.antiAlias,
-      decoration: ShapeDecoration(
+      decoration: const ShapeDecoration(
         color: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
@@ -261,16 +256,11 @@ class settingbox extends StatelessWidget {
         ),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            decoration: const BoxDecoration(
               border: Border(
                   bottom: BorderSide(
                     color: Color(0xFFF2F3F6),
@@ -278,7 +268,7 @@ class settingbox extends StatelessWidget {
                   )
               ),
             ),
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -300,17 +290,16 @@ class settingbox extends StatelessWidget {
           ),
           Container(
             width: double.infinity,
-            height: 44,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(20),
             clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(color: Colors.white),
-            child: Row(
+            decoration: const BoxDecoration(),
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '비밀번호 변경',
+                  '회원정보',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.black,
@@ -326,11 +315,10 @@ class settingbox extends StatelessWidget {
           ),
           Container(
             width: double.infinity,
-            height: 44,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(20),
             clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(color: Colors.white),
-            child: Row(
+            decoration: const BoxDecoration(),
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -352,11 +340,10 @@ class settingbox extends StatelessWidget {
           ),
           Container(
             width: double.infinity,
-            height: 44,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(20),
             clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(color: Colors.white),
-            child: Row(
+            decoration: const BoxDecoration(),
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -376,6 +363,172 @@ class settingbox extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class gympay_box extends StatelessWidget {
+  const gympay_box({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(8),
+      clipBehavior: Clip.antiAlias,
+      decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+          ),
+          border: Border(
+            top: BorderSide(
+              color: Color(0xFFF2F3F6),
+              width: 2,
+            ),
+          )
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Flexible(fit: FlexFit.loose,
+            child:
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(),
+                        child: FlutterLogo(),
+                      ),
+                      const SizedBox(width: 4),
+                      const Text(
+                        'pay',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF2CB598),
+                          fontSize: 18,
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.w600,
+                          height: 0.06,
+                          letterSpacing: -0.50,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Text(
+                    '0원',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontFamily: 'Pretendard',
+                      fontWeight: FontWeight.w600,
+                      height: 0.06,
+                      letterSpacing: -0.50,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Flexible(
+            fit: FlexFit.loose,
+            child:
+              Container(
+              width: double.infinity,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ShapeDecoration(
+                        color: Color(0xFFF2F3F6),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '충전',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 12,
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w500,
+                              height: 0.14,
+                              letterSpacing: -0.50,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 18),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      clipBehavior: Clip.antiAlias,
+                      decoration: ShapeDecoration(
+                        color: Color(0xFFF2F3F6),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            '내역',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 12,
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w500,
+                              height: 0.14,
+                              letterSpacing: -0.50,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
         ],
       ),
     );
