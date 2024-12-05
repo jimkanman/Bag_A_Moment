@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
+
+
+
+
 
 class ReservationScreen extends StatefulWidget {
   final Map<String, dynamic> info;
   ReservationScreen({required this.info});
+
 
   @override
   _ReservationScreenState createState() => _ReservationScreenState();
@@ -18,6 +25,36 @@ class _ReservationScreenState extends State<ReservationScreen> {
   // 이용 시간 상태 관리
   TimeOfDay? startTime;
   TimeOfDay? endTime;
+
+  //로그인 토큰, 아이디를 저장
+  final secureStorage = FlutterSecureStorage();
+
+  Future<void> fetchData() async {
+    final storage = FlutterSecureStorage();
+    String? token = await storage.read(key: 'auth_token');
+    String? userId = await secureStorage.read(key: 'user_id');
+
+    print('Retrieved Token: $token');
+    print('Retrieved User ID: $userId');
+
+
+    if (token == null) {
+      print('No token found');
+      return;
+    }
+    final response = await http.get(
+      Uri.parse('http://3.35.175.114:8080/'),
+      headers: {
+        'Authorization': 'Bearer $token', // 토큰 추가
+      },
+    );
+    if (response.statusCode == 200) {
+      print('Data: ${response.body}');
+    } else {
+      print('Error: ${response.statusCode}');
+    }
+  }
+
 
   Future<void> _pickTime(BuildContext context, bool isStartTime) async {
     final pickedTime = await showTimePicker(

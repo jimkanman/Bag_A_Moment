@@ -17,8 +17,17 @@ import 'widgets/marker_details_widget.dart';
 import 'theme.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-// main.dart 또는 별도 파일
+
 final FlutterSecureStorage secureStorage = FlutterSecureStorage();
+String? globalToken;
+String? globalUserId;
+
+Future<void> loadStoredValues() async {
+  globalToken = await secureStorage.read(key: 'auth_token');
+  globalUserId = await secureStorage.read(key: 'user_id');
+  print('Global Token: $globalToken');
+  print('Global User ID: $globalUserId');
+}
 
 
 class JimApp extends StatelessWidget {

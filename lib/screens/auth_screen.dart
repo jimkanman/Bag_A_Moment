@@ -46,8 +46,11 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
       await secureStorage.write(key: 'auth_token', value: ' $token');
+      await secureStorage.write(key: 'user_id', value: jsonResponse['data']['id'].toString());
       // 디버깅 메시지 출력
       print('Token 저장 완료: key: auth_token, value: $token');
+      print('사용자 ID 저장 완료. user_id:${jsonResponse['data']['id']}');
+
       // 로그인 성공 메시지 출력
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('로그인 성공!')),
