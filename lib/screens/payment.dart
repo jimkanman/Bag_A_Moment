@@ -209,7 +209,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
       onPressed: () => _pickDate(context, isStartDate),
       child: Text(
         date == null ? label : '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
-        style: TextStyle(color: Colors.blue),
+        style: TextStyle(color: Color(0xFF1CAF9C),),
       ),
     );
   }
@@ -222,13 +222,13 @@ class _ReservationScreenState extends State<ReservationScreen> {
         title: Text(
           widget.info['name'] ?? '세부 정보',
           style: TextStyle(
-            color: Colors.white, // 글씨 색상을 흰색으로 설정
+            color: Colors.black, // 글씨 색상을 흰색으로 설정
             fontWeight: FontWeight.bold, // 글씨를 볼드체로 설정
             fontSize: 20, // 글씨 크기를 적절히 설정 (옵션)
           ),
         ),
         centerTitle: true,
-        backgroundColor: Color(0xFF4DD9C6),
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.black),
@@ -237,67 +237,80 @@ class _ReservationScreenState extends State<ReservationScreen> {
           },
         ),
       ),
+
+
+      //새로 카드로 작성
+
+
+
+
+
+
+
+
+
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ListTile(
-                leading: Icon(Icons.location_on, color: Colors.green),
-                title: Text(
-                  widget.info['address'] ?? '주소 정보 없음',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text('운영 중 (${widget.info['closingTime'] ?? '미정'} 종료), ${widget.info['distance'] ?? '0m'}'),
-              ),
-              Row(
-                children: [
-                  Icon(Icons.star, color: Colors.yellow),
-                  SizedBox(width: 5),
-                  //TODO: 리뷰, ratin업승ㅁ
-                  Text('${widget.info['rating'] ?? 0}(${widget.info['reviews'] ?? 0}개의 리뷰)', style: TextStyle(fontWeight: FontWeight.bold)),
-                ],
-              ),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Chip(
-                    label: Row(
-                      children: [
-                        Icon(Icons.check, color: Colors.green),
-                        SizedBox(width: 5),
-                        Text('인증된 사용자',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                            fontFamily: 'Paperlogy',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 30),
-                  Chip(
-                    label: Row(
-                      children: [
-                        Icon(Icons.camera, color: Colors.green),
-                        SizedBox(width: 10),
-                        Text('AR 짐 크기측정',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                            fontFamily: 'Paperlogy',
-                          ),
-                        ),
+              // 제목과 AR 측정 버튼
 
-                      ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '보관할 짐을 선택해주세요.',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.camera_alt_outlined, color: Colors.teal),
+                    label: const Text(
+                      'AR 측정',
+                      style: TextStyle(color: Colors.teal),
+                    ),
+                    onPressed: () {
+                      // AR 측정 기능 구현 예정
+                    },
+                  ),
+                ],
+              ),
+
+
+              SizedBox(height: 16),
+
+              // 가방 리스트
+            Column(
+              children: [
+                _buildBagRow('배낭', 1, widget.info['backpackPrice']),
+                _buildBagRow('캐리어', 1, widget.info['suitcasePrice']),
+                _buildBagRow('특수 크기', 1, widget.info['specialPrice']),
+              ],
+            ),
+              const SizedBox(height: 10),
+              Row(
+                children: const [
+                  Icon(Icons.info_outline, color: Colors.grey, size: 18),
+                  SizedBox(width: 5),
+                  Text(
+                    '가방크기 기준 알아보기',
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
                   ),
                 ],
               ),
+
+
+
+
               SizedBox(height: 20),
               Text('맡길 짐 수정하기',
                 style: TextStyle(
@@ -309,25 +322,25 @@ class _ReservationScreenState extends State<ReservationScreen> {
               ),
               Divider(),
               // 가방 개수 선택 섹션
-              Column(
-                children: [
-                  _buildBagRow('작은 가방', smallBagCount, (value) {
-                    setState(() {
-                      smallBagCount += value;
-                    });
-                  }),
-                  _buildBagRow('큰 여행 가방', largeBagCount, (value) {
-                    setState(() {
-                      largeBagCount += value;
-                    });
-                  }),
-                  _buildBagRow('특수 크기', specialBagCount, (value) {
-                    setState(() {
-                      specialBagCount += value;
-                    });
-                  }),
-                ],
-              ),
+              // Column(
+              //   children: [
+              //     _buildBagRow('작은 가방', smallBagCount, (value) {
+              //       setState(() {
+              //         smallBagCount += value;
+              //       });
+              //     }),
+              //     _buildBagRow('큰 여행 가방', largeBagCount, (value) {
+              //       setState(() {
+              //         largeBagCount += value;
+              //       });
+              //     }),
+              //     _buildBagRow('특수 크기', specialBagCount, (value) {
+              //       setState(() {
+              //         specialBagCount += value;
+              //       });
+              //     }),
+              //   ],
+              // ),
               SizedBox(height: 10),
               Row(
                 children: [
@@ -362,11 +375,12 @@ class _ReservationScreenState extends State<ReservationScreen> {
         ),
 
         ),
+      //결제 버튼
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0), // 버튼과 화면 가장자리 간격
         child: ElevatedButton(
           onPressed: () {
-            print('예약 결제 화면입니다.\n전달받은 데이터: $widget.info');
+            print('결제 버튼 눌림.\n전달받은 데이터: $widget.info');
             _submitData();
           },
 
@@ -389,54 +403,77 @@ class _ReservationScreenState extends State<ReservationScreen> {
       );
   }
 
-  Widget _buildBagRow(String label, int count, Function(int) onUpdate) {
+  //가방 개수 설정 위젯
+  Widget _buildBagRow(String label, int count,  int? price) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label),
           Row(
             children: [
-              IconButton(
-                icon: Icon(Icons.remove),
-                onPressed: () {
-                  setState(() {
-                    if (label == '작은 가방' && smallBagCount > 0) smallBagCount--;
-                    if (label == '큰 여행 가방' && largeBagCount > 0) largeBagCount--;
-                    if (label == '특수 크기' && specialBagCount > 0) specialBagCount--;
-                  });
-                },
+              const Icon(Icons.luggage, color: Colors.teal, size: 18),
+              const SizedBox(width: 8),
+              Text(label, style: const TextStyle(fontSize: 14)),
+              // IconButton(
+              //   icon: Icon(Icons.remove),
+              //   onPressed: () {
+              //     setState(() {
+              //       if (label == '작은 가방' && smallBagCount > 0) smallBagCount--;
+              //       if (label == '큰 여행 가방' && largeBagCount > 0) largeBagCount--;
+              //       if (label == '특수 크기' && specialBagCount > 0) specialBagCount--;
+              //     });
+              //   },
+              // ),
+              // Text(count.toString()),
+              // IconButton(
+              //   icon: Icon(Icons.add),
+              //   onPressed: () {
+              //     setState(() {
+              //       if (label == '작은 가방') smallBagCount++;
+              //       if (label == '큰 여행 가방') largeBagCount++;
+              //       if (label == '특수 크기') specialBagCount++;
+              //     });
+              //   },
+              // ),
+            ],
+
+          ),
+          Row(
+            children: [
+              Text(
+                '$count',
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              Text(count.toString()),
-              IconButton(
-                icon: Icon(Icons.add),
-                onPressed: () {
-                  setState(() {
-                    if (label == '작은 가방') smallBagCount++;
-                    if (label == '큰 여행 가방') largeBagCount++;
-                    if (label == '특수 크기') specialBagCount++;
-                  });
-                },
+              const SizedBox(width: 20),
+              Text(
+                price != null ? '$price 원' : '가격 정보 없음',
+                style: const TextStyle(color: Colors.grey),
               ),
             ],
           ),
+
+
         ],
       ),
     );
   }
 
+  //시간 설정 위젯
   Widget _buildTimePickerButton(String label, TimeOfDay? time, bool isStartTime) {
     return TextButton(
       onPressed: () => _pickTime(context, isStartTime),
       child: Text(
         time == null ? label : time.format(context),
-        style: TextStyle(color: Colors.blue),
+        style: TextStyle(color: Color(0xFF1CAF9C)),
       ),
     );
   }
 }
 
+
+//예약 완료 화면
+//TODO: 다른 파일로 분리할 것
 class PaymentPage extends StatelessWidget {
   final Map<String, dynamic> info;
   PaymentPage({required this.info});
@@ -454,6 +491,7 @@ class PaymentPage extends StatelessWidget {
           children: [
             Image.asset(
               'assets/images/check-circle-broken.png', // 이미지를 넣을 경로
+              //이미지가 안나옴
               height: 150, // 이미지 크기 설정
               width: 150,
             ),

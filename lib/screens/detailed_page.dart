@@ -103,7 +103,10 @@ Future<void> fetchStorageDetails() async {
       'distance': storageDetails?.distance ?? '0m',
       'address': storageDetails?.address ?? '주소 정보 없음',
       //TODO: 거리, 주소 미정 -apimodel에 null로 넣어둠
-      'storageId': storageDetails?.id ?? 'ID 없음', // Storage ID가 필수라면 null 체크
+      'storageId': storageDetails?.id ?? 'ID 없음', // Storage ID가 필수 null 체크
+      'backpackPrice': storageDetails?.backpackPricePerHour?? '0',
+      'suitcasePrice': storageDetails?.carrierPricePerHour?? '0',
+      'specialPrice': storageDetails?.miscellaneousItemPricePerHour?? '0',
     };
     return Scaffold(
       appBar: AppBar(
