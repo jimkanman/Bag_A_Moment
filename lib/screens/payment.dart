@@ -153,6 +153,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
 
 
+
     print('예약 정보: ${widget.info}');
     print('가방 정보: $reservationData');
 
@@ -207,6 +208,14 @@ class _ReservationScreenState extends State<ReservationScreen> {
   Widget _buildDatePickerButton(String label, DateTime? date, bool isStartDate) {
     return TextButton(
       onPressed: () => _pickDate(context, isStartDate),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFEFFAF6), // 연한 초록색 배경
+        foregroundColor: Colors.teal, // 텍스트 색상
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8), // 라운드 테두리
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // 버튼 내부 여백
+      ),
       child: Text(
         date == null ? label : '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}',
         style: TextStyle(color: Color(0xFF1CAF9C),),
@@ -257,124 +266,180 @@ class _ReservationScreenState extends State<ReservationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 제목과 AR 측정 버튼
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    '보관할 짐을 선택해주세요.',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.camera_alt_outlined, color: Colors.teal),
-                    label: const Text(
-                      'AR 측정',
-                      style: TextStyle(color: Colors.teal),
-                    ),
-                    onPressed: () {
-                      // AR 측정 기능 구현 예정
-                    },
-                  ),
-                ],
-              ),
-
-
-              SizedBox(height: 16),
-
-              // 가방 리스트
-            Column(
-              children: [
-                _buildBagRow('배낭', 1, widget.info['backpackPrice']),
-                _buildBagRow('캐리어', 1, widget.info['suitcasePrice']),
-                _buildBagRow('특수 크기', 1, widget.info['specialPrice']),
+            Container(
+            margin: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: Colors.white, // 카드 배경 흰색
+              borderRadius: BorderRadius.circular(12), // 모서리 둥글게
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.2), // 그림자
+                  blurRadius: 10,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 5), // 그림자 위치
+                ),
               ],
             ),
-              const SizedBox(height: 10),
-              Row(
-                children: const [
-                  Icon(Icons.info_outline, color: Colors.grey, size: 18),
-                  SizedBox(width: 5),
-                  Text(
-                    '가방크기 기준 알아보기',
-                    style: TextStyle(
-                      color: Colors.teal,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '보관할 짐을 선택해주세요.',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    TextButton.icon(
+                      icon: const Icon(Icons.camera_alt_outlined, color: Colors.teal),
+                      label: const Text(
+                        'AR 측정',
+                        style: TextStyle(color: Colors.teal),
+                      ),
+                      onPressed: () {
+                        // AR 측정 기능 구현 예정
+                      },
+                    ),
+                  ],
+                ),
+
+
+                SizedBox(height: 16),
+
+              // 가방 리스트
+                  //TODO: 가방 개수를 AR 카메라에서 받아와야함
+                  Container(
+                    margin: const EdgeInsets.all(16.0), // 카드와 화면 가장자리 간격
+                    padding: const EdgeInsets.all(16.0), // 내부 여백
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFFAF6), // 연한 민트색 배경
+                      borderRadius: BorderRadius.circular(12), // 둥근 모서리
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2), // 그림자 색상
+                          blurRadius: 10, // 그림자 흐림 정도
+                          spreadRadius: 2, // 그림자 퍼짐 정도
+                          offset: const Offset(0, 5), // 그림자 위치
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        _buildBagRow('배낭', 1, widget.info['backpackPrice']),
+                        _buildBagRow('캐리어', 0, widget.info['suitcasePrice']),
+                        _buildBagRow('특수 크기', 1, widget.info['specialPrice']),
+                      ],
                     ),
                   ),
-                ],
-              ),
+
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('가방 크기 기준'),
+                              content: const Text('배낭: 40x50x50 이하 \n 캐리어: 80x70x60 이하 \n 특수크기: 그외 '
+                                  ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('닫기'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.info_outline, color: Colors.teal, size: 18),
+                        label: const Text(
+                          '가방크기 기준 알아보기',
+                          style: TextStyle(
+                            color: Colors.teal,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                ]
+            ),
+
+          ),
 
 
 
 
-              SizedBox(height: 20),
-              Text('맡길 짐 수정하기',
-                style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-                fontFamily: 'Paperlogy',
-              ),
-              ),
-              Divider(),
-              // 가방 개수 선택 섹션
-              // Column(
-              //   children: [
-              //     _buildBagRow('작은 가방', smallBagCount, (value) {
-              //       setState(() {
-              //         smallBagCount += value;
-              //       });
-              //     }),
-              //     _buildBagRow('큰 여행 가방', largeBagCount, (value) {
-              //       setState(() {
-              //         largeBagCount += value;
-              //       });
-              //     }),
-              //     _buildBagRow('특수 크기', specialBagCount, (value) {
-              //       setState(() {
-              //         specialBagCount += value;
-              //       });
-              //     }),
-              //   ],
-              // ),
               SizedBox(height: 10),
-              Row(
-                children: [
-                  Icon(Icons.info_outline, color: Colors.grey),
-                  SizedBox(width: 5),
-                  Text('가방 크기 기준 알아보기'),
-                  //TODO: 가방 크기기준 안정함. 누르면 가방 크기 기준 안내하는 팝업 나오면 좋을 것 같음
+
+              Container(
+                margin: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white, // 카드 배경 흰색
+                  borderRadius: BorderRadius.circular(12), // 모서리 둥글게
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2), // 그림자
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 5), // 그림자 위치
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [Text('이용시간을 선택해주세요.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          fontFamily: 'Paperlogy',
+                        ),
+                      ),
                 ],
-              ),
-              Divider(),
+                    ),
+                    SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildDatePickerButton('시작 날짜', selectedStartDate, true),
+                        const SizedBox(width: 8), // 버튼 간의 간격을 좁게 설정
+                        _buildTimePickerButton('시작 시간', startTime, true),
+                        const SizedBox(width: 8), // 버튼 간의 간격을 좁게 설정
+                        Text('부터'),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildDatePickerButton('종료 날짜', selectedEndDate, false),
+                        const SizedBox(width: 8),
+                        _buildTimePickerButton('종료 시간', endTime, false),
+                        const SizedBox(width: 8),
+                    Text('까지'),
+                      ],
+                    ),
+                  ]
+                ),
+              )
               // 이용 시간 선택 섹션
-              Text('이용 시간', style: TextStyle(fontWeight: FontWeight.bold)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildDatePickerButton('시작 날짜', selectedStartDate, true),
-                  _buildTimePickerButton('시작 시간', startTime, true),
-                  Text('부터'),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildDatePickerButton('종료 날짜', selectedEndDate, false),
-                  _buildTimePickerButton('종료 시간', endTime, false),
-                  Text('까지'),
-                ],
-              ),
-              SizedBox(height: 20),
-        ],
+            ],
           ),
         ),
+      ),
 
-        ),
       //결제 버튼
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0), // 버튼과 화면 가장자리 간격
@@ -403,6 +468,20 @@ class _ReservationScreenState extends State<ReservationScreen> {
       );
   }
 
+  IconData _getIconForLabel(String label) {
+    switch (label) {
+      case '배낭':
+        return Icons.backpack; // 배낭 아이콘
+      case '캐리어':
+        return Icons.luggage; // 캐리어 아이콘
+      case '특수 크기':
+        return Icons.add_business; // 특수 크기 아이콘
+      default:
+        return Icons.help_outline; // 기본 아이콘
+    }
+  }
+
+
   //가방 개수 설정 위젯
   Widget _buildBagRow(String label, int count,  int? price) {
     return Padding(
@@ -412,32 +491,14 @@ class _ReservationScreenState extends State<ReservationScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.luggage, color: Colors.teal, size: 18),
+              Icon(
+                _getIconForLabel(label), // 아이콘을 label에 따라 결정
+                color: Colors.teal,
+                size: 18,
+              ),
               const SizedBox(width: 8),
               Text(label, style: const TextStyle(fontSize: 14)),
-              // IconButton(
-              //   icon: Icon(Icons.remove),
-              //   onPressed: () {
-              //     setState(() {
-              //       if (label == '작은 가방' && smallBagCount > 0) smallBagCount--;
-              //       if (label == '큰 여행 가방' && largeBagCount > 0) largeBagCount--;
-              //       if (label == '특수 크기' && specialBagCount > 0) specialBagCount--;
-              //     });
-              //   },
-              // ),
-              // Text(count.toString()),
-              // IconButton(
-              //   icon: Icon(Icons.add),
-              //   onPressed: () {
-              //     setState(() {
-              //       if (label == '작은 가방') smallBagCount++;
-              //       if (label == '큰 여행 가방') largeBagCount++;
-              //       if (label == '특수 크기') specialBagCount++;
-              //     });
-              //   },
-              // ),
             ],
-
           ),
           Row(
             children: [
@@ -452,8 +513,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
               ),
             ],
           ),
-
-
         ],
       ),
     );
@@ -463,6 +522,14 @@ class _ReservationScreenState extends State<ReservationScreen> {
   Widget _buildTimePickerButton(String label, TimeOfDay? time, bool isStartTime) {
     return TextButton(
       onPressed: () => _pickTime(context, isStartTime),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFEFFAF6), // 연한 초록색 배경
+        foregroundColor: Colors.teal, // 텍스트 색상
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8), // 라운드 테두리
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // 버튼 내부 여백
+      ),
       child: Text(
         time == null ? label : time.format(context),
         style: TextStyle(color: Color(0xFF1CAF9C)),
