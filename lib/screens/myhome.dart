@@ -59,7 +59,7 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Color(0xffF7F8FA),
+        backgroundColor: AppColors.backgroundMypage,
         body: Container(
             padding: const EdgeInsets.only(
               top: 48,
