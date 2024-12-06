@@ -23,16 +23,24 @@ class ReservationScreen extends StatefulWidget {
 
 class _ReservationScreenState extends State<ReservationScreen> {
 
+  final TextEditingController smallBagController = TextEditingController();
+  final TextEditingController largeBagController = TextEditingController();
+  final TextEditingController specialBagController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
+    smallBagController.text = '0';
+    largeBagController.text = '0';
+    specialBagController.text = '0';
     print('Received info: ${widget.info}');
   }
 
-  // 가방 개수 상태 관리 <- 왜 필요?
+  // 가방 개수 초기화
   int smallBagCount = 0;
   int largeBagCount = 0;
   int specialBagCount = 0;
+
 
   // 이용 시간 상태 관리
   TimeOfDay? startTime;
@@ -127,17 +135,34 @@ class _ReservationScreenState extends State<ReservationScreen> {
     final endDateTime = formatDateTime(selectedDate, endTime!);
 
 
+    // 사용자가 텍스트 필드에 입력한 값을 가져옴
+    final smallBagCount = int.tryParse(smallBagController.text) ?? 0;
+    final largeBagCount = int.tryParse(largeBagController.text) ?? 0;
+    final specialBagCount = int.tryParse(specialBagController.text) ?? 0;
+
+    // 디버깅: 텍스트 필드 값 확인
+    print('텍스트 필드에 입력된 가방 정보');
+    print('Small Bag Count: $smallBagCount');
+    print('Large Bag Count: $largeBagCount');
+    print('Special Bag Count: $specialBagCount');
+
     // 서버로 데이터를 전송할 body??
-    //TODO:  가방 크기 일단 랜덤값 넣음
+    //TODO:  가방 크기 일단 랜덤값 넣음!!! AR 카메라에서 가져온 크기로 수정할 것채
     final reservationData = {
       'luggage': [
         for (int i = 0; i < smallBagCount; i++) {'type': 'BAG', 'width': 20, 'depth': 15, 'height': 10},
-        for (int i = 0; i < largeBagCount; i++) {'type': 'LARGE_BAG', 'width': 40, 'depth': 25, 'height': 20},
-        for (int i = 0; i < specialBagCount; i++) {'type': 'SPECIAL_BAG', 'width': 50, 'depth': 30, 'height': 25},
+        for (int i = 0; i < largeBagCount; i++) {'type': 'CARRIER', 'width': 40, 'depth': 25, 'height': 20},
+        for (int i = 0; i < specialBagCount; i++) {'type': 'MISCELLANEOUS_ITEM', 'width': 50, 'depth': 30, 'height': 25},
       ],
       'startDateTime': startDateTime,
       'endDateTime': endDateTime,
     };
+
+
+    // 디버깅: 서버에 전송되는 데이터 출력
+    print('예약 데이터 (서버 전송): ${jsonEncode(reservationData)}');
+
+
 
 
 
@@ -145,6 +170,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     String? token = await secureStorage.read(key: 'auth_token');
     if (token == null) {
       print('토큰이 만료되었습니다. 다시 로그인 해주세요');
+      _showErrorDialog('토큰이 만료되었습니다. 다시 로그인 해주세요.');
       return;
     }
 
@@ -169,7 +195,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
       //결제 화면으로 이동
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
         print('예약 성공! ');
+        print('서버 응답: $decodedResponse'); // 서버에서 받은 메시지 확인
+        print('서버 응답 상태 코드: ${response.statusCode}');
+        print('서버 응답 본문: ${utf8.decode(response.bodyBytes)}');
         // Navigate to PaymentPage
         Navigator.push(
           context,
@@ -178,27 +208,21 @@ class _ReservationScreenState extends State<ReservationScreen> {
               info: {
                 ...widget.info,
                 ...reservationData,
+                'responseMessage': decodedResponse, // 응답 메시지를 전달
               },
             ),
           ),
         );
       } else {
         final decodedResponse = utf8.decode(response.bodyBytes);
-        print('Error: ${response.statusCode}');
-        print('Response body:  $decodedResponse'); // 서버 응답 본문 출력
+        print('예약 실패 - 상태 코드: ${response.statusCode}');
+        print('서버 오류 메시지: ${utf8.decode(response.bodyBytes)}');
         _showErrorDialog('예약 실패: ${response.statusCode}');
       }
     } catch (e) {
       print('Error: $e');
       _showErrorDialog('예약 실패 ㅠㅠ');
     }
-
-
-
-
-
-
-
   }
 
 
@@ -331,9 +355,9 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     ),
                     child: Column(
                       children: [
-                        _buildBagRow('배낭', 1, widget.info['backpackPrice']),
-                        _buildBagRow('캐리어', 0, widget.info['suitcasePrice']),
-                        _buildBagRow('특수 크기', 1, widget.info['specialPrice']),
+                        _buildBagRow('소형', smallBagController, widget.info['backpackPrice']),
+                        _buildBagRow('중형', largeBagController, widget.info['suitcasePrice']),
+                        _buildBagRow('대형', specialBagController, widget.info['specialPrice']),
                       ],
                     ),
                   ),
@@ -483,8 +507,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
 
   //가방 개수 설정 위젯
-  Widget _buildBagRow(String label, int count,  int? price) {
-    TextEditingController controller = TextEditingController(text: count.toString());
+  Widget _buildBagRow(String label, TextEditingController controller, int? price) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -520,14 +543,16 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   onChanged: (value) {
                     // 입력 값 변경 처리
                     String sanitizedValue = value.replaceAll(RegExp(r'^0+'), ''); // 앞에 있는 0 제거
-                    int? newValue = int.tryParse(value);
+                    int? newValue = int.tryParse(sanitizedValue) ?? 0;
                     if (newValue == null || newValue < 0) {
                       controller.text = '0'; // 음수나 잘못된 입력은 0으로 설정
                     }
                     controller.value = TextEditingValue(
-                      text: sanitizedValue,
-                      selection: TextSelection.collapsed(offset: sanitizedValue.length), // 커서를 끝으로 이동
+                      text: newValue.toString(),
+                      selection: TextSelection.collapsed(offset: newValue.toString().length), // 커서를 끝으로 이동
+
                     );
+
                   },
                 ),
               ),
@@ -587,6 +612,7 @@ class PaymentPage extends StatelessWidget {
               height: 150, // 이미지 크기 설정
               width: 150,
             ),
+            Text('예약이 성공적으로 완료되었습니다.'),
             SizedBox(height: 20), // 이미지와 버튼 사이 간격
             ElevatedButton(
               onPressed: () {
@@ -602,7 +628,7 @@ class PaymentPage extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
               child: Text(
-                'Go to Next Page',
+                '예약 관리로 돌아가기',
                 style: TextStyle(fontSize: 16),
               ),
             ),
