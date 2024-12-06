@@ -6,43 +6,10 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:kpostal/kpostal.dart';
 
+import '../widgets/textfield.dart';
 import 'Validation.dart';
 
 
-class CustomTextFormField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hintText;
-  final String? Function(String?)? validator;
-
-  const CustomTextFormField({
-    super.key,
-    required this.controller,
-    required this.hintText,
-    this.validator,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: const TextStyle(
-          color: AppColors.textGray,
-          fontSize: 14,
-          fontFamily: 'Inter',
-          fontWeight: FontWeight.w400,
-          height: 0.14,
-        ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.primaryDark, width: 2),
-        ),
-      ),
-      maxLength: 20,
-      validator: validator,
-    );
-  }
-}
 
 class StorageScreen extends StatefulWidget {
   @override
@@ -56,14 +23,6 @@ class _StorageScreenState extends State<StorageScreen> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _postalCodeController =
       TextEditingController(); // 추가된 필드
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _backpackPriceController =
-      TextEditingController(); // 추가된 필드
-  final TextEditingController _carrierPriceController =
-      TextEditingController(); // 추가된 필드
-  final TextEditingController _miscellaneousPriceController =
-      TextEditingController(); // 추가된 필드
-  final TextEditingController _refundPolicyController = TextEditingController();
   final TextEditingController receiverZipController = TextEditingController();
   final TextEditingController _detailaddressController =
       TextEditingController();
@@ -212,7 +171,7 @@ class _StorageScreenState extends State<StorageScreen> {
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
