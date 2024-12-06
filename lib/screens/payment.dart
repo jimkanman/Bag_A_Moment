@@ -484,6 +484,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
   //가방 개수 설정 위젯
   Widget _buildBagRow(String label, int count,  int? price) {
+    TextEditingController controller = TextEditingController(text: count.toString());
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -502,9 +503,33 @@ class _ReservationScreenState extends State<ReservationScreen> {
           ),
           Row(
             children: [
-              Text(
-                '$count',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              SizedBox(
+                width: 50, // 숫자 입력 칸의 너비
+                child: TextField(
+                  controller: controller,
+                  keyboardType: TextInputType.number, // 숫자 키보드
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    isDense: true, // 텍스트 필드 높이를 줄임
+                    contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0), // 여백 조정
+                  ),
+                  style: const TextStyle(
+                    fontSize: 14, // 글씨 크기를 줄임
+                  ),
+
+                  onChanged: (value) {
+                    // 입력 값 변경 처리
+                    String sanitizedValue = value.replaceAll(RegExp(r'^0+'), ''); // 앞에 있는 0 제거
+                    int? newValue = int.tryParse(value);
+                    if (newValue == null || newValue < 0) {
+                      controller.text = '0'; // 음수나 잘못된 입력은 0으로 설정
+                    }
+                    controller.value = TextEditingValue(
+                      text: sanitizedValue,
+                      selection: TextSelection.collapsed(offset: sanitizedValue.length), // 커서를 끝으로 이동
+                    );
+                  },
+                ),
               ),
               const SizedBox(width: 20),
               Text(
