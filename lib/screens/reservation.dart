@@ -22,7 +22,6 @@ class ReservationScreen extends StatefulWidget {
 }
 
 class _ReservationScreenState extends State<ReservationScreen> {
-  List<dynamic> _reservations_old = [];
   bool _isLoading = true;
   final FlutterSecureStorage _storage = FlutterSecureStorage();
 
@@ -31,7 +30,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
   late List<StorageReservation> _reservations;
   late List<StorageReservation> _reservationsOnDelivery;
   late List<Location> _deliveryLocations;
-  final ApiService _apiService = ApiService();
+  late ApiService _apiService;
   final WebSocketService _webSocketService = WebSocketService();
 
   // 예약 상태에 따른 색상 반환
@@ -79,20 +78,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
   }
 
   /// 시작 시 API로 필요한 Data 가져옴
-  Future<void> _jaehwanFetchReservations() async {
-    print("Fetching data");
-    // 로그인 처리
-    final token = await _storage.read(key: 'auth_token');
-    if (token == null) {
-      print("로그인 토큰이 없습니다.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('로그인이 필요합니다.')),
-      );
-      return;
-    }
-    String? savedUserId = await secureStorage.read(key: 'user_id');
-    userId = int.parse(savedUserId!);
-
+  Future<void> _fetchReservations() async {
     // API 요청 & 변수 초기화
     print("REQUESTING...");
     _reservations = await _apiService.get(
@@ -186,13 +172,38 @@ class _ReservationScreenState extends State<ReservationScreen> {
     return Colors.white;
   }
 
+  /// 로그인 처리, JWT 가져옴, ApiService 초기화
+  Future<void> _initialize() async {
+    // 로그인 처리
+    final token = await _storage.read(key: 'auth_token');
+    if (token == null) {
+      print("로그인 토큰이 없습니다.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인이 필요합니다.')),
+      );
+      return;
+    }
+
+    // Jwt 가져옴
+    String? savedUserId = await secureStorage.read(key: 'user_id');
+    String? jwt = await secureStorage.read(key: 'auth_token');
+    userId = int.parse(savedUserId!);
+
+    // ApiService 초기화
+    _apiService = ApiService(defaultHeader: {'Authorization' : jwt ?? ''});
+  }
+
+  /// API 호출해서 데이터 가져옴
+  Future<void> _fetchApiData() async {
+    await _initialize(); // JWT 가져옴 & ApiService 초기화
+    await _fetchReservations(); // API 호출해서 데이터 초기화
+    await _putDummyData(); // TODO 테스트 데이터 삽입. 배포 시 삭제
+  }
+
   @override
   void initState() {
     super.initState();
-    // _fetchReservations(); // 데이터 가져오기
-    _jaehwanFetchReservations().then((_) {
-      _putDummyData(); // TODO 삭제
-    });
+    _fetchApiData();
   }
 
   @override
