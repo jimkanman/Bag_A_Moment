@@ -158,7 +158,8 @@ class _InitialScreenState extends State<InitialScreen> {
 
 //모든 플러터 위젯 시작점
 void main() {
-  runApp(JimApp());
+  runApp(
+    JimApp());
 }
 
 
