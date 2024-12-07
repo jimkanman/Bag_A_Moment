@@ -19,6 +19,7 @@ class ExpandableReservationCard extends StatefulWidget {
   final Color backgroundColor;
   final VoidCallback? onButtonPressed;
   final DeliveryReservation? deliveryReservation;
+  static final Map<int, GoogleMapController> googleMapControllers = {}; // Controller 저장용 MAP (deliveryId : 컨트롤러)
 
   // 추가 요소 (터치 시 GoogleMap 렌더링 관련
   final double? deliveryLatitude;
@@ -209,6 +210,9 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                             color: Colors.grey[200],
                           ),
                           child: GoogleMap(
+                            onMapCreated: (controller) {
+                              ExpandableReservationCard.googleMapControllers[widget.deliveryReservation?.deliveryId ?? -1] = controller;
+                            },
                             initialCameraPosition: const CameraPosition(
                               target: LatLng(37.5665, 126.9780), // 서울
                               zoom: 14,
