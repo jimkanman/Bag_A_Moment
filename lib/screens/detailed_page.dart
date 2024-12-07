@@ -5,7 +5,9 @@ import 'package:bag_a_moment/screens/payment.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../main.dart';
-import 'package:bag_a_moment/StorageDetailModel.dart'; //api 모델로 받아옴
+import 'package:bag_a_moment/StorageDetailModel.dart';
+
+import 'deliveryRequest.dart'; //api 모델로 받아옴
 
 
 // 상세 페이지
@@ -304,8 +306,6 @@ Future<void> fetchStorageDetails() async {
               }).toList(),
             ),
 
-
-
           SizedBox(height: 80),
 
 
@@ -319,7 +319,7 @@ Future<void> fetchStorageDetails() async {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ReservationScreen(info: {},
+                      builder: (context) => DeliveryrequestScreen(info: info,
                         //???  빈배열 보냄
                       ),
                     ),
