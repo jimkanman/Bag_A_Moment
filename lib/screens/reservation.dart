@@ -3,9 +3,12 @@ import 'package:bag_a_moment/core/app_constants.dart';
 import 'package:bag_a_moment/main.dart';
 import 'package:bag_a_moment/models/location.dart';
 import 'package:bag_a_moment/models/delivery_reservation.dart';
+import 'package:bag_a_moment/models/luggage.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';
 import 'package:bag_a_moment/services/api_service.dart';
 import 'package:bag_a_moment/services/websocket_service.dart';
+import 'package:bag_a_moment/utils/string_time_formatter.dart';
+import 'package:bag_a_moment/widgets/expendable_reservation_card.dart';
 import 'package:bag_a_moment/widgets/reservation_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -31,56 +34,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
   final ApiService _apiService = ApiService();
   final WebSocketService _webSocketService = WebSocketService();
 
-  // 서버에서 예약 데이터를 가져오는 함수
-  /*
-  Future<void> _fetchReservations() async {
-    try {
-      final token = await _storage.read(key: 'auth_token'); // 로그인 토큰 읽기
-      if (token == null) {
-        print("로그인 토큰이 없습니다.");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인이 필요합니다.')),
-        );
-        return;
-      }
-
-      final String url = 'http://3.35.175.114:8080/reservations/1'; // 서버 API
-
-      // 요청 헤더에 토큰 추가
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Authorization': token,
-          'accept': 'application/json',
-        },
-      );
-      print("HTTP 응답 상태 코드: ${response.statusCode}");
-
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
-        if (jsonResponse['isSuccess'] == true) {
-          setState(() {
-            _reservations_old = List<Map<String, dynamic>>.from(jsonResponse['data']);
-            _isLoading = false;
-          });
-        } else {
-          print("서버에서 실패 응답을 보냈습니다: ${jsonResponse['message']}");
-          throw Exception('Failed to fetch reservations');
-        }
-      } else {
-        print("HTTP 상태 코드 에러: ${response.statusCode}");
-        print("응답 본문: ${response.body}");
-        throw Exception('Server error');
-      }
-    } catch (e) {
-      print('Error fetching reservations: $e');
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-  */
-
   // 예약 상태에 따른 색상 반환
   Color _getStatusColor(String status) {
     switch (status) {
@@ -95,6 +48,37 @@ class _ReservationScreenState extends State<ReservationScreen> {
     }
   }
 
+  /// 웹소켓 메시지 도착 시 해당 응답대로 delivery의 위치 업데이트
+  void onWebSocketJsonResponse(Map<String, dynamic> json) {
+    int deliveryId = json['deliveryId'];
+    double? lat = json['latitude'];
+    double? lng = json['longitude'];
+
+    setState(() {
+      for(var loc in _deliveryLocations){
+        if (loc.deliveryId == deliveryId) {
+          if(lat != null) loc.latitude = lat;
+          if(lng != null) loc.longitude = lng;
+          print("Websocket: updated location for deliveryId $deliveryId: lat=$lat, lng=$lng");
+        }
+
+        _moveCameraToLocation(deliveryId, lat, lng);
+        break;
+      }
+    });
+  }
+
+  /// GoogleMap 카메라 이동
+  void _moveCameraToLocation(int deliveryId, double? lat, double? lng) {
+    if (lat != null && lng != null) {
+      // GoogleMap 컨트롤러를 사용해 카메라 이동 -> ExpandableReservationCard의 static Map을 통해 연결
+      ExpandableReservationCard.googleMapControllers[deliveryId]?.animateCamera(
+        CameraUpdate.newLatLng(LatLng(lat, lng)),
+      );
+    }
+  }
+
+  /// 시작 시 API로 필요한 Data 가져옴
   Future<void> _jaehwanFetchReservations() async {
     print("Fetching data");
     // 로그인 처리
@@ -110,24 +94,28 @@ class _ReservationScreenState extends State<ReservationScreen> {
     userId = int.parse(savedUserId!);
 
     // API 요청 & 변수 초기화
-    print("REQEUSTING...");
+    print("REQUESTING...");
     _reservations = await _apiService.get(
         "users/$userId/reservations",
         fromJson: (data) => (data as List<dynamic>)
         .map((d) => StorageReservation.fromJson(d))
         .toList()
     );
-    print("GOT REPSPONSE");
+    print("GOT RESPONSE");
 
-    print("SETTING RESERVATIONSONDELIVERY");
+    print("SETTING RESERVATIONS_ON_DELIVERY");
     _reservationsOnDelivery = _reservations
       .where((reservation) => reservation.deliveryReservation?.status == 'ON_DELIVERY').toList();
 
-    print("SETTING DELIVERYLOCATIONS");
+    print("SETTING DELIVERY LOCATIONS");
     _deliveryLocations = _reservationsOnDelivery
         .map((r) => Location(
           deliveryId: r.deliveryReservation!.deliveryId,))
         .toList();
+
+    // reservations에는 배송 중이 아닌 것만 담음
+    _reservations = _reservations
+      .where((reservation) => reservation.deliveryReservation?.status != 'ON_DELIVERY').toList();
 
     // Websocket 연결
     print("SETTING WEBSOCKET");
@@ -135,7 +123,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
       _webSocketService.subscribe(
           'topic/${location.deliveryId}/location',
               (json) {
-            // 메시지 도착 시
+                // 메시지 도착 시
+
             print(json);
           });
     });
@@ -154,22 +143,47 @@ class _ReservationScreenState extends State<ReservationScreen> {
         storageId: index,
         storageName: "보관소 $index",
         previewImagePath: AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
-        luggage: const [],
+        luggage: [Luggage(type: 'BAG', width: 0, depth: 1, height: 2)],
         deliveryReservation: null,
-        startDateTime: "2024-12-05T14:30:00",
-        endDateTime: "2024-12-06T14:00:00",
+        startDateTime: "2024-12-05T14:00:00",
+        endDateTime: "2024-12-05T14:15:00",
         paymentAmount: 999));
 
     _reservationsOnDelivery = List.generate(4, (index) => StorageReservation(
       id: index,
       storageId: index,
       storageName: "보관소 $index",
-      deliveryReservation: DeliveryReservation(id:index, deliveryId: index, storageId: index),
+      deliveryReservation: DeliveryReservation(
+          id:index,
+          deliveryId: index,
+          storageId: index,
+        deliveryArrivalDateTime: "2024-12-05T22:02:00",
+
+      ),
     ));
 
-    _deliveryLocations = List.generate(4, (index) => Location(deliveryId: index));
+    _deliveryLocations = List.generate(4, (index) => Location(deliveryId: index, latitude: 37, longitude: 127));
 
     return;
+  }
+
+  void OnDeliveryReservationButtonPress(int idx) {
+    // TODO
+  }
+
+  void OnStorageReservationButtonPress(int idx) {
+    // TODO
+  }
+
+  Color determineStorageReservationCardBackgroundColor(StorageReservation s) {
+    if(s.status.toLowerCase() == 'complete') return AppColors.backgroundGray;
+    print(s.endDateTime);
+    print(DateTime.now());
+    print(DateTime.parse(s.endDateTime));
+    bool isLate = DateTime.now().add(const Duration(hours:9)).isAfter(DateTime.parse(s.endDateTime));
+    print(isLate);
+    if(isLate) return AppColors.backgroundLightRed;
+    return Colors.white;
   }
 
   @override
@@ -242,26 +256,13 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.normal,
+                      color: AppColors.textGray
                     ),
                   ),
               ],
             ),
 
           // 배송 예약 카드 위젯
-          /*
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: _reservationsOnDelivery.length,
-            itemBuilder: (context, index) {
-              final _deliveryReservation = _reservationsOnDelivery[index];
-              return ReservationCard(
-
-                buttonBackgroundColor: AppColors.backgroundLight,
-              );
-
-          }),
-
-           */
           if(_reservationsOnDelivery.isNotEmpty)
             Container(
               decoration: BoxDecoration(
@@ -270,11 +271,18 @@ class _ReservationScreenState extends State<ReservationScreen> {
               ),
               child: Column(
                 children: [
-                  for (var reservation in _reservationsOnDelivery)
-                    ReservationCard(
+                  for (int idx = 0; idx < _reservationsOnDelivery.length; idx++)
+                    ExpandableReservationCard(
                       buttonBackgroundColor: AppColors.backgroundLight,
-                      // TODO 다른 예약 데이터 전달
-                      // TODO 현재 배달 위치 확인
+                      buttonText: const Text("내 짐은 배달 중", style: TextStyle(color: AppColors.textDark, fontSize: 10),),
+                      previewImagePath: _reservationsOnDelivery[idx].previewImagePath,
+                      storageName: _reservationsOnDelivery[idx].storageName,
+                      pickupTime: StringTimeFormatter.formatTime(_reservationsOnDelivery[idx].deliveryReservation?.deliveryArrivalDateTime),
+                      backgroundColor: Colors.white,
+                      onButtonPressed: () => OnDeliveryReservationButtonPress(idx),
+                      deliveryReservation: _reservationsOnDelivery[idx].deliveryReservation,
+                      deliveryLatitude: _deliveryLocations[idx].latitude,
+                      deliveryLongitude: _deliveryLocations[idx].longitude,
                     ),
                 ]
               )
@@ -308,26 +316,13 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.normal,
+                  color: AppColors.textGray
                 ),
               ),
             ],
           ),
 
           // 보관소 예약 카드 위젯
-          /*
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: _reservations.length,
-            itemBuilder: (context, index) {
-              final storageReservation = _reservations[index];
-              return ReservationCard(
-                // TODO
-                buttonBackgroundColor: AppColors.backgroundLight,
-              );
-          }),
-          */
-
-          // 보관소 예약 카드 리스트 (for 문 사용)
           if(_reservations.isNotEmpty)
             Container(
               decoration: BoxDecoration(
@@ -336,9 +331,17 @@ class _ReservationScreenState extends State<ReservationScreen> {
               ),
               child: Column(
                 children: [
-                  for (var reservation in _reservations)
+                  // for (var reservation in _reservations)
+                  for (int idx = 0; idx < _reservations.length; idx++)
                     ReservationCard(
                       buttonBackgroundColor: AppColors.primaryDark,
+                      luggage: _reservations[idx].luggage,
+                      previewImagePath: _reservations[idx].previewImagePath,
+                      storageName: _reservations[idx].storageName,
+                      pickupTime: StringTimeFormatter.formatTime(_reservations[idx].endDateTime),
+                      buttonText: const Text("연장 요청"),
+                      backgroundColor: determineStorageReservationCardBackgroundColor(_reservations[idx]),
+                      onButtonPressed: () => OnStorageReservationButtonPress(idx),
                       // 다른 보관소 데이터 전달...
                     ),
                 ],
