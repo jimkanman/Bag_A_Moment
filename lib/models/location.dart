@@ -1,8 +1,8 @@
 
 class Location {
   final int deliveryId;
-  final double? latitude;
-  final double? longitude;
+  double? latitude;
+  double? longitude;
 
   Location({
     required this.deliveryId,

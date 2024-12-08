@@ -5,10 +5,10 @@ class ApiService {
   final String _BASE_URL = "http://3.35.175.114:8080";
   Map<String, String>? _defaultHeader;
 
-
   ApiService({Map<String, String>? defaultHeader}):
         _defaultHeader = defaultHeader;
 
+  /// 주어진 파라미터로 GET 전송 + data 필드에 fromJson 매핑하여 반환
   Future<T> get<T>(String endpoint, {Map<String, String>? headers, required T Function(dynamic) fromJson}) async {
     print("ApiService: GET to '$_BASE_URL/$endpoint");
     headers = {
