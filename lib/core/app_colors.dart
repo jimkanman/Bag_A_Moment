@@ -14,6 +14,7 @@ class AppColors {
   static const Color backgroundLightRed = Color(0xFFFA9E9E);
   static const Color backgroundGray = Color(0xFFF8F8F8);
   static const Color backgroundDarkBlack = Color(0xFF555555);
+  static const Color backgroundMypage = Color(0xFFF7F8FA);
 
   // 텍스트 색
   static const Color textDark = Color(0xFF2CB598);
