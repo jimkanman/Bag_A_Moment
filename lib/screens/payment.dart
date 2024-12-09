@@ -273,7 +273,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
           style: TextStyle(
             color: Colors.black, // 글씨 색상을 흰색으로 설정
             fontWeight: FontWeight.bold, // 글씨를 볼드체로 설정
-            fontSize: 20, // 글씨 크기를 적절히 설정 (옵션)
+            fontSize: 15, // 글씨 크기를 적절히 설정 (옵션)
           ),
         ),
         centerTitle: true,
@@ -286,15 +286,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
           },
         ),
       ),
-
-
-
-
-
-
-
-
-
 
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -330,18 +321,23 @@ class _ReservationScreenState extends State<ReservationScreen> {
                       '보관할 짐을 선택해주세요.',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 12,
                       ),
+                      overflow: TextOverflow.ellipsis, // 넘칠 경우 "..."으로 표시
+                      maxLines: 1, // 한 줄로 제한
                     ),
-                    TextButton.icon(
-                      icon: const Icon(Icons.camera_alt_outlined, color: Colors.teal),
-                      label: const Text(
-                        'AR 측정',
-                        style: TextStyle(color: Colors.teal),
+                    Align(
+                      alignment: Alignment.centerRight, // 버튼을 오른쪽으로 정렬
+                      child: TextButton.icon(
+                        icon: const Icon(Icons.camera_alt_outlined, color: Colors.teal),
+                        label: const Text(
+                          'AR 측정',
+                          style: TextStyle(color: Colors.teal, fontSize: 10,),
+                        ),
+                        onPressed: () {
+                          // AR 측정 기능 구현 예정
+                        },
                       ),
-                      onPressed: () {
-                        // AR 측정 기능 구현 예정
-                      },
                     ),
                   ],
                 ),
@@ -352,17 +348,17 @@ class _ReservationScreenState extends State<ReservationScreen> {
               // 가방 리스트
                   //TODO: 가방 개수를 AR 카메라에서 받아와야함
                   Container(
-                    margin: const EdgeInsets.all(16.0), // 카드와 화면 가장자리 간격
-                    padding: const EdgeInsets.all(16.0), // 내부 여백
+                    margin: const EdgeInsets.all(8.0), // 카드와 화면 가장자리 간격
+                    padding: const EdgeInsets.all(8.0), // 내부 여백
                     decoration: BoxDecoration(
                       color: const Color(0xFFEFFAF6), // 연한 민트색 배경
                       borderRadius: BorderRadius.circular(12), // 둥근 모서리
                       boxShadow: [
                         BoxShadow(
                           color: Colors.grey.withOpacity(0.2), // 그림자 색상
-                          blurRadius: 10, // 그림자 흐림 정도
+                          blurRadius: 5, // 그림자 흐림 정도
                           spreadRadius: 2, // 그림자 퍼짐 정도
-                          offset: const Offset(0, 5), // 그림자 위치
+                          offset: const Offset(0, 2), // 그림자 위치
                         ),
                       ],
                     ),
@@ -402,7 +398,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                           style: TextStyle(
                             color: Colors.teal,
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            fontSize: 10,
                           ),
                         ),
                       ),
@@ -439,7 +435,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     Row(
                       children: [Text('이용시간을 선택해주세요.',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                           fontFamily: 'Paperlogy',

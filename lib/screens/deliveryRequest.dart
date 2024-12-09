@@ -372,7 +372,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
           style: TextStyle(
             color: Colors.black, // 글씨 색상을 흰색으로 설정
             fontWeight: FontWeight.bold, // 글씨를 볼드체로 설정
-            fontSize: 20, // 글씨 크기를 적절히 설정 (옵션)
+            fontSize: 15, // 글씨 크기를 적절히 설정 (옵션)
           ),
         ),
         centerTitle: true,
