@@ -5,7 +5,9 @@ import 'package:bag_a_moment/screens/payment.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../main.dart';
-import 'package:bag_a_moment/StorageDetailModel.dart'; //api 모델로 받아옴
+import 'package:bag_a_moment/StorageDetailModel.dart';
+
+import 'deliveryRequest.dart'; //api 모델로 받아옴
 
 
 // 상세 페이지
@@ -42,6 +44,8 @@ class _StorageDetailPageState extends State<StorageDetailPage> {
     images: [],
     storageOptions: [],
   );
+
+
 
   bool isLoading = true;
 
@@ -86,6 +90,8 @@ Future<void> fetchStorageDetails() async {
     print('Error fetching storage details: $error');
     //지금 여기
   }
+
+
 }
 
 
@@ -93,6 +99,17 @@ Future<void> fetchStorageDetails() async {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic> info = {
+      'name': storageDetails?.name ?? '이름 없음',
+      'closingTime': storageDetails?.closingTime ?? '미정',
+      'distance': storageDetails?.distance ?? '0m',
+      'address': storageDetails?.address ?? '주소 정보 없음',
+      //TODO: 거리, 주소 미정 -apimodel에 null로 넣어둠
+      'storageId': storageDetails?.id ?? 'ID 없음', // Storage ID가 필수 null 체크
+      'backpackPrice': storageDetails?.backpackPricePerHour?? '0',
+      'suitcasePrice': storageDetails?.carrierPricePerHour?? '0',
+      'specialPrice': storageDetails?.miscellaneousItemPricePerHour?? '0',
+    };
     return Scaffold(
       appBar: AppBar(
         title: isLoading
@@ -289,8 +306,6 @@ Future<void> fetchStorageDetails() async {
               }).toList(),
             ),
 
-
-
           SizedBox(height: 80),
 
 
@@ -304,8 +319,8 @@ Future<void> fetchStorageDetails() async {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ReservationScreen(info: {},
-                        //???
+                      builder: (context) => DeliveryrequestScreen(info: info,
+                        //???  빈배열 보냄
                       ),
                     ),
                   );
@@ -327,7 +342,7 @@ Future<void> fetchStorageDetails() async {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ReservationScreen(info: {},
+                      builder: (context) => ReservationScreen( info: info,
 
                       ),
                     ),

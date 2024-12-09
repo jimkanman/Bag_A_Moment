@@ -1,22 +1,21 @@
 import 'dart:convert';
 
 import 'package:bag_a_moment/screens/reservation.dart';
-import 'package:bag_a_moment/screens/reservationSuccess.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
-import 'deliveryRequest.dart';
+import 'deliveryRequestSuccess.dart';
 
 
 
 
-class ReservationScreen extends StatefulWidget {
+class DeliveryrequestScreen extends StatefulWidget {
   //final int storageId;
   final Map<String, dynamic> info;
-  ReservationScreen({required this.info});
+  DeliveryrequestScreen({required this.info});
 
 
 
@@ -24,7 +23,7 @@ class ReservationScreen extends StatefulWidget {
   _ReservationScreenState createState() => _ReservationScreenState();
 }
 
-class _ReservationScreenState extends State<ReservationScreen> {
+class _ReservationScreenState extends State<DeliveryrequestScreen> {
 
   final TextEditingController smallBagController = TextEditingController();
   final TextEditingController largeBagController = TextEditingController();
@@ -106,6 +105,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
       });
     }
   }
+  //에러 메세지
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -122,7 +122,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     );
   }
 
-
+  //서버에 데이터 전송
   void _submitData() async{
     if (selectedStartDate == null || selectedEndDate == null || startTime == null || endTime == null) {
       print('날짜 & 시간 입력하시오');
@@ -196,7 +196,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         body: jsonEncode(reservationData),
       );
 
-      //1. 예약 완료 화면으로 이동
+      //결제 화면으로 이동
       if (response.statusCode == 200 || response.statusCode == 201) {
         final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
         print('예약 성공! ');
@@ -207,7 +207,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ReservationsuccessPage(
+            builder: (context) => DeliveryrequestsuccessPage(
               info: {
                 ...widget.info,
                 ...reservationData,
@@ -237,6 +237,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
       }
     } catch (e) {
+
       print('Error: $e');
       _showErrorDialog('예약 실패 ㅠㅠ');
     }
@@ -245,7 +246,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
 
 
-
+// 날짜 선택
   Widget _buildDatePickerButton(String label, DateTime? date, bool isStartDate) {
     return TextButton(
       onPressed: () => _pickDate(context, isStartDate),
@@ -263,262 +264,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
       ),
     );
   }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.info['name'] ?? '세부 정보',
-          style: TextStyle(
-            color: Colors.black, // 글씨 색상을 흰색으로 설정
-            fontWeight: FontWeight.bold, // 글씨를 볼드체로 설정
-            fontSize: 20, // 글씨 크기를 적절히 설정 (옵션)
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-
-
-
-
-
-
-
-
-
-
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 제목과 AR 측정 버튼
-            Container(
-            margin: const EdgeInsets.all(16.0),
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: Colors.white, // 카드 배경 흰색
-              borderRadius: BorderRadius.circular(12), // 모서리 둥글게
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2), // 그림자
-                  blurRadius: 10,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 5), // 그림자 위치
-                ),
-              ],
-            ),
-
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '보관할 짐을 선택해주세요.',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    TextButton.icon(
-                      icon: const Icon(Icons.camera_alt_outlined, color: Colors.teal),
-                      label: const Text(
-                        'AR 측정',
-                        style: TextStyle(color: Colors.teal),
-                      ),
-                      onPressed: () {
-                        // AR 측정 기능 구현 예정
-                      },
-                    ),
-                  ],
-                ),
-
-
-                SizedBox(height: 16),
-
-              // 가방 리스트
-                  //TODO: 가방 개수를 AR 카메라에서 받아와야함
-                  Container(
-                    margin: const EdgeInsets.all(16.0), // 카드와 화면 가장자리 간격
-                    padding: const EdgeInsets.all(16.0), // 내부 여백
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEFFAF6), // 연한 민트색 배경
-                      borderRadius: BorderRadius.circular(12), // 둥근 모서리
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.2), // 그림자 색상
-                          blurRadius: 10, // 그림자 흐림 정도
-                          spreadRadius: 2, // 그림자 퍼짐 정도
-                          offset: const Offset(0, 5), // 그림자 위치
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        _buildBagRow('소형', smallBagController, widget.info['backpackPrice']),
-                        _buildBagRow('중형', largeBagController, widget.info['suitcasePrice']),
-                        _buildBagRow('대형', specialBagController, widget.info['specialPrice']),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton.icon(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('가방 크기 기준'),
-                              content: const Text('배낭: 40x50x50 이하 \n 캐리어: 80x70x60 이하 \n 특수크기: 그외 '
-                                  ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text('닫기'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.info_outline, color: Colors.teal, size: 18),
-                        label: const Text(
-                          '가방크기 기준 알아보기',
-                          style: TextStyle(
-                            color: Colors.teal,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                ]
-            ),
-
-          ),
-
-
-
-
-              SizedBox(height: 10),
-
-              Container(
-                margin: const EdgeInsets.all(16.0),
-                padding: const EdgeInsets.all(16.0),
-                decoration: BoxDecoration(
-                  color: Colors.white, // 카드 배경 흰색
-                  borderRadius: BorderRadius.circular(12), // 모서리 둥글게
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2), // 그림자
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 5), // 그림자 위치
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [Text('이용시간을 선택해주세요.',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                          fontFamily: 'Paperlogy',
-                        ),
-                      ),
-                ],
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildDatePickerButton('시작 날짜', selectedStartDate, true),
-                        const SizedBox(width: 8), // 버튼 간의 간격을 좁게 설정
-                        _buildTimePickerButton('시작 시간', startTime, true),
-                        const SizedBox(width: 8), // 버튼 간의 간격을 좁게 설정
-                        Text('부터'),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildDatePickerButton('종료 날짜', selectedEndDate, false),
-                        const SizedBox(width: 8),
-                        _buildTimePickerButton('종료 시간', endTime, false),
-                        const SizedBox(width: 8),
-                    Text('까지'),
-                      ],
-                    ),
-                  ]
-                ),
-              )
-              // 이용 시간 선택 섹션
-            ],
-          ),
-        ),
-      ),
-
-      //결제 버튼
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0), // 버튼과 화면 가장자리 간격
-        child: ElevatedButton(
-          onPressed: () {
-            print('결제 버튼 눌림.\n전달받은 데이터: $widget.info');
-            _submitData();
-          },
-
-            style: ElevatedButton.styleFrom(
-            backgroundColor:
-           Color(0xFF4DD9C6),
-            minimumSize: Size(double.infinity, 50), // 버튼의 최소 크기 (너비, 높이)
-            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12), // 둥근 모서리 설정 (12px)
-            ),
-          ),
-          child: Text(
-            '결제하기',
-            style: TextStyle(color: Colors.white, fontSize: 18),
-          ),
-          ),
-
-        ),
-      );
-  }
-
-  IconData _getIconForLabel(String label) {
-    switch (label) {
-      case '배낭':
-        return Icons.backpack; // 배낭 아이콘
-      case '캐리어':
-        return Icons.luggage; // 캐리어 아이콘
-      case '특수 크기':
-        return Icons.add_business; // 특수 크기 아이콘
-      default:
-        return Icons.help_outline; // 기본 아이콘
-    }
-  }
-
 
   //가방 개수 설정 위젯
   Widget _buildBagRow(String label, TextEditingController controller, int? price) {
@@ -538,13 +283,13 @@ class _ReservationScreenState extends State<ReservationScreen> {
               Text(label, style: const TextStyle(fontSize: 14)),
             ],
           ),
-          Row(
-            children: [
+
               SizedBox(
                 width: 50, // 숫자 입력 칸의 너비
                 child: TextField(
                   controller: controller,
                   keyboardType: TextInputType.number, // 숫자 키보드
+                  textAlign: TextAlign.center, // 숫자를 가운데 정렬
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     isDense: true, // 텍스트 필드 높이를 줄임
@@ -576,8 +321,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 style: const TextStyle(color: Colors.grey),
               ),
             ],
-          ),
-        ],
+
       ),
     );
   }
@@ -600,8 +344,274 @@ class _ReservationScreenState extends State<ReservationScreen> {
       ),
     );
   }
+
+//기본 위젯
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.info['name'] ?? '세부 정보',
+          style: TextStyle(
+            color: Colors.black, // 글씨 색상을 흰색으로 설정
+            fontWeight: FontWeight.bold, // 글씨를 볼드체로 설정
+            fontSize: 20, // 글씨 크기를 적절히 설정 (옵션)
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+
+
+      //새로 카드로 작성
+
+
+
+
+
+
+
+
+
+
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 제목과 AR 측정 버튼
+              Container(
+                margin: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
+
+                decoration: BoxDecoration(
+                  color: Colors.white, // 카드 배경 흰색
+                  borderRadius: BorderRadius.circular(12), // 모서리 둥글게
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2), // 그림자
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 5), // 그림자 위치
+                    ),
+                  ],
+                ),
+
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start, // 텍스트를 왼쪽 정렬
+                        children: [
+                           Text(
+                              '보관 및 배송할 짐을 선택해주세요.',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                              overflow: TextOverflow.ellipsis, // 넘칠 경우 "..."으로 표시
+                              maxLines: 1, // 한 줄로 제한
+                            ),
+
+                          Align(
+                            alignment: Alignment.centerRight, // 버튼을 오른쪽으로 정렬
+                            child: TextButton.icon(
+                            icon: const Icon(Icons.camera_alt_outlined, color: Colors.teal),
+                            label: const Text(
+                              'AR 측정',
+                              style: TextStyle(color: Colors.teal),
+                            ),
+                            onPressed: () {
+                              // AR 측정 기능 구현 예정
+                            },
+                          ),
+                          ),
+                        ],
+                      ),
+
+
+                      SizedBox(height: 16),
+
+                      // 가방 리스트
+                      //TODO: 가방 개수를 AR 카메라에서 받아와야함
+                      Container(
+                        margin: const EdgeInsets.all(16.0), // 카드와 화면 가장자리 간격
+                        padding: const EdgeInsets.all(16.0), // 내부 여백
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFFAF6), // 연한 민트색 배경
+                          borderRadius: BorderRadius.circular(12), // 둥근 모서리
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.2), // 그림자 색상
+                              blurRadius: 10, // 그림자 흐림 정도
+                              spreadRadius: 2, // 그림자 퍼짐 정도
+                              offset: const Offset(0, 5), // 그림자 위치
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            _buildBagRow('소형', smallBagController, widget.info['backpackPrice']),
+                            _buildBagRow('중형', largeBagController, widget.info['suitcasePrice']),
+                            _buildBagRow('대형', specialBagController, widget.info['specialPrice']),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton.icon(
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  title: const Text('가방 크기 기준'),
+                                  content: const Text('배낭: 40x50x50 이하 \n 캐리어: 80x70x60 이하 \n 특수크기: 그외 '
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('닫기'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.info_outline, color: Colors.teal, size: 18),
+                            label: const Text(
+                              '가방크기 기준 알아보기',
+                              style: TextStyle(
+                                color: Colors.teal,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    ]
+                ),
+
+              ),
+
+
+
+
+              SizedBox(height: 10),
+
+              Container(
+                margin: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white, // 카드 배경 흰색
+                  borderRadius: BorderRadius.circular(12), // 모서리 둥글게
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2), // 그림자
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 5), // 그림자 위치
+                    ),
+                  ],
+                ),
+                child: Column(
+                    children: [
+                      Row(
+                        children: [Text('이용시간을 선택해주세요.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                            fontFamily: 'Paperlogy',
+                          ),
+                        ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildDatePickerButton('시작 날짜', selectedStartDate, true),
+                          const SizedBox(width: 8), // 버튼 간의 간격을 좁게 설정
+                          _buildTimePickerButton('시작 시간', startTime, true),
+                          const SizedBox(width: 8), // 버튼 간의 간격을 좁게 설정
+                          Text('부터'),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildDatePickerButton('종료 날짜', selectedEndDate, false),
+                          const SizedBox(width: 8),
+                          _buildTimePickerButton('종료 시간', endTime, false),
+                          const SizedBox(width: 8),
+                          Text('까지'),
+                        ],
+                      ),
+                    ]
+                ),
+              )
+              // 이용 시간 선택 섹션
+            ],
+          ),
+        ),
+      ),
+
+      //결제 버튼
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0), // 버튼과 화면 가장자리 간격
+        child: ElevatedButton(
+          onPressed: () {
+            print('결제 버튼 눌림.\n전달받은 데이터: $widget.info');
+            _submitData();
+          },
+
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+            Color(0xFF4DD9C6),
+            minimumSize: Size(double.infinity, 50), // 버튼의 최소 크기 (너비, 높이)
+            padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12), // 둥근 모서리 설정 (12px)
+            ),
+          ),
+          child: Text(
+            '배송 요청하기',
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+        ),
+
+      ),
+    );
+  }
+//가방 아이콘 설정
+  IconData _getIconForLabel(String label) {
+    switch (label) {
+      case '배낭':
+        return Icons.backpack; // 배낭 아이콘
+      case '캐리어':
+        return Icons.luggage; // 캐리어 아이콘
+      case '특수 크기':
+        return Icons.add_business; // 특수 크기 아이콘
+      default:
+        return Icons.help_outline; // 기본 아이콘
+    }
+  }
+
+
+
 }
 
 
-//예약 완료 화면
-//TODO: 다른 파일로 분리할 것

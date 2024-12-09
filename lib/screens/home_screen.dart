@@ -502,7 +502,14 @@ class _HomeScreenState extends State<HomeScreen> {
             child: _buildMarkerInfoWidget(context),
           )
             :SizedBox.shrink(),
+
+
+            //5.하단 슬라이드 바
+            DraggableScrollableBottomSheet(),
+           
           ],
+
+
         ),
       );
   }
@@ -820,4 +827,109 @@ class _HomeScreenState extends State<HomeScreen> {
 
 }
 
+class DraggableScrollableBottomSheet extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.2,
+      minChildSize: 0.2,
+      maxChildSize: 0.8,
+      builder: (BuildContext context, ScrollController scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 4,
+                offset: Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // 1. 작은 검은색 바
+              SmallDragBar(),
+              // 2. 추천 짐스팟 Row
+              RecommendationTitle(),
+              // 3. 목록 표시
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: 10,
+                  itemBuilder: (BuildContext context, int index) {
+                    return ListTile(
+                      leading: Icon(Icons.storage),
+                      title: Text("상도 스토리지 $index"),
+                      subtitle: Row(
+                        children: [
+                          Chip(
+                            label: Text("근접 보관"),
+                          ),
+                          SizedBox(width: 8),
+                          Chip(
+                            label: Text("냉장"),
+                          ),
+                          SizedBox(width: 8),
+                          Chip(
+                            label: Text("24시간"),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
 
+class SmallDragBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 40,
+      height: 4,
+      margin: EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(2),
+      ),
+    );
+  }
+}
+
+class RecommendationTitle extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+        children: [
+          Text(
+            "추천 짐스팟",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Spacer(),
+          IconButton(
+            icon: Icon(Icons.filter_alt),
+            onPressed: () {
+              // 필터 버튼 동작 정의
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
