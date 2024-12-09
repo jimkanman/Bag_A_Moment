@@ -502,7 +502,58 @@ class _HomeScreenState extends State<HomeScreen> {
             child: _buildMarkerInfoWidget(context),
           )
             :SizedBox.shrink(),
+            // 3. 드래그 가능한 목록
+            DraggableScrollableSheet(
+              initialChildSize: 0.2, // 초기 크기 (화면의 20%)
+              minChildSize: 0.2, // 최소 크기
+              maxChildSize: 0.8, // 최대 크기 (화면의 80%)
+              builder: (BuildContext context, ScrollController scrollController) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(0, -2),
+                      ),
+                    ],
+                  ),
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: 10, // 목록 아이템 수
+                    itemBuilder: (BuildContext context, int index) {
+                      return ListTile(
+                        leading: Icon(Icons.storage),
+                        title: Text("상도 스토리지 $index"),
+                        subtitle: Row(
+                          children: [
+                            Chip(
+                              label: Text("근접 보관"),
+                            ),
+                            SizedBox(width: 8),
+                            Chip(
+                              label: Text("냉장"),
+                            ),
+                            SizedBox(width: 8),
+                            Chip(
+                              label: Text("24시간"),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
           ],
+
+
         ),
       );
   }
