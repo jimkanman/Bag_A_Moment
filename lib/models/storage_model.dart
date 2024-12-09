@@ -62,7 +62,7 @@ class StorageModel {
       ownerId: json['ownerId'],
       phoneNumber: json['phoneNumber'],
       description: json['description'],
-      notice: json['notice'],
+      notice: json['notice']??'',
       hasDeliveryService: json['hasDeliveryService'],
       postalCode: json['postalCode'],
       detailedAddress: json['detailedAddress'],
@@ -74,7 +74,7 @@ class StorageModel {
       backpackPricePerHour: json['backpackPricePerHour'],
       carrierPricePerHour: json['carrierPricePerHour'],
       miscellaneousItemPricePerHour: json['miscellaneousItemPricePerHour'],
-      termsAndConditions: json['termsAndConditions'],
+      termsAndConditions: json['termsAndConditions']??'',
       images: json['images'] != null ? List<String>.from(json['images']) : [],
       storageOptions: json['storageOptions'] != null
           ? List<String>.from(json['storageOptions'])
