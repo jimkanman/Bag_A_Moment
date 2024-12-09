@@ -200,8 +200,8 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
 
 
 
-    print('예약 정보: ${widget.info}');
-    print('가방 정보: $reservationData');
+    print('widget.info예약 정보: ${widget.info}');
+    print('$reservationData 정보: $reservationData');
 
     try {
       final response = await http.post(
@@ -389,15 +389,6 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
 
       //새로 카드로 작성
 
-
-
-
-
-
-
-
-
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -433,7 +424,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                               '보관 및 배송할 짐을 선택해주세요.',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 12,
                               ),
                               overflow: TextOverflow.ellipsis, // 넘칠 경우 "..."으로 표시
                               maxLines: 1, // 한 줄로 제한
@@ -445,7 +436,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                             icon: const Icon(Icons.camera_alt_outlined, color: Colors.teal),
                             label: const Text(
                               'AR 측정',
-                              style: TextStyle(color: Colors.teal),
+                              style: TextStyle(color: Colors.teal, fontSize: 10,),
                             ),
                             onPressed: () {
                               // AR 측정 기능 구현 예정
@@ -456,22 +447,22 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                       ),
 
 
-                      SizedBox(height: 16),
+                      SizedBox(height: 5),
 
                       // 가방 리스트
                       //TODO: 가방 개수를 AR 카메라에서 받아와야함
                       Container(
-                        margin: const EdgeInsets.all(16.0), // 카드와 화면 가장자리 간격
-                        padding: const EdgeInsets.all(16.0), // 내부 여백
+                        margin: const EdgeInsets.all(8.0), // 카드와 화면 가장자리 간격
+                        padding: const EdgeInsets.all(8.0), // 내부 여백
                         decoration: BoxDecoration(
                           color: const Color(0xFFEFFAF6), // 연한 민트색 배경
                           borderRadius: BorderRadius.circular(12), // 둥근 모서리
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.withOpacity(0.2), // 그림자 색상
-                              blurRadius: 10, // 그림자 흐림 정도
+                              blurRadius: 5, // 그림자 흐림 정도
                               spreadRadius: 2, // 그림자 퍼짐 정도
-                              offset: const Offset(0, 5), // 그림자 위치
+                              offset: const Offset(0, 2), // 그림자 위치
                             ),
                           ],
                         ),
@@ -511,7 +502,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                fontSize: 10,
                               ),
                             ),
                           ),
@@ -577,13 +568,35 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                           Text('까지'),
                         ],
                       ),
-                      AddressInputCard(
-                        userInputPostalCodeController: userInputPostalCodeController,
-                        userInputAddressController: userInputAddressController,
-                      ),
+
                     ]
                 ),
-              )
+              ),
+              Container(
+                margin: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white, // 카드 배경 흰색
+                  borderRadius: BorderRadius.circular(12), // 모서리 둥글게
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2), // 그림자
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 5), // 그림자 위치
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    AddressInputCard(
+                      userInputPostalCodeController: userInputPostalCodeController,
+                      userInputAddressController: userInputAddressController,
+                    ),
+                  ]
+                ),
+              ),
+
               // 이용 시간 선택 섹션
             ],
           ),
