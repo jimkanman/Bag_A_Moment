@@ -313,7 +313,10 @@ Future<void> fetchStorageDetails() async {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              ElevatedButton(
+          Expanded(
+          child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton(
                 onPressed: () {
                   print('배송 버튼 클릭');
                   Navigator.push(
@@ -327,7 +330,7 @@ Future<void> fetchStorageDetails() async {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFB3EDE5),
-                  minimumSize: Size(160, 50), // 버튼의 최소 크기 (너비, 높이)
+                  minimumSize: Size(120, 50), // 버튼의 최소 크기 (너비, 높이)
                   padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12), // 둥근 모서리 설정 (12px)
@@ -335,8 +338,14 @@ Future<void> fetchStorageDetails() async {
                 ),
                 child: Text('배송', style: TextStyle(color: Color(0xFF43CBBA), fontSize: 20, fontFamily: 'Paperlogy',)),
               ),
+          ),
+          ),
+
               SizedBox(width: 10,),
-              ElevatedButton(
+      Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: ElevatedButton(
                 onPressed: () {
                   print('보관 버튼 클릭');
                   Navigator.push(
@@ -359,6 +368,8 @@ Future<void> fetchStorageDetails() async {
                 child: Text('보관',
                     style: TextStyle(color: Colors.white, fontSize: 20, fontFamily: 'Paperlogy',)),
               ),
+          ),
+      ),
               // ... (Other sections)
             ],
           ),
