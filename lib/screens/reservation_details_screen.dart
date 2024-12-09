@@ -174,6 +174,7 @@ class ReservationDetailsScreen extends StatelessWidget {
 
 
                   /*
+
                   Expanded(
                     child: NetworkImageRect(
                       url: 'https://via.placeholder.com/150',
@@ -191,7 +192,6 @@ class ReservationDetailsScreen extends StatelessWidget {
                       borderRadius: 8,
                     ),
                   ),
-
                    */
                 ],
               ),
