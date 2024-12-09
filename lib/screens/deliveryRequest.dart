@@ -29,12 +29,19 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
   final TextEditingController largeBagController = TextEditingController();
   final TextEditingController specialBagController = TextEditingController();
 
+  final TextEditingController userInputPostalCodeController = TextEditingController();
+  final TextEditingController userInputAddressController = TextEditingController();
+
+
   @override
   void initState() {
     super.initState();
     smallBagController.text = '0';
     largeBagController.text = '0';
     specialBagController.text = '0';
+    userInputPostalCodeController.text = '우편번호';
+    userInputAddressController.text = '주소';
+
     print('Received info: ${widget.info}');
   }
 
@@ -137,11 +144,25 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
     final startDateTime = formatDateTime(selectedDate, startTime!);
     final endDateTime = formatDateTime(selectedDate, endTime!);
 
+    //주소 입력 변수
+    // 우편번호를 처리
+    final destinationPostalCode = userInputPostalCodeController.text.isNotEmpty
+        ? userInputPostalCodeController.text
+        : '우편번호';
+
+    final destinationAddress = userInputAddressController.text.isNotEmpty
+        ? userInputAddressController.text
+        : '우편번호';
+
+
 
     // 사용자가 텍스트 필드에 입력한 값을 가져옴
     final smallBagCount = int.tryParse(smallBagController.text) ?? 0;
     final largeBagCount = int.tryParse(largeBagController.text) ?? 0;
     final specialBagCount = int.tryParse(specialBagController.text) ?? 0;
+
+    // 도착 날짜 계산 (예: 예약 종료일 + 1일)
+    final deliveryArrivalDateTime = formatDateTime(selectedEndDate!.add(Duration(days: 1)), TimeOfDay(hour: 15, minute: 8));
 
     // 디버깅: 텍스트 필드 값 확인
     print('텍스트 필드에 입력된 가방 정보');
@@ -157,8 +178,12 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
         for (int i = 0; i < largeBagCount; i++) {'type': 'CARRIER', 'width': 40, 'depth': 25, 'height': 20},
         for (int i = 0; i < specialBagCount; i++) {'type': 'MISCELLANEOUS_ITEM', 'width': 50, 'depth': 30, 'height': 25},
       ],
+      'destinationPostalCode': destinationPostalCode,
+      'destinationAddress': destinationAddress,
       'startDateTime': startDateTime,
       'endDateTime': endDateTime,
+    'deliveryArrivalDateTime': deliveryArrivalDateTime,
+
     };
 
 
@@ -373,14 +398,6 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
       //새로 카드로 작성
 
 
-
-
-
-
-
-
-
-
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -560,6 +577,10 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                           Text('까지'),
                         ],
                       ),
+                      AddressInputCard(
+                        userInputPostalCodeController: userInputPostalCodeController,
+                        userInputAddressController: userInputAddressController,
+                      ),
                     ]
                 ),
               )
@@ -568,6 +589,8 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
           ),
         ),
       ),
+
+
 
       //결제 버튼
       bottomNavigationBar: Padding(
@@ -614,4 +637,60 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
 
 }
 
+class AddressInputCard extends StatelessWidget {
+  final TextEditingController userInputPostalCodeController;
+  final TextEditingController userInputAddressController;
 
+  AddressInputCard({
+    required this.userInputPostalCodeController,
+    required this.userInputAddressController,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Colors.white,
+      elevation: 4.0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      margin: const EdgeInsets.all(16.0),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '주소 입력',
+              style: TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: userInputPostalCodeController,
+              decoration: InputDecoration(
+                labelText: '우편번호',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16.0),
+            TextField(
+              controller: userInputAddressController,
+              decoration: InputDecoration(
+                labelText: '주소',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              keyboardType: TextInputType.streetAddress,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
