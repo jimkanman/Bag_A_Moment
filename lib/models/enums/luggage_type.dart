@@ -1,0 +1,4 @@
+
+enum LuggageType {
+  BAG, CARRIER, MISCELLANEOUS_ITEM;
+}

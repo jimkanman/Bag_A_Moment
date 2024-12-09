@@ -4,7 +4,7 @@ class Luggage {
   final int? depth;
   final int? height;
 
-  Luggage({
+  const Luggage({
     required this.type,
     required this.width,
     required this.depth,
