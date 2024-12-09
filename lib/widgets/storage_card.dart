@@ -1,9 +1,13 @@
+import 'package:bag_a_moment/models/storage_model.dart';
+import 'package:bag_a_moment/screens/detailed_page.dart';
 import 'package:bag_a_moment/screens/registerStorage.dart';
 import 'package:flutter/material.dart';
 
 /// '내 보관소' 화면의 보관소 카드
 class StorageCard extends StatelessWidget {
-  const StorageCard({super.key});
+  final StorageModel storage;
+
+  const StorageCard({super.key, required this.storage});
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +31,9 @@ class StorageCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text( '보관소 제목', /* TODO Title */ style: const TextStyle( fontSize: 16, fontWeight: FontWeight.bold,), overflow: TextOverflow.ellipsis,),
+                Text( storage.name ,/* TODO Title */ style: const TextStyle( fontSize: 16, fontWeight: FontWeight.bold,), overflow: TextOverflow.ellipsis,),
                 const SizedBox(height: 4),
-                Text('서울특별시 흑석로 84 310관', /* TODO 주소 */style: const TextStyle(fontSize: 10, overflow: TextOverflow.ellipsis),
+                Text(storage.detailedAddress, /* TODO 주소 */style: const TextStyle(fontSize: 10, overflow: TextOverflow.ellipsis),
                 ),
               ],
             ),
@@ -42,7 +46,7 @@ class StorageCard extends StatelessWidget {
             children: [
               // 상태 텍스트 (검수 중 or REJECTED)
               Text(
-                '점검중', // TODO status 보고 결정 (APPROVED 시 렌더링 X)
+                storage.status, // TODO status 보고 결정 (APPROVED 시 렌더링 X)
                 style: TextStyle(
                   color: Colors.red,
                   fontWeight: FontWeight.bold,
@@ -59,7 +63,7 @@ class StorageCard extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => StorageRegistraterScreen(), // TODO storageId 전달
+                        builder: (context) => StorageDetailPage(storageId: storage.id, ), // TODO 보관소 주인용 페이지 만들기
                       ),
                     );
                   },
