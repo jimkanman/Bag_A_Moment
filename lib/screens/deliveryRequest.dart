@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import 'AddressInputCard.dart';
 import 'deliveryRequestSuccess.dart';
 
 
@@ -28,6 +29,8 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
   final TextEditingController smallBagController = TextEditingController();
   final TextEditingController largeBagController = TextEditingController();
   final TextEditingController specialBagController = TextEditingController();
+  final TextEditingController userInputPostalCodeController = TextEditingController();
+  final TextEditingController userInputAddressController = TextEditingController();
 
   @override
   void initState() {
@@ -136,12 +139,23 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
     final selectedDate = DateTime.now();
     final startDateTime = formatDateTime(selectedDate, startTime!);
     final endDateTime = formatDateTime(selectedDate, endTime!);
+    // 사용자 입력 데이터 변수
+    final destinationPostalCode = userInputPostalCodeController.text.isNotEmpty
+        ? userInputPostalCodeController.text
+        : '우편번호'; // 기본 값 설정
+    final destinationAddress = userInputAddressController.text.isNotEmpty
+        ? userInputAddressController.text
+        : '주소 입력 필요'; // 기본 값 설정
 
 
     // 사용자가 텍스트 필드에 입력한 값을 가져옴
     final smallBagCount = int.tryParse(smallBagController.text) ?? 0;
     final largeBagCount = int.tryParse(largeBagController.text) ?? 0;
     final specialBagCount = int.tryParse(specialBagController.text) ?? 0;
+
+    // 도착 날짜 계산 (예: 예약 종료일 + 1일)
+    final deliveryArrivalDateTime = formatDateTime(selectedEndDate!.add(Duration(days: 1)), TimeOfDay(hour: 15, minute: 8));
+
 
     // 디버깅: 텍스트 필드 값 확인
     print('텍스트 필드에 입력된 가방 정보');
@@ -157,8 +171,11 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
         for (int i = 0; i < largeBagCount; i++) {'type': 'CARRIER', 'width': 40, 'depth': 25, 'height': 20},
         for (int i = 0; i < specialBagCount; i++) {'type': 'MISCELLANEOUS_ITEM', 'width': 50, 'depth': 30, 'height': 25},
       ],
+      'destinationPostalCode': destinationPostalCode,
+      'destinationAddress': destinationAddress,
       'startDateTime': startDateTime,
       'endDateTime': endDateTime,
+      'deliveryArrivalDateTime': deliveryArrivalDateTime,
     };
 
 
@@ -560,6 +577,10 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                           Text('까지'),
                         ],
                       ),
+                      AddressInputCard(
+                        userInputPostalCodeController: userInputPostalCodeController,
+                        userInputAddressController: userInputAddressController,
+                      ),
                     ]
                 ),
               )
@@ -574,7 +595,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
         padding: const EdgeInsets.all(16.0), // 버튼과 화면 가장자리 간격
         child: ElevatedButton(
           onPressed: () {
-            print('결제 버튼 눌림.\n전달받은 데이터: $widget.info');
+            print('배송 버튼 눌림.\n전달받은 데이터: $widget.info');
             _submitData();
           },
 

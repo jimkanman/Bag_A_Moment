@@ -185,7 +185,7 @@ class _MainScreenBottomState extends State<MainBottomScreen>
   // 페이지 목록
   final List<Widget> _pages = [
     HomeScreen(), // 홈 (지도 페이지)
-    ReservationCheckScreen(), // 예약 내역 페이지
+    ReservationScreen(), // 예약 내역 페이지
     StorageManagementPage(), // 내보관소 페이지
     MyPageMainScreen(), // 마이페이지
   ];
