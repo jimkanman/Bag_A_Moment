@@ -163,7 +163,8 @@ class ReservationDetailsScreen extends StatelessWidget {
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Image.network(
-                            imageUrls[index],
+                            // imageUrls[index],
+                            dummyImages[index],
                             fit: BoxFit.cover,
                           ),
                         );
@@ -172,6 +173,7 @@ class ReservationDetailsScreen extends StatelessWidget {
                   ),
 
 
+                  /*
                   Expanded(
                     child: NetworkImageRect(
                       url: 'https://via.placeholder.com/150',
@@ -189,6 +191,8 @@ class ReservationDetailsScreen extends StatelessWidget {
                       borderRadius: 8,
                     ),
                   ),
+
+                   */
                 ],
               ),
             ),
