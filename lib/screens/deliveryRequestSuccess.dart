@@ -32,7 +32,7 @@ class DeliveryrequestsuccessPage extends StatelessWidget {
                 // 버튼 클릭 시 이동할 페이지
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ReservationCheckScreen()),
+                  MaterialPageRoute(builder: (context) => ReservationScreen()),
                 );
               },
               style: ElevatedButton.styleFrom(
