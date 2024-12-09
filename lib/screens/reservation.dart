@@ -23,7 +23,6 @@ class ReservationScreen extends StatefulWidget {
 
 class _ReservationScreenState extends State<ReservationScreen> {
   bool _isLoading = true;
-  final FlutterSecureStorage _storage = FlutterSecureStorage();
 
   // 재환 추가
   late int userId;
@@ -143,7 +142,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
           id:index,
           deliveryId: index,
           storageId: index,
-        deliveryArrivalDateTime: "2024-12-05T22:02:00",
+        deliveryArrivalDateTime: "2024-12-05T22:15:00",
 
       ),
     ));
@@ -175,7 +174,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
   /// 로그인 처리, JWT 가져옴, ApiService 초기화
   Future<void> _initialize() async {
     // 로그인 처리
-    final token = await _storage.read(key: 'auth_token');
+    final token = await secureStorage.read(key: 'auth_token');
     if (token == null) {
       print("로그인 토큰이 없습니다.");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -186,11 +185,10 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
     // Jwt 가져옴
     String? savedUserId = await secureStorage.read(key: 'user_id');
-    String? jwt = await secureStorage.read(key: 'auth_token');
     userId = int.parse(savedUserId!);
 
     // ApiService 초기화
-    _apiService = ApiService(defaultHeader: {'Authorization' : jwt ?? ''});
+    _apiService = ApiService(defaultHeader: {'Authorization' : token ?? ''});
   }
 
   /// API 호출해서 데이터 가져옴
@@ -238,7 +236,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
             onPressed: () {
               print("새로고침 버튼 클릭됨."); // 디버깅: 새로고침 버튼 로그
               // _fetchReservations(); // 예약 데이터 다시 가져오기
-              _jaehwanFetchReservations();
+              // _jaehwanFetchReservations();
+              _fetchReservations();
             },
           ),
         ],
@@ -358,20 +357,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 ],
               ),
             ),
-
-
-          // TEST
-          GestureDetector(
-            onTap: () {
-              _jaehwanFetchReservations();
-            },
-            child: Container(
-              height: 100,
-              width: 100,
-              color: Colors.red,
-              child: const Text("push me"),
-            ),
-          ),
       ]
       ),
     );

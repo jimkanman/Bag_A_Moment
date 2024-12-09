@@ -1,283 +1,153 @@
+import 'package:bag_a_moment/main.dart';
+import 'package:bag_a_moment/models/storage_model.dart';
+import 'package:bag_a_moment/models/storage_reservation.dart';
 import 'package:bag_a_moment/screens/addStorage.dart';
 import 'package:bag_a_moment/screens/storage.dart';
 import 'package:bag_a_moment/screens/registerStorage.dart';
+import 'package:bag_a_moment/services/api_service.dart';
+import 'package:bag_a_moment/widgets/reservation_card_for_storage_manage_screen.dart';
+import 'package:bag_a_moment/widgets/storage_card.dart';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'detailed_page.dart';
 
-class StorageManagementPage extends StatelessWidget {
+class StorageManagementPage extends StatefulWidget {
+  const StorageManagementPage({super.key});
+
+  @override
+  State<StorageManagementPage> createState() => _StorageManagementPageState();
+}
+
+class _StorageManagementPageState extends State<StorageManagementPage> {
+  late ApiService _apiService;
+  late final int userId;
+  late final String? jwt;
+
+  late List<StorageModel> storages;
+  late List<StorageReservation> reservations;
+
+  bool isStorageLoading = true;
+  bool isReservationLoading = true;
+
+  /// 보관소 API 호출
+  Future<void> fetchMyStorages() async {
 
 
+    setState(() {
+      isStorageLoading = false; // 보관소 로딩바 제거
+    });
+  }
 
+  /// 최근 예약 API 호출
+  Future<void> fetchRecentReservations() async {
+
+    // TODO 예약 fetch 후 마감된 예약은 필터링
+
+
+    setState(() {
+      isReservationLoading = false; // 예약 로딩바 제거
+    });
+  }
+
+  Future<void> initialize() async {
+    // 로그인 처리
+    jwt = await secureStorage.read(key: 'auth_token');
+    String? userIdString = await secureStorage.read(key: 'user_id');
+    if (jwt == null) {
+      print("로그인 토큰이 없습니다.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인이 필요합니다.')),
+      );
+      return;
+    }
+    userId = int.parse(userIdString ?? "");
+
+    // ApiService 초기화
+    _apiService = ApiService(defaultHeader: {'Authorization' : jwt ?? ''});
+  }
+
+  Future<void> fillDummyData() async {
+    storages = List.generate(3, (index) => StorageModel(), growable: true);
+    reservations = List.generate(3, (index) => StorageReservation());
+  }
+
+  /// API로 나의 보관소 & 최근 예약 호출
+  Future<void> fetchApiData() async {
+    // TODO 양쪽 API 호출은 비동기로 변경 (동시에 하도록)
+    await initialize(); // jwt & apiService 시작
+    await fetchMyStorages(); // 나의 보관소 호출
+    await fetchRecentReservations(); // 최근 예약 호출
+    await fillDummyData();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchApiData();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(
-          '보관소 관리',
+        title: const Text(
+          '내 보관소',
           style: TextStyle(
-            color: Colors.white, // 글씨 색상을 흰색으로 설정
-            fontWeight: FontWeight.bold, // 글씨를 볼드체로 설정
-            fontSize: 20, // 글씨 크기를 설정
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
         ),
-        centerTitle: true, // 제목을 중앙 정렬
-        backgroundColor: Color(0xFF4DD9C6), // 민트색 배경
-        elevation: 0, // 앱바 그림자 제거
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black), // 뒤로가기 버튼
-          onPressed: () {
-            Navigator.pop(context); // 뒤로가기 동작
-          },
+          icon: const Icon(Icons.arrow_back, color: Colors.black), // 뒤로가기 버튼
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.all(24.0),
         children: [
-          // 1. 나의 보관소 섹션
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 섹션 타이틀
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '나의 보관소',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.add),
-                        onPressed: () async {
-                          print("보관소 추가 버튼 클릭됨");
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => StorageScreen(), // StorageScreen으로 이동
-                            ),
-                          );
-                          // 서버로 전송이 완료되었는지 확인
-                          if (result == true) {
-                            // 서버로 전송이 완료된 상태
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('서버로 데이터가 전송되었습니다.')),
-                            );
-                          }
-
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  // 보관소 리스트
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: 2, // 예제 데이터 개수
-                      itemBuilder: (context, index) {
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            children: [
-                              // 보관소 이미지
-                              Container(
-                                width: 50,
-                                height: 50,
-                                color: Colors.black, // 임시 색상
-                              ),
-                              const SizedBox(width: 12),
-                              // 보관소 정보
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '보관소${index + 1}',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      '서울특별시 흑석로 84 30${index}관...',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // 상태 텍스트
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  // 첫 번째 버튼: 상세보기
-                                  TextButton(
-                                    onPressed: index % 2 == 0
-                                        ? () {
-                                      print('상세보기 클릭됨');
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => StorageRegistraterScreen(), // storageId 전달
-                                        ),
-                                      );
-                                    }
-                                        : null, // '점검중'일 경우 버튼 비활성화
-                                    child: Text(
-                                      '상세보기',
-                                      style: TextStyle(
-                                        color: index % 2 == 0 ? Colors.blue : Colors.grey, // '점검중'일 경우 비활성화 색상
-                                      ),
-                                    ),
-                                  ),
-                                  // 두 번째 버튼: 점검중
-                                  Text(
-                                    index % 2 == 0 ? '' : '점검중', // 두 번째 칸은 '점검중' 표시
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+          // 나의 보관소 섹션
+          // 섹션 타이틀 ('니의 보관소' [+])
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('나의 보관소', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,),),
+              Align(
+                alignment: Alignment.centerRight,
+                child: IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () async {
+                    // TODO 라우팅 검토 (추가 정보 없이 StorageScreen으로 가면 안될 거 같지??)
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => StorageScreen()));
+                  },
+                ),
               ),
-            ),
+            ],
           ),
+          const SizedBox(height: 16),
+          StorageCard(),
+          StorageCard(),
+          StorageCard(),
 
-          Divider(height: 1, thickness: 1),
+          // 보관소 리스트
+          // for(int index = 0; index < storages.length; index++)
+          //   StorageCard(),
 
-          // 2. 최근 예약 섹션
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 섹션 타이틀
-                  Text(
-                    '최근 예약',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // 예약 리스트
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: 2, // 예제 데이터 개수
-                      itemBuilder: (context, index) {
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // 예약자 정보
-                              Row(
-                                mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Doldom 님의 새로운 예약!',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    //'가방 x${index + 2} 캐리어 y${index}개',
-                                    '가방 2개, 캐리어 1개',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              // 예약 상세
-                              Text(
-                                //'보관소 ${index + 1}',
-                                'Lemon Tree 보관소',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '24.09.${27 + index} ~ 24.09.${28 + index}\n'
-                                    '13시-  19시 \n13,000원 (예상 금액)',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed: () {
-                                    print('예약 확인하기 클릭됨');
-                                  },
-                                  child: Text(
-                                    '예약 확인하기',
-                                    style: TextStyle(color: Colors.blue),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // 최근 예약 섹션
+          const SizedBox(height: 16,),
+          const Text('최근 예약', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,),),
+          const SizedBox(height: 16),
+
+          // 예약 리스트
+          for(var reservation in reservations)
+            ReservationManageCard(),
+          // for(var reservation in reservations)
+          //   ReservationManageCard(),
         ],
       ),
     );
