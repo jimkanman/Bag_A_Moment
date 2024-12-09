@@ -106,6 +106,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
       });
     }
   }
+  //에러 팝업
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -132,10 +133,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
     }
 
 
-    //초기 시작날짜 = 오늘
-    final selectedDate = DateTime.now();
-    final startDateTime = formatDateTime(selectedDate, startTime!);
-    final endDateTime = formatDateTime(selectedDate, endTime!);
+    final startDateTime = formatDateTime(selectedStartDate!, startTime!);
+    final endDateTime = formatDateTime(selectedEndDate!, endTime!);
 
 
     // 사용자가 텍스트 필드에 입력한 값을 가져옴

@@ -135,10 +135,9 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
     }
 
 
-    //초기 시작날짜 = 오늘
-    final selectedDate = DateTime.now();
-    final startDateTime = formatDateTime(selectedDate, startTime!);
-    final endDateTime = formatDateTime(selectedDate, endTime!);
+
+    final startDateTime = formatDateTime(selectedStartDate!, startTime!);
+    final endDateTime = formatDateTime(selectedEndDate!, endTime!);
     // 사용자 입력 데이터 변수
     final destinationPostalCode = userInputPostalCodeController.text.isNotEmpty
         ? userInputPostalCodeController.text
@@ -171,8 +170,9 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
         for (int i = 0; i < largeBagCount; i++) {'type': 'CARRIER', 'width': 40, 'depth': 25, 'height': 20},
         for (int i = 0; i < specialBagCount; i++) {'type': 'MISCELLANEOUS_ITEM', 'width': 50, 'depth': 30, 'height': 25},
       ],
-      'destinationPostalCode': destinationPostalCode,
-      'destinationAddress': destinationAddress,
+      'destinationPostalCode': destinationPostalCode.toString(), //string
+      'destinationAddress': destinationAddress.trim(), //불필요한 공백 삭제함
+
       'startDateTime': startDateTime,
       'endDateTime': endDateTime,
       'deliveryArrivalDateTime': deliveryArrivalDateTime,
