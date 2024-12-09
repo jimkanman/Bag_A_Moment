@@ -310,10 +310,10 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     isDense: true, // 텍스트 필드 높이를 줄임
-                    contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0), // 여백 조정
+                    contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0), // 여백 조정
                   ),
                   style: const TextStyle(
-                    fontSize: 14, // 글씨 크기를 줄임
+                    fontSize: 12, // 글씨 크기를 줄임
                   ),
 
                   onChanged: (value) {
@@ -332,7 +332,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                   },
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 16),
               Text(
                 price != null ? '$price 원' : '가격 정보 없음',
                 style: const TextStyle(color: Colors.grey),
@@ -539,7 +539,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                       Row(
                         children: [Text('이용시간을 선택해주세요.',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                             fontFamily: 'Paperlogy',
