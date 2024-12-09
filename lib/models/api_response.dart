@@ -2,7 +2,7 @@
 class ApiResponse<T> {
   final bool isSuccess;
   final int code;
-  final String message;
+  final String? message;
   final List<T> data;
 
   ApiResponse({

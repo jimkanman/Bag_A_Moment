@@ -103,130 +103,133 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Color(0xFF49E0C0), actions: [
-      ],
+        ],
       ),
       body: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
+          children: [
+            Container(
+              decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/background.png'), // 배경 이미지 경로
-                fit: BoxFit.cover, // 화면에 맞게 이미지 크기 조정
+              image: AssetImage('assets/images/background.png'), // 배경 이미지 경로
+              fit: BoxFit.cover, // 화면에 맞게 이미지 크기 조정
               ),
             ),
           ),
 
-          Center(
+        SingleChildScrollView(
+          child: Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  Flexible(
-                    child: Image.asset(
-                      'assets/images/mainLogo.png',
-                      height: 100,
-                    ),
-                  ),
-                  SizedBox(height: 40),
-
-                  SizedBox(
+              children: [
+                Flexible(
+                   child: Image.asset(
+                     'assets/images/mainLogo.png',
+                     height: 100,
+                   ),
+                ),
+                SizedBox(height: 40),
+          
+                SizedBox(
                     width: 300,
                     height: 100,
                     child: TextField(
                       controller: _idController,
                       decoration: InputDecoration(
-                        labelText: 'ID 입력',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide.none,
-                        ),
-                        labelStyle: TextStyle(
-                          color: Color(0xFF0C4944),
-
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                      ),
-                      style: TextStyle(fontSize: 16, color: Color(0xFF0C4944)), // 텍스트 스타일
-                    ),
-
-                  ),
-                  SizedBox(
-                    width: 300,
-                    height: 100,
-                    child: TextField(
-                      obscureText: !_isPasswordVisible, // 비밀번호 가림 처리
-                      controller: _passwordController,
-                      decoration: InputDecoration(
-                        labelText: '비밀번호',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                          borderSide: BorderSide.none,
-                        ),
-                        labelStyle: TextStyle(
-                          color: Color(0xFF0C4944),
-
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isPasswordVisible
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                          labelText: 'ID 입력',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                            borderSide: BorderSide.none,
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible; // 상태 변경
-                            });
-                          },
-                        ),
+                        labelStyle: TextStyle(
+                            color: Color(0xFF0C4944),
+          
+                          ),
+                        filled: true,
+                        fillColor: Colors.white,
                       ),
                       style: TextStyle(fontSize: 16, color: Color(0xFF0C4944)), // 텍스트 스타일
-
                     ),
-                  ),
-
-                  ElevatedButton(
-                    onPressed: _login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF80E3D6),
-                      foregroundColor: Color(0xFFE0F7F5),
-                    ),
-                    child: Text('로그인',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+          
+                ),
+                SizedBox(
+                  width: 300,
+                  height: 100,
+                  child: TextField(
+                    obscureText: !_isPasswordVisible, // 비밀번호 가림 처리
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: '비밀번호',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        borderSide: BorderSide.none,
+                      ),
+                      labelStyle: TextStyle(
+                        color: Color(0xFF0C4944),
+          
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible; // 상태 변경
+                          });
+                        },
                       ),
                     ),
+                    style: TextStyle(fontSize: 16, color: Color(0xFF0C4944)), // 텍스트 스타일
+          
                   ),
-                  SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed:() {
-                      Navigator.push( context, MaterialPageRoute(builder: (context) => SignupScreen()),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF80E3D6),
-                      foregroundColor: Color(0xFFE0F7F5),
-                    ),
+                ),
+          
+                ElevatedButton(
+                  onPressed: _login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF80E3D6),
+                    foregroundColor: Color(0xFFE0F7F5),
+                  ),
+                  child: Text('로그인',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                  ),
+                ),
+                ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed:() {
+                    Navigator.push( context, MaterialPageRoute(builder: (context) => SignupScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF80E3D6),
+                    foregroundColor: Color(0xFFE0F7F5),
+                  ),
                     child: Text('회원가입',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ],
+          ),
+        ),
+      ],
       ),
     );
   }

@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'package:stomp_dart_client/stomp_dart_client.dart';
 
 class WebSocketService {
-  StompClient? stompClient;
+  StompClient? _stompClient;
   final Map<String, StompUnsubscribe?> _subsriptions = {};
 
   void connect() {
-    stompClient = StompClient(
+    _stompClient = StompClient(
       config: StompConfig(
         url: 'ws://3.35.175.114/connection', // 서버의 WebSocket URL
         onConnect: onConnect,
@@ -15,7 +15,7 @@ class WebSocketService {
       ),
     );
 
-    stompClient?.activate();
+    _stompClient?.activate();
   }
 
   void onConnect(StompFrame frame) {
@@ -23,7 +23,8 @@ class WebSocketService {
   }
 
   void subscribe(String topic, Function(Map<String, dynamic>) onMessage) {
-    stompClient?.subscribe(
+    print("StompService: subscribing %topic");
+    _stompClient?.subscribe(
       destination: topic,
       callback: (StompFrame frame) {
         print('StompService: received ${frame.body}');
@@ -36,15 +37,11 @@ class WebSocketService {
     );
   }
 
-  void subscribeDelivery(int id) {
-
-  }
-
   void unsubscribeDelivery(int id) {
 
   }
 
   void disconnect() {
-    stompClient?.deactivate();
+    _stompClient?.deactivate();
   }
 }

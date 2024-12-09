@@ -1,8 +1,8 @@
 class Luggage {
   final String type;
-  final int width;
-  final int depth;
-  final int height;
+  final int? width;
+  final int? depth;
+  final int? height;
 
   Luggage({
     required this.type,
@@ -18,5 +18,14 @@ class Luggage {
       depth: json['depth'],
       height: json['height'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type,
+      'width': width,
+      'depth': depth,
+      'height': height,
+    };
   }
 }
