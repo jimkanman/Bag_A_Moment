@@ -25,6 +25,27 @@ class ApiService {
       throw Exception('Failed to load data: ${body}');
     }
   }
+  /// 주어진 파라미터로 PATCH 전송 + data 필드에 fromJson 매핑하여 반환
+  Future<T> patch<T>(String endpoint, {Map<String, dynamic>? requestBody, Map<String, String>? headers, required T Function(dynamic) fromJson}) async{
+    print("ApiService: PATCH to '$_BASE_URL/$endpoint' with body=$requestBody");
+    headers = {
+      'Content-Type' : 'application/json',
+      ...?_defaultHeader,
+      ...?headers
+    };
+    final response = await http.patch(
+      Uri.parse('$_BASE_URL/$endpoint'),
+      headers: headers,
+      body: requestBody != null ? jsonEncode(requestBody) : null,
+    );
+    String decodedBody = utf8.decode(response.bodyBytes);
+    print("ApiService: PATCH /$endpoint received $decodedBody");
+    if (response.statusCode == 200) {
+      return fromJson(jsonDecode(decodedBody)['data']);
+    } else {
+      throw Exception('Failed to patch data: $decodedBody');
+    }
+  }
 
   /// 주어진 파라미터로 POST 전송 + data 필드에 fromJson 매핑하여 반환
   Future<T> post<T>(String endpoint, {Map<String, dynamic>? requestBody, Map<String, String>? headers, required T Function(dynamic) fromJson}) async {
