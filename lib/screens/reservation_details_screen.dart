@@ -21,6 +21,9 @@ class ReservationDetailsScreen extends StatefulWidget {
 class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
   late StorageReservation reservation;
   late ApiService _apiService;
+  int smallCount=0;
+  int  mediumCount=0;
+  int  largeCount=0;
   late final int userId;
   late final String? jwt;
   bool isLoading = true;
@@ -50,12 +53,30 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
       isLoading = false; // 데이터 로드 완료
     });
   }
-
+  Future<void> processLuggageAsync() async {
+    await Future.forEach(reservation.luggage, (element) async {
+      // 비동기 작업이 필요한 경우 여기에 작성
+      switch (element.type) {
+        case 'BAG':
+          smallCount++;
+          break;
+        case 'LUGGAGE':
+          mediumCount++;
+          break;
+        case 'MISCELLANEOUS_ITEM':
+          largeCount++;
+          break;
+        default:
+          break;
+      }
+    });
+  }
   fetchReservation() async {
     reservation = await _apiService.get(
       'reservations/${widget.reservation.id}',
       fromJson: (json) => StorageReservation.fromJson(json),
     );
+    processLuggageAsync();
   }
 
   static const dummyImages = [
@@ -276,7 +297,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                           ],
                         ),
                         Spacer(),
-                        Text("1",
+                        Text(smallCount.toString(),
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
@@ -295,7 +316,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                           ],
                         ),
                         Spacer(),
-                        Text("1",
+                        Text(mediumCount.toString(),
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
@@ -314,7 +335,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                           ],
                         ),
                         Spacer(),
-                        Text("1",
+                        Text(largeCount.toString(),
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
@@ -409,7 +430,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
               width: double.infinity,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
+                children: [
                   const Text(
                     '결제 예상금액',
                     style: TextStyle(fontSize: 14, color: Colors.black),
@@ -419,9 +440,9 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        '9000',
+                        reservation.paymentAmount.toString(),
                         /* TODO 가격 */
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textDark,
