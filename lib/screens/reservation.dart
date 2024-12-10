@@ -120,6 +120,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
   }
 
 
+  // 더미 데이터 삽입 (Test용)
   Future<void> _putDummyData() async {
     print("putting data");
     // reservations, reservationOnDelivery, deliveryLocations 더미값
@@ -153,11 +154,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
   }
 
   void OnDeliveryReservationButtonPress(int idx) {
-    // TODO
+    // TODO 예약상세 페이지로 라우팅?
   }
 
   void OnStorageReservationButtonPress(int idx) {
-    // TODO
+    // TODO 예약상세 페이지로 라우팅?
   }
 
   Color determineStorageReservationCardBackgroundColor(StorageReservation s) {
@@ -195,7 +196,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
   Future<void> _fetchApiData() async {
     await _initialize(); // JWT 가져옴 & ApiService 초기화
     await _fetchReservations(); // API 호출해서 데이터 초기화
-    await _putDummyData(); // TODO 테스트 데이터 삽입. 배포 시 삭제
+    // await _putDummyData(); // TODO 테스트 데이터 삽입. 배포 시 삭제
   }
 
   @override
