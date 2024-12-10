@@ -4,6 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:bag_a_moment/screens/validation.dart';
+
+import '../core/app_colors.dart';
 class AddStorageScreen extends StatefulWidget {
   @override
   _AddStorageScreenState createState() => _AddStorageScreenState();
