@@ -1,6 +1,7 @@
 import 'package:bag_a_moment/models/luggage.dart';
 import 'package:bag_a_moment/models/storage_model.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';
+import 'package:bag_a_moment/screens/reservation/ReservationDetailsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/core/app_colors.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';
@@ -128,10 +129,20 @@ class ReservationManageCard extends StatelessWidget {
             onTap: () { },
             child: const Text("예약 확인하기", style: TextStyle(color: AppColors.textDark, fontSize: 14),)
           ),
-          // TextButton(
-          //   onPressed: () {}, // TODO 예약 확인하기 콜백
-          //   child: const Text("예약 확인하기", style: TextStyle(color: AppColors.textDark, fontSize: 14),)
-          // )
+          TextButton(
+            onPressed: () {
+              // TODO
+              print('상세보기 클릭됨');
+              print("reservation id:${reservation.id}");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ReservationDetailsScreen(reservation: reservation), // TODO storageId 전달
+                ),
+              );
+            },
+            child: const Text("예약 확인하기", style: TextStyle(color: AppColors.textDark, fontSize: 14),)
+          )
         ],
       )
     );

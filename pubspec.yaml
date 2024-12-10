@@ -40,6 +40,7 @@ dependencies:
   permission_handler: ^10.2.0
   flutter_secure_storage: ^7.0.0
   geolocator: ^9.0.2
+  kpostal: ^1.1.0
 
 
 
@@ -83,6 +84,7 @@ flutter:
     - assets/images/box_icon3.png
     - assets/images/background.png
     - assets/images/check-circle-broken.png
+    - assets/images/smallmarker.png
   fonts:
     - family: Paperlogy
       fonts:

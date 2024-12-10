@@ -1,12 +1,12 @@
 //예약 완료 화면
-//TODO: 다른 파일로 분리할 것
-import 'package:bag_a_moment/screens/reservation.dart';
+
+import 'package:bag_a_moment/screens/reservation/reservationRequestScreen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class ReservationsuccessPage extends StatelessWidget {
+class DeliveryrequestsuccessPage extends StatelessWidget {
   final Map<String, dynamic> info;
-  ReservationsuccessPage({required this.info});
+  DeliveryrequestsuccessPage({required this.info});
 
   @override
   Widget build(BuildContext context) {

@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:bag_a_moment/screens/auth_screen.dart';
+import 'package:bag_a_moment/screens/others/loginScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:bag_a_moment/screens/mypage.dart'; // 회원 정보 조회 페이지
-import 'package:bag_a_moment/userInfo.dart';
+import 'package:bag_a_moment/screens/mypage/mypage.dart'; // 회원 정보 조회 페이지
+import 'package:bag_a_moment/screens/mypage/userInfo.dart';
 
-import '../core/app_colors.dart';
-import '../main.dart';
+import '../../core/app_colors.dart';
+import '../../main.dart';
 
 class MyPageMainScreen extends StatefulWidget {
   @override
