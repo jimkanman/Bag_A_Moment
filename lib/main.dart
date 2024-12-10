@@ -173,7 +173,6 @@ class _InitialScreenState extends State<InitialScreen> {
 
 
 
-
 //하단바
 class MainBottomScreen extends StatefulWidget {
   @override
