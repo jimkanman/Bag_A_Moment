@@ -89,7 +89,7 @@ class ReservationManageCard extends StatelessWidget {
                     Expanded(
                       child: Align(
                         alignment: Alignment.bottomLeft,
-                        child: Text(reservation.storageAddress, style: const TextStyle(fontSize: 8), overflow: TextOverflow.ellipsis,), // TODO 주소
+                        child: Text(reservation.storageAddress, style: const TextStyle(fontSize: 8), overflow: TextOverflow.ellipsis,),
                       ),
                     )
                   ],
