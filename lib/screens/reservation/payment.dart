@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:bag_a_moment/screens/reservation/reservationRequestScreen.dart';
 import 'package:bag_a_moment/screens/reservation/reservationSuccess.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -106,6 +107,54 @@ class _ReservationScreenState extends State<ReservationScreen> {
       });
     }
   }
+
+  //AR 카메라 함수
+  Map<String, int> _volumeData = {};
+  static const platform = MethodChannel("com.example.example/message");
+  Future<void> _fetchVolumeData() async {
+    try {
+      final Map<dynamic, dynamic> result =
+      await platform.invokeMethod('getVolumeAndroid');
+      setState(() {
+        _volumeData = {
+          'width': result['width'],
+          'height': result['height'],
+          'depth': result['depth'],
+        };
+      });
+    } on PlatformException catch (e) {
+      print("Failed to get volume: '${e.message}'.");
+    }
+  }
+
+  void _showVolumeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('AR 측정 결과'),
+          content: _volumeData.isNotEmpty
+              ? Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('가로: ${_volumeData['width']} cm'),
+              Text('세로: ${_volumeData['height']} cm'),
+              Text('깊이: ${_volumeData['depth']} cm'),
+            ],
+          )
+              : Text('데이터를 가져올 수 없습니다.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('닫기'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   //에러 팝업
   void _showErrorDialog(String message) {
     showDialog(
@@ -122,6 +171,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
       ),
     );
   }
+
+
 
 
   void _submitData() async{
@@ -147,6 +198,27 @@ class _ReservationScreenState extends State<ReservationScreen> {
     print('Small Bag Count: $smallBagCount');
     print('Large Bag Count: $largeBagCount');
     print('Special Bag Count: $specialBagCount');
+
+    //AR 카메라에서 받은 w,h,d 값 리스트에 저장
+    List<Map<String, dynamic>> luggageData = [];
+    Future<void> _addBagData() async {
+      try {
+        final Map<dynamic, dynamic> result = await platform.invokeMethod('getVolumeAndroid');
+        setState(() {
+          luggageData.add({
+            'type': 'CUSTOM', // 필요한 경우 유형을 지정
+            'width': result['width'],
+            'height': result['height'],
+            'depth': result['depth'],
+          });
+        });
+        print('추가된 데이터: $luggageData');
+      } on PlatformException catch (e) {
+        print("Failed to get volume: '${e.message}'");
+      }
+    }
+
+
 
     // 서버로 데이터를 전송할 body??
     //TODO:  가방 크기 일단 랜덤값 넣음!!! AR 카메라에서 가져온 크기로 수정할 것채
@@ -273,7 +345,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
           style: TextStyle(
             color: Colors.black, // 글씨 색상을 흰색으로 설정
             fontWeight: FontWeight.bold, // 글씨를 볼드체로 설정
-            fontSize: 15, // 글씨 크기를 적절히 설정 (옵션)
+            fontSize: 15, // 글씨 크기
           ),
         ),
         centerTitle: true,
@@ -334,13 +406,20 @@ class _ReservationScreenState extends State<ReservationScreen> {
                           'AR 측정',
                           style: TextStyle(color: Colors.teal, fontSize: 10,),
                         ),
-                        onPressed: () {
-                          // AR 측정 기능 구현 예정
+                        onPressed: () async {
+                          // AR 측정 데이터 가져오기
+                          await _fetchVolumeData();
+                          // 결과 보여주기
+                          _showVolumeDialog(context);
+
+
+
                         },
                       ),
                     ),
                   ],
                 ),
+
 
 
                 SizedBox(height: 16),
