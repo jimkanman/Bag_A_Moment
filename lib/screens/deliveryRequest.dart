@@ -205,7 +205,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://3.35.175.114:8080/storages/${widget.info['storageId']}/reservations'),
+        Uri.parse('http://3.35.175.114:8080/storages/${widget.info['storageId']}//delivery-reservations'),
         headers: {
           'Authorization': token,
           'Content-Type': 'application/json',
