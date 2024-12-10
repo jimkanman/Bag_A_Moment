@@ -210,7 +210,13 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                             color: Colors.grey[200],
                           ),
                           child: GoogleMap(
+                            // 맵 생성 완료 후
                             onMapCreated: (controller) {
+                              _mapController = controller;
+                              if(widget.deliveryLatitude != null && widget.deliveryLongitude != null) {
+                                // 시작 위치 주어진 경우 해당 위치로 이동
+                                controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryLatitude!, widget.deliveryLongitude!)));
+                              }
                               ExpandableReservationCard.googleMapControllers[widget.deliveryReservation?.deliveryId ?? -1] = controller;
                             },
                             initialCameraPosition: const CameraPosition(
