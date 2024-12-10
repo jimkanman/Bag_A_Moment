@@ -16,7 +16,8 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _phoneNumberController = TextEditingController();
   bool _isPasswordMatching = true;
 
-  //회원가입
+  //회원가입 페이지
+  //TODO: 회원가입 페이지 UI 수정할 것
   Future<void> _signup() async {
     final response = await http.post(
       Uri.parse('http://3.35.175.114:8080/signup'),

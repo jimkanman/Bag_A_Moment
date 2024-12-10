@@ -1,6 +1,5 @@
 import 'package:bag_a_moment/models/storage_model.dart';
-import 'package:bag_a_moment/screens/detailed_page.dart';
-import 'package:bag_a_moment/screens/registerStorage.dart';
+import 'package:bag_a_moment/screens/home/afterMarker/StorageDetailPage.dart';
 import 'package:flutter/material.dart';
 
 /// '내 보관소' 화면의 보관소 카드

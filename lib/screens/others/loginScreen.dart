@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:bag_a_moment/main.dart';
-import 'package:bag_a_moment/screens/home_screen.dart';
-import 'package:bag_a_moment/screens/signup_screen.dart';
+import 'package:bag_a_moment/screens/home/homeScreen.dart';
+import 'package:bag_a_moment/screens/others/signupScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';

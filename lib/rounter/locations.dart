@@ -1,6 +1,6 @@
 import 'package:beamer/beamer.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:bag_a_moment/screens/home_screen.dart';
+import 'package:bag_a_moment/screens/home/homeScreen.dart';
 
 
 //Beamer HomeLocation (인스턴스)
