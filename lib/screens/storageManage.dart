@@ -124,6 +124,12 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (isReservationLoading || isStorageLoading) {
+      // 로딩 중일 때
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -158,7 +164,6 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
                 child: IconButton(
                   icon: const Icon(Icons.add),
                   onPressed: () async {
-                    // TODO 라우팅 검토 (추가 정보 없이 StorageScreen으로 가면 안될 거 같지??)
                     Navigator.push(context, MaterialPageRoute(builder: (context) => StorageScreen()));
                   },
                 ),
