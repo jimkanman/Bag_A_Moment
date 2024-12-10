@@ -32,7 +32,12 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
   /// 보관소 API 호출
   Future<void> fetchMyStorages() async {
 
-
+    print("fetchMyStorages 호출");
+    storages=await _apiService.get("users/${userId}/storages", fromJson:
+      (json) => (json as List).map((item) => StorageModel.fromJson(item)).toList());
+    if(storages==null){
+      print("보관소가 없습니다.");
+    }
     setState(() {
       isStorageLoading = false; // 보관소 로딩바 제거
     });
@@ -42,11 +47,42 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
   Future<void> fetchRecentReservations() async {
 
     // TODO 예약 fetch 후 마감된 예약은 필터링
+    try {
+      List<StorageReservation> allReservations = [];
+      for (var storage in storages) {
+        try {
+          print("storage ${storage.id}의 예약을 불러옵니다.");
+          final storageReservations = await _apiService.get(
+            "storages/${storage.id}/reservations",
+            fromJson: (json) => (json as List<dynamic>)
+                .map((item) => StorageReservation.fromJson(item))
+                .toList(),
+          );
+          print(storageReservations);
+          allReservations.addAll(storageReservations);
+        } catch (e) {
+          if (e.toString().contains('404')) {
+            print("Storage ${storage.id}에는 예약이 없습니다. 빈 리스트를 추가합니다.");
+            // 예약이 없으면 아무 작업도 하지 않거나 빈 리스트를 추가 (사실상 필요 없음)
+          } else {
+            print("Storage ${storage.id}에서 예상치 못한 오류 발생: $e");
+            // 예외가 발생했지만 다음 스토리지로 넘어갑니다.
+          }
+        }
+      }
 
+      setState(() {
+        reservations = allReservations;
+        isReservationLoading = false; // 로딩 상태 해제
+      });
 
-    setState(() {
-      isReservationLoading = false; // 예약 로딩바 제거
-    });
+      print("총 예약 수: ${reservations.length}");
+    } catch (e) {
+      print("Error while fetching reservations: $e");
+      setState(() {
+        isReservationLoading = false;
+      });
+    }
   }
 
   Future<void> initialize() async {
@@ -61,7 +97,7 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
       return;
     }
     userId = int.parse(userIdString ?? "");
-
+    print("initialized 호출");
     // ApiService 초기화
     _apiService = ApiService(defaultHeader: {'Authorization' : jwt ?? ''});
   }
@@ -77,7 +113,7 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
     await initialize(); // jwt & apiService 시작
     await fetchMyStorages(); // 나의 보관소 호출
     await fetchRecentReservations(); // 최근 예약 호출
-    await fillDummyData();
+    // await fillDummyData();
   }
 
   @override
@@ -130,24 +166,16 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
             ],
           ),
           const SizedBox(height: 16),
-          StorageCard(),
-          StorageCard(),
-          StorageCard(),
-
           // 보관소 리스트
-          // for(int index = 0; index < storages.length; index++)
-          //   StorageCard(),
+          for(int index = 0; index < storages.length; index++)
+            StorageCard(storage: storages[index]),
 
           // 최근 예약 섹션
           const SizedBox(height: 16,),
           const Text('최근 예약', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,),),
           const SizedBox(height: 16),
-
-          // 예약 리스트
           for(var reservation in reservations)
-            ReservationManageCard(),
-          // for(var reservation in reservations)
-          //   ReservationManageCard(),
+            ReservationManageCard(reservation: reservation,),
         ],
       ),
     );
