@@ -1,15 +1,13 @@
 import 'package:bag_a_moment/main.dart';
 import 'package:bag_a_moment/models/storage_model.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';
-import 'package:bag_a_moment/screens/addStorage.dart';
-import 'package:bag_a_moment/screens/storage.dart';
-import 'package:bag_a_moment/screens/registerStorage.dart';
+import 'package:bag_a_moment/screens/storage/registerStorageScreen.dart';
 import 'package:bag_a_moment/services/api_service.dart';
 import 'package:bag_a_moment/widgets/reservation_card_for_storage_manage_screen.dart';
 import 'package:bag_a_moment/widgets/storage_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'detailed_page.dart';
+import '../home/afterMarker/StorageDetailPage.dart';
 
 class StorageManagementPage extends StatefulWidget {
   const StorageManagementPage({super.key});

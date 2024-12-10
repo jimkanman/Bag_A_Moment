@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bag_a_moment/screens/reservation.dart';
+import 'package:bag_a_moment/screens/reservation/reservationRequestScreen.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 import 'AddressInputCard.dart';
-import 'deliveryRequestSuccess.dart';
+import 'deliveryRequestSuccessScreen.dart';
 
 
 

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:io';
-import 'package:bag_a_moment/screens/payment.dart';
+import 'package:bag_a_moment/screens/reservation/payment.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../main.dart';
+import '../../../main.dart';
 import 'package:bag_a_moment/StorageDetailModel.dart';
 
-import 'deliveryRequest.dart'; //api 모델로 받아옴
+import '../../reservation/deliveryRequestScreen.dart'; //api 모델로 받아옴
 
 
 // 상세 페이지

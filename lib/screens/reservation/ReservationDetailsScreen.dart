@@ -6,7 +6,7 @@ import 'package:bag_a_moment/core/app_colors.dart';
 import 'package:bag_a_moment/core/app_constants.dart';
 import 'package:bag_a_moment/main.dart';
 
-import '../services/api_service.dart';
+import '../../services/api_service.dart';
 
 class ReservationDetailsScreen extends StatefulWidget {
   final StorageReservation reservation; // 예약 정보를 저장할 변수

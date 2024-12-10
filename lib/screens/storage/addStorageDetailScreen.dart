@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:bag_a_moment/screens/storage.dart';
+import 'package:bag_a_moment/screens/storage/storageManage.dart';
 import 'package:bag_a_moment/services/api_service.dart';
 import 'package:bag_a_moment/widgets/primarybtn.dart';
 import 'package:file_picker/file_picker.dart';
@@ -10,9 +10,12 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/app_colors.dart';
+import '../../widgets/textfield.dart';
 import '../core/app_colors.dart';
+import '../home/homeScreen.dart';
 import '../widgets/textfield.dart';
-import 'home_screen.dart';
+
 
 class StorageDetailScreen extends StatefulWidget {
   // 상위에서 전달받는 값들
@@ -109,7 +112,7 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
       'Authorization': jwt ?? '',
     });
   }
-    String _timeOfDayToString(String? time) {
+  String _timeOfDayToString(String? time) {
     if (time == null) return "00:00"; // 기본값 설정
     try {
       if (time.contains("AM") || time.contains("PM")) {
@@ -272,7 +275,7 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
 
       print("요청 성공: $result");
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => StorageScreen()),
+        MaterialPageRoute(builder: (context) => StorageManagementPage()),
             (Route<dynamic> route) => false, // 모든 이전 경로 제거
       );
     } catch (e) {
@@ -426,7 +429,7 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
                                   controller: _refundPolicyController,
                                   hintText: '10분이상 미도착시 환불 불가',
                                   validator: (value) =>
-                                      value!.isEmpty ? '보관소 이름을 입력해주세요' : null,
+                                  value!.isEmpty ? '보관소 이름을 입력해주세요' : null,
                                 ),
                                 const SizedBox(height: 24),
                                 const SizedBox(
@@ -445,31 +448,31 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
                                 const SizedBox(height: 8),
                                 Row(
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                     children: [
                                       _selectedFile == null
                                           ? const Text(
-                                              '이용약관.pdf',
-                                              style: TextStyle(
-                                                color: Color(0xFFC4C3C3),
-                                                fontSize: 12,
-                                                fontFamily: 'Inter',
-                                                fontWeight: FontWeight.w400,
-                                                height: 0.14,
-                                              ),
-                                            )
+                                        '이용약관.pdf',
+                                        style: TextStyle(
+                                          color: Color(0xFFC4C3C3),
+                                          fontSize: 12,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w400,
+                                          height: 0.14,
+                                        ),
+                                      )
                                           : Text(
-                                              _selectedFile!.path
-                                                  .split('/')
-                                                  .last,
-                                              style: TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 12,
-                                                fontFamily: 'Inter',
-                                                fontWeight: FontWeight.w400,
-                                                height: 0.14,
-                                              ),
-                                            ),
+                                        _selectedFile!.path
+                                            .split('/')
+                                            .last,
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 12,
+                                          fontFamily: 'Inter',
+                                          fontWeight: FontWeight.w400,
+                                          height: 0.14,
+                                        ),
+                                      ),
                                       Primarybtn(
                                         padding: const EdgeInsets.all(8),
                                         onPressed: _pickFile,
@@ -494,7 +497,7 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
                                   controller: _descriptionController,
                                   hintText: '보관소의 상세한 소개를 적어주세요',
                                   validator: (value) =>
-                                      value!.isEmpty ? '보관소 소개를 입력해주세요.' : null,
+                                  value!.isEmpty ? '보관소 소개를 입력해주세요.' : null,
                                   maxlines: 4,
                                 ),
                                 SizedBox(height: 20),

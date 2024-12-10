@@ -1,7 +1,7 @@
 import 'package:bag_a_moment/models/luggage.dart';
 import 'package:bag_a_moment/models/storage_model.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';
-import 'package:bag_a_moment/screens/reservation_details_screen.dart';
+import 'package:bag_a_moment/screens/reservation/ReservationDetailsScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/core/app_colors.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';

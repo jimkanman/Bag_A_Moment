@@ -1,14 +1,14 @@
 import 'dart:convert';
 
-import 'package:bag_a_moment/screens/reservation.dart';
-import 'package:bag_a_moment/screens/reservationSuccess.dart';
+import 'package:bag_a_moment/screens/reservation/reservationRequestScreen.dart';
+import 'package:bag_a_moment/screens/reservation/reservationSuccess.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
-import 'deliveryRequest.dart';
+import 'deliveryRequestScreen.dart';
 
 
 

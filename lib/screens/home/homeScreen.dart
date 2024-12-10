@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:bag_a_moment/screens/detailed_page.dart';
+import 'package:bag_a_moment/screens/home/afterMarker/StorageDetailPage.dart';
 import 'package:bag_a_moment/widgets/marker_details_widget.dart';
 import 'package:http/http.dart' as http;
 import 'package:bag_a_moment/model/searchModel.dart';
 import 'package:bag_a_moment/service/storageService.dart';
 
-import '../main.dart';
+import '../../main.dart';
 
 //홈화면 클래스 생성
 class HomeScreen extends StatefulWidget {

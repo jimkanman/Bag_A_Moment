@@ -4,6 +4,10 @@ class AddressInputCard extends StatelessWidget {
   final TextEditingController userInputPostalCodeController;
   final TextEditingController userInputAddressController;
 
+
+  //배송요청시 주소, 우편번호 입력
+  //TODO: 카카오맵 API 연결로 수정할것
+  
   AddressInputCard({
     required this.userInputPostalCodeController,
     required this.userInputAddressController,
