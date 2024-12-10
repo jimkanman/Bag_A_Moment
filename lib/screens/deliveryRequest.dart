@@ -7,6 +7,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
+import 'AddressInputCard.dart';
 import 'deliveryRequestSuccess.dart';
 
 
@@ -28,6 +29,8 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
   final TextEditingController smallBagController = TextEditingController();
   final TextEditingController largeBagController = TextEditingController();
   final TextEditingController specialBagController = TextEditingController();
+  final TextEditingController userInputPostalCodeController = TextEditingController();
+  final TextEditingController userInputAddressController = TextEditingController();
 
   final TextEditingController userInputPostalCodeController = TextEditingController();
   final TextEditingController userInputAddressController = TextEditingController();
@@ -139,10 +142,16 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
     }
 
 
-    //초기 시작날짜 = 오늘
-    final selectedDate = DateTime.now();
-    final startDateTime = formatDateTime(selectedDate, startTime!);
-    final endDateTime = formatDateTime(selectedDate, endTime!);
+
+    final startDateTime = formatDateTime(selectedStartDate!, startTime!);
+    final endDateTime = formatDateTime(selectedEndDate!, endTime!);
+    // 사용자 입력 데이터 변수
+    final destinationPostalCode = userInputPostalCodeController.text.isNotEmpty
+        ? userInputPostalCodeController.text
+        : '우편번호'; // 기본 값 설정
+    final destinationAddress = userInputAddressController.text.isNotEmpty
+        ? userInputAddressController.text
+        : '주소 입력 필요'; // 기본 값 설정
 
     //주소 입력 변수
     // 우편번호를 처리
@@ -164,6 +173,8 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
     // 도착 날짜 계산 (예: 예약 종료일 + 1일)
     final deliveryArrivalDateTime = formatDateTime(selectedEndDate!.add(Duration(days: 1)), TimeOfDay(hour: 15, minute: 8));
 
+
+
     // 디버깅: 텍스트 필드 값 확인
     print('텍스트 필드에 입력된 가방 정보');
     print('Small Bag Count: $smallBagCount');
@@ -178,11 +189,13 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
         for (int i = 0; i < largeBagCount; i++) {'type': 'CARRIER', 'width': 40, 'depth': 25, 'height': 20},
         for (int i = 0; i < specialBagCount; i++) {'type': 'MISCELLANEOUS_ITEM', 'width': 50, 'depth': 30, 'height': 25},
       ],
-      'destinationPostalCode': destinationPostalCode,
-      'destinationAddress': destinationAddress,
+
+      'destinationPostalCode': destinationPostalCode.toString(), //string
+      'destinationAddress': destinationAddress.trim(), //불필요한 공백 삭제함
+
       'startDateTime': startDateTime,
       'endDateTime': endDateTime,
-    'deliveryArrivalDateTime': deliveryArrivalDateTime,
+      'deliveryArrivalDateTime': deliveryArrivalDateTime,
 
     };
 
@@ -208,12 +221,12 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
 
 
 
-    print('예약 정보: ${widget.info}');
-    print('가방 정보: $reservationData');
+    print('widget.info예약 정보: ${widget.info}');
+    print('$reservationData 정보: $reservationData');
 
     try {
       final response = await http.post(
-        Uri.parse('http://3.35.175.114:8080/storages/${widget.info['storageId']}/reservations'),
+        Uri.parse('http://3.35.175.114:8080/storages/${widget.info['storageId']}/delivery-reservations'),
         headers: {
           'Authorization': token,
           'Content-Type': 'application/json',
@@ -318,10 +331,10 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                   decoration: const InputDecoration(
                     border: InputBorder.none,
                     isDense: true, // 텍스트 필드 높이를 줄임
-                    contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0), // 여백 조정
+                    contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0), // 여백 조정
                   ),
                   style: const TextStyle(
-                    fontSize: 14, // 글씨 크기를 줄임
+                    fontSize: 12, // 글씨 크기를 줄임
                   ),
 
                   onChanged: (value) {
@@ -340,7 +353,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                   },
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 16),
               Text(
                 price != null ? '$price 원' : '가격 정보 없음',
                 style: const TextStyle(color: Colors.grey),
@@ -380,7 +393,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
           style: TextStyle(
             color: Colors.black, // 글씨 색상을 흰색으로 설정
             fontWeight: FontWeight.bold, // 글씨를 볼드체로 설정
-            fontSize: 20, // 글씨 크기를 적절히 설정 (옵션)
+            fontSize: 15, // 글씨 크기를 적절히 설정 (옵션)
           ),
         ),
         centerTitle: true,
@@ -396,7 +409,6 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
 
 
       //새로 카드로 작성
-
 
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -433,7 +445,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                               '보관 및 배송할 짐을 선택해주세요.',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 12,
                               ),
                               overflow: TextOverflow.ellipsis, // 넘칠 경우 "..."으로 표시
                               maxLines: 1, // 한 줄로 제한
@@ -445,7 +457,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                             icon: const Icon(Icons.camera_alt_outlined, color: Colors.teal),
                             label: const Text(
                               'AR 측정',
-                              style: TextStyle(color: Colors.teal),
+                              style: TextStyle(color: Colors.teal, fontSize: 10,),
                             ),
                             onPressed: () {
                               // AR 측정 기능 구현 예정
@@ -456,22 +468,22 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                       ),
 
 
-                      SizedBox(height: 16),
+                      SizedBox(height: 5),
 
                       // 가방 리스트
                       //TODO: 가방 개수를 AR 카메라에서 받아와야함
                       Container(
-                        margin: const EdgeInsets.all(16.0), // 카드와 화면 가장자리 간격
-                        padding: const EdgeInsets.all(16.0), // 내부 여백
+                        margin: const EdgeInsets.all(8.0), // 카드와 화면 가장자리 간격
+                        padding: const EdgeInsets.all(8.0), // 내부 여백
                         decoration: BoxDecoration(
                           color: const Color(0xFFEFFAF6), // 연한 민트색 배경
                           borderRadius: BorderRadius.circular(12), // 둥근 모서리
                           boxShadow: [
                             BoxShadow(
                               color: Colors.grey.withOpacity(0.2), // 그림자 색상
-                              blurRadius: 10, // 그림자 흐림 정도
+                              blurRadius: 5, // 그림자 흐림 정도
                               spreadRadius: 2, // 그림자 퍼짐 정도
-                              offset: const Offset(0, 5), // 그림자 위치
+                              offset: const Offset(0, 2), // 그림자 위치
                             ),
                           ],
                         ),
@@ -511,7 +523,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                               style: TextStyle(
                                 color: Colors.teal,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                fontSize: 10,
                               ),
                             ),
                           ),
@@ -548,7 +560,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                       Row(
                         children: [Text('이용시간을 선택해주세요.',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                             fontFamily: 'Paperlogy',
@@ -577,13 +589,42 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
                           Text('까지'),
                         ],
                       ),
+
                       AddressInputCard(
                         userInputPostalCodeController: userInputPostalCodeController,
                         userInputAddressController: userInputAddressController,
                       ),
+
+
+
                     ]
                 ),
-              )
+              ),
+              Container(
+                margin: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.white, // 카드 배경 흰색
+                  borderRadius: BorderRadius.circular(12), // 모서리 둥글게
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2), // 그림자
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 5), // 그림자 위치
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    AddressInputCard(
+                      userInputPostalCodeController: userInputPostalCodeController,
+                      userInputAddressController: userInputAddressController,
+                    ),
+                  ]
+                ),
+              ),
+
               // 이용 시간 선택 섹션
             ],
           ),
@@ -597,7 +638,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
         padding: const EdgeInsets.all(16.0), // 버튼과 화면 가장자리 간격
         child: ElevatedButton(
           onPressed: () {
-            print('결제 버튼 눌림.\n전달받은 데이터: $widget.info');
+            print('배송 버튼 눌림.\n전달받은 데이터: $widget.info');
             _submitData();
           },
 

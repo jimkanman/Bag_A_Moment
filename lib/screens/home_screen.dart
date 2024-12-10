@@ -498,7 +498,7 @@ class _HomeScreenState extends State<HomeScreen> {
             top: MediaQuery.of(context).size.height / 2 - 20,
             left: MediaQuery.of(context).size.width / 2 - 150,
             width: 320, // 명시적 너비
-            height: 100, // 명시적 높이
+            height: 120, // 명시적 높이
             child: _buildMarkerInfoWidget(context),
           )
             :SizedBox.shrink(),
@@ -530,9 +530,13 @@ class _HomeScreenState extends State<HomeScreen> {
           _showExtraContainer = !_showExtraContainer; // 상태 변경
         });
       },
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+        maxWidth: 320, // 최대 너비
+        maxHeight: MediaQuery.of(context).size.height / 3, // 최대 높이
+        ),
       child:  Container(
-        width: 320,
-        height: 100,
+
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -612,9 +616,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       spacing: 8, // 태그 사이 간격
                       runSpacing: 4, // 줄 간격
                       children: (_selectedMarkerInfo!['tags'] as List<String>)
-                          .map((tag) => Container(
-                        width: 60,
-                        height: 20,
+                          .map((tag) => IntrinsicWidth(
+                        child: Container(
+
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
@@ -624,13 +628,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Text(
                           tag == 'TWENTY_FOUR_HOURS' ? '24시간' : tag,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 7,
                             fontFamily: 'Paperlogy',
                             fontWeight: FontWeight.w400, // Regular
                             color: Color(0xFFE0F7F5),
                           ),
+                          overflow: TextOverflow.ellipsis, // 넘칠 경우 "..." 표시
                         ),
-                      ))
+                      ),
+                      ),
+                      )
                           .toList(),
                     ),
 
@@ -641,6 +648,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
 
         ),
+      ),
       ),
     );
   }
