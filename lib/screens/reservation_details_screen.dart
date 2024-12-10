@@ -76,7 +76,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
       'reservations/${widget.reservation.id}',
       fromJson: (json) => StorageReservation.fromJson(json),
     );
-    processLuggageAsync();
+    await processLuggageAsync();
   }
 
   static const dummyImages = [
