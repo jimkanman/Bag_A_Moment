@@ -32,8 +32,6 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
   final TextEditingController userInputPostalCodeController = TextEditingController();
   final TextEditingController userInputAddressController = TextEditingController();
 
-  final TextEditingController userInputPostalCodeController = TextEditingController();
-  final TextEditingController userInputAddressController = TextEditingController();
 
 
   @override
@@ -153,15 +151,7 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
         ? userInputAddressController.text
         : '주소 입력 필요'; // 기본 값 설정
 
-    //주소 입력 변수
-    // 우편번호를 처리
-    final destinationPostalCode = userInputPostalCodeController.text.isNotEmpty
-        ? userInputPostalCodeController.text
-        : '우편번호';
 
-    final destinationAddress = userInputAddressController.text.isNotEmpty
-        ? userInputAddressController.text
-        : '우편번호';
 
 
 
