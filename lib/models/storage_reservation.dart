@@ -39,15 +39,13 @@ class StorageReservation {
       id: json['id'],
       storageId: json['storageId'],
       storageName: json['storageName'],
-      storageAddress: json['storageAddress'],
-      previewImagePath: json['previewImagePath'],
       luggage: json['luggage'] != null
           ? (json['luggage'] as List)
           .map((item) => Luggage.fromJson(item))
           .toList()
           : [],
       deliveryReservation:
-      json['deliveryReservation'] != null ? DeliveryReservation.fromJson(json['deliveryReservation']) : null,
+      json['deliveryReservation'] != null ? DeliveryReservation.fromJson(json['deliveryReservation']) : DeliveryReservation(),
       startDateTime: json['startDateTime'],
       endDateTime: json['endDateTime'],
       paymentAmount: json['paymentAmount'],

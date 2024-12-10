@@ -87,7 +87,7 @@ class _AddStorageScreenState extends State<AddStorageScreen> {
           '보관소 등록',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Color(0xFFE8F5F3),
+        backgroundColor: AppColors.backgroundMypage,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),

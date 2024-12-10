@@ -1,59 +1,115 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
+import 'package:bag_a_moment/screens/storage.dart';
+import 'package:bag_a_moment/services/api_service.dart';
+import 'package:bag_a_moment/widgets/primarybtn.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:bag_a_moment/main.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:intl/intl.dart';
 
+import '../core/app_colors.dart';
+import '../widgets/textfield.dart';
+import 'home_screen.dart';
 
-class ValidationScreen extends StatelessWidget {
+class StorageDetailScreen extends StatefulWidget {
+  // 상위에서 전달받는 값들
   final String name;
   final String phone;
   final String address;
   final String postalCode;
-  final String description;
-  final String backpackPrice;
-  final String carrierPrice;
-  final String miscellaneousPrice;
   final String? openTime;
   final String? closeTime;
   final File? image;
-  final File? file;
-  final String refundPolicy; //환불정책 string?
-  final List<String> storageOptions;
   final bool deliveryService;
 
-
-  const ValidationScreen({
+  const StorageDetailScreen({
     Key? key,
     required this.name,
     required this.phone,
     required this.address,
     required this.postalCode,
-    required this.description,
-    required this.backpackPrice,
-    required this.carrierPrice,
-    required this.miscellaneousPrice,
     required this.deliveryService,
-
     this.openTime,
     this.closeTime,
     this.image,
-    this.file,
-    required this.refundPolicy,
-    this.storageOptions = const [], // 기본값 추가
-
-
-
   }) : super(key: key);
 
+  @override
+  _StorageDetailScreenState createState() => _StorageDetailScreenState();
+}
 
+class _StorageDetailScreenState extends State<StorageDetailScreen> {
+  late ApiService apiService;
+  late int userId;
+  final FlutterSecureStorage _storage=FlutterSecureStorage();
+  final List<String> _availableOptions = [
+    "PARKING",
+    "CART",
+    "BOX",
+    "CCTV",
+    "INSURANCE",
+    "REFRIGERATION",
+    "VALUABLES",
+    "OTHER"
+  ];
+  final Map<String, String> optionTranslations = {
+    'PARKING': '주차 가능',
+    'CART': '카트 사용',
+    'BOX': '박스 제공',
+    'TWENTY_FOUR_HOURS': '24시간',
+    'CCTV': 'CCTV 설치',
+    'INSURANCE': '보험 제공',
+    'REFRIGERATION': '냉장 보관',
+    'VALUABLES': '귀중품 보관',
+    'OTHER': '기타',
+  };
+  // 이 화면에서 관리할 추가 상태들
+  final _formKey = GlobalKey<FormState>();
+  String description = '';
+  List<Map<String, String>> items = [
+    {'label': '여행용 가방', 'price': '0','data':'backpackPrice'}, // backpackPrice
+    {'label': '캐리어', 'price': '0','data':'carrierPrice'},      // carrierPrice
+    {'label': '기타 가방', 'price': '0','data':'miscellaneousPrice'},   // miscellaneousPrice
+  ];
+  String refundPolicy = '';
+  File? _selectedFile;
+  List<String> _storageOptions = [];
 
-  //시간 변환 함수
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _refundPolicyController = TextEditingController();
 
-  String _timeOfDayToString(String? time) {
+  Future<void> _pickFile() async {
+    final result = await FilePicker.platform
+        .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
+    if (result != null) {
+      setState(() {
+        _selectedFile = File(result.files.single.path!);
+      });
+    }
+  }
+
+  Future<void> initialize() async{
+    final token=await _storage.read(key: 'auth_token');
+    if(token==null){
+      print("[INFO] 로그인 토큰 없음");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인이 필요합니다.')),
+      );
+      return;
+    }
+
+    String? savedUserId=await _storage.read(key: 'user_id');
+    String? jwt=await _storage.read(key: 'auth_token');
+    userId=int.parse(savedUserId!);
+
+    apiService=ApiService(defaultHeader: {
+      'Authorization': jwt ?? '',
+    });
+  }
+    String _timeOfDayToString(String? time) {
     if (time == null) return "00:00"; // 기본값 설정
     try {
       if (time.contains("AM") || time.contains("PM")) {
@@ -78,485 +134,506 @@ class ValidationScreen extends StatelessWidget {
       return "00:00";
     }
   }
-
-
-
-
-  Future<void> _submitData(BuildContext context) async {
-    // openingTime과 closingTime 필수 검사
-    if (openTime == null || closeTime == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('운영 시간을 입력해주세요.')),
-      );
-      return; // 종료
-    }
-
-    final String url = 'http://3.35.175.114:8080/storages'; // 서버 API 주소
-
-        {
-      // 디버깅용 print문
-      print("=== storage.dart에서 ValidationScreen에 전달된 데이터 ===");
-      print("이름: $name");
-      print("전화번호: $phone");
-      print("주소: $address");
-      print("우편번호: $postalCode");
-      print("설명: $description");
-      print("가방 요금: $backpackPrice");
-      print("캐리어 요금: $carrierPrice");
-      print("기타 물품 요금: $miscellaneousPrice");
-      print("영업 시작 시간: $openTime");
-      print("영업 종료 시간: $closeTime");
-      print("선택된 이미지 경로: ${image?.path}");
-      print("선택된 파일 경로: ${file?.path}");
-      print("환불 정책: $refundPolicy");
-      print("보관 옵션: $storageOptions");
-      print("배송 옵션: $deliveryService");
-      print("=================================");
-      //여기까지는 시간, 이미지 정상
-    }
-
-
-    try {
-      // Flutter Secure Storage에서 토큰 읽기
-      final token = await secureStorage.read(key: 'auth_token');
-      if (token == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그인이 필요합니다.')),
-        );
-        return;
-      }
-      // Multipart Request 생성
-      var request = http.MultipartRequest('POST', Uri.parse(url));
-      request.headers.addAll({
-        'Authorization': token, // 인증 토큰 추가
-        'Content-Type': 'multipart/form-data', // 명시적으로 Content-Type 추가
-      });
-
-
-
-      // 헤더 출력 (디버깅)
-      final headers = {
-        'Authorization': token,
-      };
-      print('Request Headers: $headers');
-      print('Request Body: ${request}');
-
-
-      // 본문 데이터 추가
-      request.fields.addAll({
-        "registerName": name,
-        "phoneNumber": phone,
-        "description": description,
-        "postalCode": postalCode,
-        "detailedAddress": address,
-        "openingTime": _timeOfDayToString(openTime),
-        "closingTime":  _timeOfDayToString(closeTime),
-        "backpackPricePerHour": backpackPrice,
-        "carrierPricePerHour": carrierPrice,
-        "miscellaneousItemPricePerHour": miscellaneousPrice,
-        "hasDelivery": deliveryService.toString(), // bool 값을 문자열로 변환
-      });
-      // `storageOptions` 필드를 JSON 배열로 추가
-      if (storageOptions.isNotEmpty) {
-        request.fields['storageOptions'] = jsonEncode(storageOptions);
-      }
-      print('Selected Storage Options: $storageOptions');
-
-
-      //이미지 파일 디버깅
-      if (image == null) {
-        print("@@@@@@@@No image selected.");
-      } else {
-        print("@@@@@@@@Image path: ${image!.path}");
-      }
-
-
-      // 이미지 파일 추가 (선택적으로 추가)
-      // 이미지 파일 추가 (필드 이름을 '"storageImages'로 변경)
-      if (image != null) {
-        final fileExists = await File(image!.path).exists();
-        print("Image file exists: $fileExists");
-        if (fileExists) {
-          request.files.add(
-            await http.MultipartFile.fromPath(
-              'storageImages', // Ensure this matches the server's expected field
-              image!.path,
-              contentType: MediaType('image', 'jpeg'), // Specify content type
-            ),
-          );
-          print("################# 제발제발 Image added to request under 'images' field: ${image!.path}");
-        } else {
-          print("Selected image file does not exist: ${image!.path}");
-        }
-      }
-
-      // 약관 파일 추가 (선택적으로 추가)
-      if (file != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath('termsAndConditions', file!.path),
-        );
-      }
-
-
-      // POST request 보내기
-      final response = await request.send();
-      // 응답 확인
-      if (response.statusCode == 200) {
-        final responseBody = await response.stream.bytesToString();
-        final jsonResponse = jsonDecode(responseBody);
-
-        if (jsonResponse['isSuccess'] == true) {
-          // 응답 데이터 확인
-          final data = jsonResponse['data'];
-
-          print("Registration Successful!");
-          print("ID: ${data['id']}");
-          print("Name: ${data['name']}");
-          print("Owner ID: ${data['ownerId']}");
-          print("Phone Number: ${data['phoneNumber']}");
-          print("Description: ${data['description']}");
-          print("Notice: ${data['notice']}");
-          print("Postal Code: ${data['postalCode']}");
-          print("Address: ${data['detailedAddress']}");
-          print("Latitude: ${data['latitude']}");
-          print("Longitude: ${data['longitude']}");
-          print("Opening Time: ${data['openingTime']}");
-          print("Closing Time: ${data['closingTime']}");
-          print("Backpack Price Per Hour: ${data['backpackPricePerHour']}");
-          print("Carrier Price Per Hour: ${data['carrierPricePerHour']}");
-          print("Miscellaneous Item Price Per Hour: ${data['miscellaneousItemPricePerHour']}");
-          print("Terms and Conditions: ${data['termsAndConditions']}");
-          print("Images: ${data['images']}");
-          print("Storage Options: ${data['storageOptions']}");
-          print("Delivery Options: ${data['hasDeliveryService']}");
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('보관소 등록이 완료되었습니다!')),
-          );
-          Navigator.pop(context); // 성공 시 이전 화면으로 이동
-
-        } else { //isSuccess 가 false이면
-          print('Request Failed: ${jsonResponse['message']}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('등록 실패: ${jsonResponse['message']}')),
-          );
-        }
-      } else {
-        // HTTP 상태 코드가 200이 아닐 때 처리
-        try {
-          final responseBody = await response.stream.bytesToString();
-          final jsonResponse = jsonDecode(responseBody);
-          print('Server Error:');
-          print('Status Code: ${response.statusCode}');
-          print('Message: ${jsonResponse['message']}');
-          print('Error Data: ${jsonResponse['data']}');
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('서버 오류: ${jsonResponse['message']}')),
-          );
-        } catch (e) {
-          // JSON 파싱 실패 시 처리
-          final responseBody = await response.stream.bytesToString();
-          print('Server Response Body: $responseBody');
-          print('Failed to parse server error response. Raw response: ${responseBody}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('서버 오류 발생: ${response.statusCode}')),
-          );
-        }
-      }
-    } catch (e, stacktrace) {
-  print('Exception occurred: $e');
-  print('Stacktrace: $stacktrace');
-}
-
-}
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-
-      appBar: AppBar(
-        title: Text(
-          '입력 정보 확인',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFFFFFFF)),
-        ),
-        backgroundColor: Color(0xFF4DD9C6),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  // Row 생성 로직을 추출한 함수
+  List<Widget> _buildRows(List<Map<String, String>> items) {
+    return items.asMap().entries.map((entry) {
+      final index = entry.key;
+      final item = entry.value;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              '보관소명:',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
-            ),
-            SizedBox(height: 10),
+            // 라벨
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), // 내부 여백
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300, // 연한 회색 배경
-                borderRadius: BorderRadius.circular(18), // 둥근 모서리
-              ),
-              child: Text(
-                name, // 사용자가 입력한 데이터
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Color(0xFF0E2927), // 텍스트 색상
+              width: 100,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: ShapeDecoration(
+                shape: RoundedRectangleBorder(
+                  side: const BorderSide(width: 1, color: Color(0xFF2CB598)),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
-            ),
-            SizedBox(height: 15),
-
-            Text(
-              '전화번호:',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Text(
-                phone,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Color(0xFF0E2927),
-                ),
-              ),
-            ),
-            SizedBox(height: 15),
-            Text(
-              '주소:',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Text(
-                address,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Color(0xFF0E2927),
-                ),
-              ),
-            ),
-            SizedBox(height: 15),
-            Text(
-              '운영 시간:',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300, // 연한 회색 배경
-                borderRadius: BorderRadius.circular(18), // 둥근 모서리
-              ),
-              child: Text(
-                '$openTime ~ $closeTime',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Color(0xFF0E2927), // 텍스트 색상
-                ),
-              ),
-            ),
-            SizedBox(height: 15),
-
-            Text(
-              '보관소 소개:',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Text(
-                description,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Color(0xFF0E2927),
-                ),
-              ),
-            ),
-            SizedBox(height: 15),
-
-            if (image != null)
-              Text(
-                '보관소 대표 이미지:',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
-              ),
-            SizedBox(height: 10),
-              Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: Image.file(
-                    image!,
-                    height: 100,
-                    width: 100,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-
-
-            SizedBox(height: 15),
-            Text(
-              '가격 정보:',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '가방: $backpackPrice 원',
-                    style: TextStyle(fontSize: 18, color: Color(0xFF0E2927)),
-                  ),
-                  Text(
-                    '캐리어: $carrierPrice 원',
-                    style: TextStyle(fontSize: 18, color: Color(0xFF0E2927)),
-                  ),
-                  Text(
-                    '기타 물품: $miscellaneousPrice 원',
-                    style: TextStyle(fontSize: 18, color: Color(0xFF0E2927)),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 15),
-
-            Checkbox(
-              value: deliveryService, // `deliveryService` 값으로 체크 여부 결정
-              onChanged: null, // null로 설정하여 체크박스 수정 불가
-              activeColor: Colors.green, // 체크박스의 활성화 색상
-            ),
-            Text(
-              '배송 서비스 제공 여부',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 15),
-
-            Text(
-              '환불 정책:',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
-            ),
-            SizedBox(height: 15),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Text(
-                refundPolicy,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Color(0xFF0E2927),
-                ),
-              ),
-            ),
-            SizedBox(height: 15),
-
-            if (file != null)
-              Text(
-                '약관 파일:',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF31BEB0)),
-              ),
-            if (file != null)
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Text(
-                  file!.path.split('/').last,
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Color(0xFF0E2927),
-                  ),
-                ),
-              ),
-            SizedBox(height: 20),
-            Center(
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context); // 뒤로 이동, 뒤가 입력페이지인지 확인
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
-                    child: Text(
-                      ' 뒤로 ',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  const FlutterLogo(size: 20),
+                  const SizedBox(width: 4),
+                  Text(
+                    item['label']!,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(height: 10, width:80 ),
-                Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _submitData(context); // 서버로 데이터 전송
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF31BEB0),
-                      minimumSize: Size(double.infinity, 50), // 버튼의 최소 크기 (너비, 높이)
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    ),
-                    child: Text(
-                      '입력한 정보가 모두 맞아요!',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ),
-                  ],
-                ),
-
                 ],
+              ),
+            ),
+            // 고정 텍스트
+            const Text(
+              '개당',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            // 가격 입력 TextField
+            Container(
+              width: 80, // TextField의 고정 너비
+              child: TextField(
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                controller: TextEditingController(text: item['price']),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  isDense: true, // 간격 축소
+                  contentPadding: EdgeInsets.all(8), // 내부 여백 조정
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    items[index]['price'] = value; // 값 업데이트
+                  });
+                },
               ),
             ),
           ],
         ),
-      ),
+      );
+    }).toList();
+  }
+  Future<void> _submitApiData(BuildContext context) async {
+    await initialize();
+
+    print("이름: ${widget.name}");
+    print("전화번호: ${widget.phone}");
+    print("주소: ${widget.address}");
+    print("우편번호: ${widget.postalCode}");
+    print("설명: ${_descriptionController.text}");
+    print("가방 요금: ${items[0]['price']}");
+    print("캐리어 요금: ${items[1]['price']}");
+    print("기타 물품 요금: ${items[2]['price']}");
+    print("영업 시작 시간: ${widget.openTime}");
+    print("영업 종료 시간: ${widget.closeTime}");
+    print("선택된 이미지 경로: ${widget.image?.path}");
+    print("선택된 파일 경로: ${_selectedFile?.path}");
+    print("환불 정책: ${_refundPolicyController.text}");
+    print("보관 옵션: $_storageOptions");
+    print("배송 옵션: ${widget.deliveryService}");
+    print("=================================");
+    try {
+      // MultipartFile 생성
+      final List<http.MultipartFile> files = [];
+
+      if (widget.image != null) {
+        final imageFile = await http.MultipartFile.fromPath(
+          'storageImages',
+          widget.image!.path,
+          contentType: MediaType('image', 'jpeg'), // MIME 타입 지정
+        );
+        files.add(imageFile);
+      }
+
+      if (_selectedFile != null) {
+        final otherFile = await http.MultipartFile.fromPath(
+          'termsAndConditions',
+          _selectedFile!.path,
+        );
+        files.add(otherFile);
+      }
+
+      // Form 데이터 전송
+      final result = await apiService.postMultipart(
+        'storages', // 엔드포인트
+        fields: {
+          'registerName': widget.name,
+          'phoneNumber': widget.phone,
+          'detailedAddress': widget.address,
+          'postalCode': widget.postalCode,
+          'description': _descriptionController.text,
+          'backpackPricePerHour': items[0]['price'].toString(),
+          'carrierPricePerHour': items[1]['price'].toString(),
+          'miscellaneousItemPricePerHour': items[2]['price'].toString(),
+          "openingTime": _timeOfDayToString(widget.openTime),
+          "closingTime": _timeOfDayToString(widget.closeTime),
+          'refundPolicy': _refundPolicyController.text,
+          'storageOptions': jsonEncode(_storageOptions),
+          'deliveryService': widget.deliveryService.toString(),
+        },
+        files: files,
+        fromJson: (data) => data, // 응답 처리 (필요시 매핑 함수 작성)
+      );
+
+      print("요청 성공: $result");
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => StorageScreen()),
+            (Route<dynamic> route) => false, // 모든 이전 경로 제거
+      );
+    } catch (e) {
+      print("요청 중 오류 발생: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('요청 중 오류가 발생했습니다.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        backgroundColor: AppColors.backgroundMypage,
+        appBar: AppBar(
+          title: const Text(
+            '보관소 등록',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        ),
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ElevatedButton(
+            onPressed: () {
+              // 서버로 데이터 전송
+              _submitApiData(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF31BEB0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: Text(
+              '입력한 정보로 내 보관소 등록하기',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+          ),
+        ),
+        body: SingleChildScrollView(
+            padding: EdgeInsets.all(12.0),
+            child: Container(
+                child: Form(
+                    key: _formKey,
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 20),
+                            child: const Text(
+                              '추가 정보를 입력해주세요',
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primaryDark,
+                                  fontFamily: 'Pretendard'),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 24),
+                            decoration: ShapeDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              shadows: const [
+                                BoxShadow(
+                                  color: Color(0x3F000000),
+                                  blurRadius: 4,
+                                  offset: Offset(0, 0),
+                                  spreadRadius: 0,
+                                )
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    '가격 설정',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w600,
+                                      height: 0.10,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: ShapeDecoration(
+                                    color: const Color(0xFFEBFFFA),
+                                    shape: RoundedRectangleBorder(
+                                      side: const BorderSide(width: 1, color: Color(0xFF2CB598)),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    shadows: const [
+                                      BoxShadow(
+                                        color: Color(0x3F000000),
+                                        blurRadius: 4,
+                                        offset: Offset(0, 0),
+                                        spreadRadius: 0,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // 반복적으로 Row를 생성하는 구조
+                                      ..._buildRows(items),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                const SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    '환불 정책',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w600,
+                                      height: 0.10,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                CustomTextFormField(
+                                  controller: _refundPolicyController,
+                                  hintText: '10분이상 미도착시 환불 불가',
+                                  validator: (value) =>
+                                      value!.isEmpty ? '보관소 이름을 입력해주세요' : null,
+                                ),
+                                const SizedBox(height: 24),
+                                const SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    '이용 약관',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w600,
+                                      height: 0.10,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _selectedFile == null
+                                          ? const Text(
+                                              '이용약관.pdf',
+                                              style: TextStyle(
+                                                color: Color(0xFFC4C3C3),
+                                                fontSize: 12,
+                                                fontFamily: 'Inter',
+                                                fontWeight: FontWeight.w400,
+                                                height: 0.14,
+                                              ),
+                                            )
+                                          : Text(
+                                              _selectedFile!.path
+                                                  .split('/')
+                                                  .last,
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 12,
+                                                fontFamily: 'Inter',
+                                                fontWeight: FontWeight.w400,
+                                                height: 0.14,
+                                              ),
+                                            ),
+                                      Primarybtn(
+                                        padding: const EdgeInsets.all(8),
+                                        onPressed: _pickFile,
+                                        text: '파일 선택',
+                                      ),
+                                    ]),
+                                const SizedBox(
+                                  width: double.infinity,
+                                  child: Text(
+                                    '보관소 설명',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w600,
+                                      height: 0.10,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 20),
+                                CustomLargeTextFormField(
+                                  controller: _descriptionController,
+                                  hintText: '보관소의 상세한 소개를 적어주세요',
+                                  validator: (value) =>
+                                      value!.isEmpty ? '보관소 소개를 입력해주세요.' : null,
+                                  maxlines: 4,
+                                ),
+                                SizedBox(height: 20),
+                                const SizedBox(
+                                  width: double.infinity,
+                                  height: 20,
+                                  child: Text(
+                                    '보관소 옵션 선택',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 16,
+                                      fontFamily: 'Pretendard',
+                                      fontWeight: FontWeight.w600,
+                                      height: 0.10,
+                                    ),
+                                  ),
+                                ),
+                                Wrap(
+                                  spacing: 10,
+                                  children: _availableOptions.map((option) {
+                                    return ChoiceChip(
+                                      label: Text(
+                                        optionTranslations[option] ?? option, // 한글 변환, 기본값은 원래 문자열
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: _storageOptions.contains(option)
+                                              ? Colors.white // 선택된 상태 글자색
+                                              : AppColors.primaryDark, // 선택되지 않은 상태 글자색
+                                          fontFamily: 'Pretendard',
+                                        ),
+                                      ),
+                                      backgroundColor: Colors.white, // 선택되지 않은 상태의 배경색
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12), // 둥근 모서리
+                                        side: BorderSide(
+                                          color: AppColors.primaryDark, // 테두리 색상
+                                          width: 1, // 테두리 두께
+                                        ),
+                                      ),
+                                      selectedColor: AppColors.primaryDark, // 선택된 상태의 배경색
+                                      selected: _storageOptions.contains(option),
+                                      onSelected: (selected) {
+                                        setState(() {
+                                          if (selected) {
+                                            _storageOptions.add(option);
+                                          } else {
+                                            _storageOptions.remove(option);
+                                          }
+                                        });
+                                      },
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ]
+                    )
+                )
+            )
+        )
     );
   }
 
 }
 
+class addStorageSuccessScreen extends StatelessWidget {
+  const addStorageSuccessScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFFEBFFFA),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 200,
+                  height: 200,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(),
+                  child: FlutterLogo(),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  '보관소 등록을 완료했어요',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF2CB598),
+                    fontSize: 16,
+                    fontFamily: 'Pretandard',
+                    fontWeight: FontWeight.w600,
+                    height: 0.08,
+                    letterSpacing: 0.50,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: 200,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: ShapeDecoration(
+                    color: Color(0xFF2CB598),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Primarybtn(padding: const EdgeInsets.all(0), onPressed: (){
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                              (Route<dynamic> route) => false, // 모든 이전 경로 제거
+                        );
+                      }, text: "내 보관소로 이동하기")
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

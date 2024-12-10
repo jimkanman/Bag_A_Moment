@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:bag_a_moment/models/storage_reservation.dart';
 import 'package:bag_a_moment/rounter/locations.dart';
+import 'package:bag_a_moment/screens/reservation_details_screen.dart';
 import 'package:bag_a_moment/screens/storageManage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +31,10 @@ Future<void> loadStoredValues() async {
   print('Global User ID: $globalUserId');
 }
 
+//모든 플러터 위젯 시작점
+void main() {
+  runApp(JimApp());
+}
 
 class JimApp extends StatelessWidget {
   const JimApp({Key? key}) : super(key: key);
@@ -37,6 +43,7 @@ class JimApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: InitialScreen(),
+      // home: ReservationDetailsScreen(reservation: StorageReservation(),),
       theme: ThemeData(
         //텍스트 스타일 지정
         fontFamily: "Pretendard"
@@ -158,17 +165,12 @@ class _InitialScreenState extends State<InitialScreen> {
     );
   }
 
-    @override
-    Widget build(BuildContext context) {
-      return LoadingScreen(); // 앱을 실행할 때 처음에 로딩 화면이 표시됨
-    }
+  @override
+  Widget build(BuildContext context) {
+    return LoadingScreen(); // 앱을 실행할 때 처음에 로딩 화면이 표시됨
   }
-
-
-//모든 플러터 위젯 시작점
-void main() {
-  runApp(JimApp());
 }
+
 
 
 //하단바
@@ -189,6 +191,7 @@ class _MainScreenBottomState extends State<MainBottomScreen>
     StorageManagementPage(), // 내보관소 페이지
     MyPageMainScreen(), // 마이페이지
   ];
+
   void _onItemTapped(int index) {
     setState(() {
       print("탭 선택: $index");
@@ -196,14 +199,30 @@ class _MainScreenBottomState extends State<MainBottomScreen>
     });
   }
 
+  Widget _buildPage(int index) {
+    switch (index) {
+      case 0:
+        return HomeScreen();
+      case 1:
+        return ReservationScreen();
+      case 2:
+        return StorageManagementPage();
+      case 3:
+        return MyPageMainScreen();
+      default:
+        return Container();
+    }
+  }
+
   //하단바 위젯
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
+      /*body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
-      ), // 현재 선택된 페이지
+      ), // 현재 선택된 페이지*/
+      body: _buildPage(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
