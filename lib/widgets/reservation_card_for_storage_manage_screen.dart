@@ -54,7 +54,7 @@ class ReservationManageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 125,
+      height: 150,
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -122,12 +122,6 @@ class ReservationManageCard extends StatelessWidget {
                 )
               ],
             ),
-          ),
-
-          // 예약 확인하기 버튼
-          GestureDetector(
-            onTap: () { },
-            child: const Text("예약 확인하기", style: TextStyle(color: AppColors.textDark, fontSize: 14),)
           ),
           TextButton(
             onPressed: () {
