@@ -88,10 +88,13 @@ class _ReservationScreenState extends State<ReservationScreen> {
         .toList()
     );
     print("GOT RESPONSE");
+    for (var r in _reservations)
+      print(r);
 
     print("SETTING RESERVATIONS_ON_DELIVERY");
     _reservationsOnDelivery = _reservations
-      .where((reservation) => reservation.deliveryReservation?.status == 'ON_DELIVERY').toList();
+      // .where((reservation) => reservation.deliveryReservation?.status == 'ON_DELIVERY').toList();
+          .where((reservation) => reservation.deliveryReservation != null).toList();
 
     print("SETTING DELIVERY LOCATIONS");
     _deliveryLocations = _reservationsOnDelivery
@@ -101,11 +104,12 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
     // reservations에는 배송 중이 아닌 것만 담음
     _reservations = _reservations
-      .where((reservation) => reservation.deliveryReservation?.status != 'ON_DELIVERY').toList();
+      // .where((reservation) => reservation.deliveryReservation?.status != 'ON_DELIVERY').toList();
+      .where((reservation) => reservation.deliveryReservation == null).toList();
 
     // Websocket 연결
     print("SETTING WEBSOCKET");
-    _deliveryLocations.forEach((location) {
+    for (var location in _deliveryLocations) {
       _webSocketService.subscribe(
           'topic/${location.deliveryId}/location',
               (json) {
@@ -113,7 +117,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
             print(json);
           });
-    });
+    }
 
       print("SETTING IS_LOADING TO FALSE");
       setState(() { _isLoading = false;});
@@ -162,6 +166,21 @@ class _ReservationScreenState extends State<ReservationScreen> {
     // TODO 예약상세 페이지로 라우팅?
   }
 
+  Color determineDeliveryReservationCardButtonColor(String? status) {
+    switch(status?.toUpperCase()) {
+      case "PENDING":
+        return AppColors.backgroundLight;
+      case "ASSIGNED":
+        return AppColors.backgroundLight;
+      case "ON_DELIVERY":
+        return AppColors.primary;
+      case "COMPLETED":
+        return AppColors.backgroundDarkBlack;
+      default:
+        return AppColors.backgroundGray;
+    }
+  }
+
   Color determineStorageReservationCardBackgroundColor(StorageReservation s) {
     if(s.status.toLowerCase() == 'complete') return AppColors.backgroundGray;
     print(s.endDateTime);
@@ -171,6 +190,18 @@ class _ReservationScreenState extends State<ReservationScreen> {
     print(isLate);
     if(isLate) return AppColors.backgroundLightRed;
     return Colors.white;
+  }
+
+  Text determineDeliveryReservationCardText(String? status) {
+    const TextStyle(color: AppColors.textDark, fontSize: 10);
+
+    switch(status?.toUpperCase()) {
+      case "PENDING": return const Text("배송 대기", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
+      case "ASSIGNED": return const Text("배정 완료", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
+      case "ON_DELIVERY": return const Text("배송 중", style: TextStyle(color: AppColors.textLight, fontSize: 10),);
+      case "COMPLETE": return const Text("배송 완료", style: TextStyle(color: AppColors.textLight, fontSize: 10),);
+      default: return const Text("배송 대기", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
+    }
   }
 
   /// 로그인 처리, JWT 가져옴, ApiService 초기화
@@ -264,7 +295,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   ),
                   const SizedBox(width: 8),
                   const Text(
-                    '개의 배송 중인 짐이 있어요',
+                    '개의 배송 예약이 있어요',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.normal,
@@ -285,8 +316,9 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 children: [
                   for (int idx = 0; idx < _reservationsOnDelivery.length; idx++)
                     ExpandableReservationCard(
-                      buttonBackgroundColor: AppColors.backgroundLight,
-                      buttonText: const Text("내 짐은 배달 중", style: TextStyle(color: AppColors.textDark, fontSize: 10),),
+                      buttonBackgroundColor: determineDeliveryReservationCardButtonColor(_reservationsOnDelivery[idx].status),
+                      buttonText: determineDeliveryReservationCardText(_reservationsOnDelivery[idx].deliveryReservation?.status),
+                      luggage: _reservationsOnDelivery[idx].luggage,
                       previewImagePath: _reservationsOnDelivery[idx].previewImagePath,
                       storageName: _reservationsOnDelivery[idx].storageName,
                       pickupTime: StringTimeFormatter.formatTime(_reservationsOnDelivery[idx].deliveryReservation?.deliveryArrivalDateTime),
@@ -324,7 +356,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
               ),
               const SizedBox(width: 8),
               const Text(
-                '개의 보관 중인 짐이 있어요',
+                '개의 보관 예약이 있어요',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.normal,
@@ -363,4 +395,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
       ),
     );
   }
+
+
 }

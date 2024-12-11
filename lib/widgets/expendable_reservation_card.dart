@@ -53,9 +53,106 @@ class ExpandableReservationCard extends StatefulWidget {
 class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
   bool _isExpanded = false;
   late GoogleMapController _mapController;
+  final Set<Marker> _markers = {};
+
+  Widget DeliveryStatusString(String status) {
+    switch(status.toUpperCase()){
+      case 'ON_DELIVERY':
+        return const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("배송맨", style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold ),),
+            Text("이 목적지를 향해 ", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
+            Text("이동", style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold ),),
+            Text("하고 있어요", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),)
+          ],
+        );
+      case 'COMPLETE':
+        return const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("배송이", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
+            Text("완료", style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold ),),
+            Text("되었어요", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),)
+          ],
+        );
+      case 'PENDING':
+      default:
+        return const Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("보관소에서 보관 중이에요", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
+          ],
+        );
+    }
+
+  }
+
+  Future<void> _addCustomMarker() async {
+    final BitmapDescriptor storageRed = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(48, 48)), // 이미지 크기 조정
+      'assets/images/red_box_icon.png', // assets 경로
+    );
+    final BitmapDescriptor storageGreen = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(48, 48)), // 이미지 크기 조정
+      'assets/images/green_box_icon.png', // assets 경로
+    );
+
+    final _tmpMarkes = [
+      if(widget.deliveryLatitude != null
+          && widget.deliveryLongitude != null)
+        Marker(
+          markerId: const MarkerId('delivery'),
+          position: LatLng(
+              widget.deliveryLatitude!,
+              widget.deliveryLongitude!),
+          infoWindow: const InfoWindow(title: '배송맨'),
+        ),
+
+      if(widget.deliveryReservation?.destinationLatitude != null
+          && widget.deliveryReservation?.destinationLongitude != null)
+        Marker(
+            markerId: const MarkerId('destination'),
+            position: LatLng(
+                widget.deliveryReservation!.destinationLatitude ?? 37.5665,
+                widget.deliveryReservation!.destinationLongitude ?? 126.9780),
+            infoWindow: const InfoWindow(title: '목적지'),
+            icon: storageRed
+        ),
+
+      if(widget.deliveryReservation?.storageLatitude != null
+          && widget.deliveryReservation?.storageLongitude != null)
+        Marker(
+            markerId: const MarkerId('storage'),
+            position: LatLng(
+                widget.deliveryReservation!.storageLatitude,
+                widget.deliveryReservation!.storageLongitude),
+            infoWindow: const InfoWindow(title: '배송지'),
+            icon: storageGreen
+        )
+    ];
+    print("ADDING MARKERS :");
+    for(var marker in _tmpMarkes)
+      print(marker);
+    print("ADDING...");
+
+    setState(() {
+      _markers.addAll(
+        _tmpMarkes
+      );
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+  }
 
   @override
   Widget build(BuildContext context) {
+    print("ExpendableReservationCard: title: ${widget.storageName}, luggage: ${widget.luggage}, pickupTime: ${widget.pickupTime} ");
+    // _addCustomMarker();
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -66,7 +163,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
         duration: const Duration(milliseconds: 300), // 애니메이션 지속 시간
         curve: Curves.easeInOut, // 부드러운 애니메이션 효과
         margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        height: _isExpanded ? 386 : 136, // 확장 여부에 따라 높이 조절
+        height: _isExpanded ? 400 : 150, // 확장 여부에 따라 높이 조절
         decoration: BoxDecoration(
           color: widget.backgroundColor,
           borderRadius: BorderRadius.circular(12.0),
@@ -89,56 +186,64 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // 짐 관련 정보
-                  Row(
-                    children: [
-                      const Icon(Icons.shopping_bag_outlined, size: 24.0, color: AppColors.textDark),
-                      const SizedBox(width: 4.0),
-                      Text(
-                        '${widget.luggage.length}개',
-                        style: const TextStyle(
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                  Flexible(
+                    flex: 2,
+                    child: Row(
+                      children: [
+                        const Icon(Icons.shopping_bag_outlined, size: 24.0, color: AppColors.textDark),
+                        const SizedBox(width: 4.0),
+                        Text(
+                          '${widget.luggage.length}개',
+                          style: const TextStyle(
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 16.0),
+                  const SizedBox(width: 12),
 
                   // 가운데 이미지 + 보관소 정보
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          widget.previewImagePath,
-                          width: 96.0,
-                          height: 52.0,
-                          fit: BoxFit.cover,
+                  Flexible(
+                    flex: 4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: Image.network(
+                            widget.previewImagePath,
+                            width: 96.0,
+                            height: 70,
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4.0),
-                      const Text(
-                        "수령 장소",
-                        style: TextStyle(fontSize: 8, color: AppColors.textGray),
-                      ),
-                      const SizedBox(height: 8.0),
-                      Text(
-                        widget.storageName,
-                        style: const TextStyle(
-                          fontSize: 13.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                        const SizedBox(height: 4.0),
+                        const Text(
+                          "수령 장소",
+                          style: TextStyle(fontSize: 8, color: AppColors.textGray),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 8.0),
+                        Text(
+                          widget.storageName,
+                          style: const TextStyle(
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            overflow: TextOverflow.ellipsis
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
 
                   // 오른쪽 텍스트 및 버튼 (픽업 예정 시간 / 연장 요청 등)
-                  Expanded(
+                  Flexible(
+                    flex: 5,
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
@@ -159,7 +264,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 8),
                             SizedBox(
                               height: 28,
                               width: double.infinity,
@@ -189,17 +294,9 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                       const Divider(thickness: 0.5, height: 3,),
 
                      // 배송맨이 이동 중이에요!
-                     const Padding(
+                     Padding(
                         padding: EdgeInsets.all(8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("배송맨", style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold ),),
-                            Text("이 목적지를 향해 ", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
-                            Text("이동", style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold ),),
-                            Text("하고 있어요", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),)
-                          ],
-                        ),
+                        child: DeliveryStatusString(widget.deliveryReservation!.status)
                       ),
 
                       // GOOGLE MAP
@@ -212,10 +309,14 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                           child: GoogleMap(
                             // 맵 생성 완료 후
                             onMapCreated: (controller) {
+                              _addCustomMarker();
                               _mapController = controller;
                               if(widget.deliveryLatitude != null && widget.deliveryLongitude != null) {
                                 // 시작 위치 주어진 경우 해당 위치로 이동
                                 controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryLatitude!, widget.deliveryLongitude!)));
+                              } else {
+                                // 시작 위치 주어지지 않은 경우 (= 배송 시작이 아닌 경우) 보관소 위치를 보여줌
+                                controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryReservation!.storageLatitude, widget.deliveryReservation!.storageLongitude)));
                               }
                               ExpandableReservationCard.googleMapControllers[widget.deliveryReservation?.deliveryId ?? -1] = controller;
                             },
@@ -223,25 +324,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                               target: LatLng(37.5665, 126.9780), // 서울
                               zoom: 14,
                             ),
-                            markers: {
-                              Marker(
-                                markerId: const MarkerId('delivery'),
-                                position: LatLng(
-                                    widget.deliveryLatitude ?? 37.5665,
-                                    widget.deliveryLongitude ?? 126.9780),
-                                infoWindow: const InfoWindow(title: '배송맨'),
-                              ),
-
-                              if(widget.deliveryReservation?.destinationLatitude != null &&
-                                  widget.deliveryReservation?.destinationLongitude != null)
-                                Marker(
-                                  markerId: const MarkerId('delivery'),
-                                  position: LatLng(
-                                      widget.deliveryReservation!.destinationLatitude ?? 37.5665,
-                                      widget.deliveryReservation!.destinationLongitude ?? 126.9780),
-                                  infoWindow: const InfoWindow(title: '배송맨'),
-                                ),
-                            }
+                            markers: _markers,
                           ),
                         ),
                       ),
@@ -272,67 +355,4 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
       ),
     );
   }
-
-
-    /*  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              _isExpanded = !_isExpanded; // 상태를 반전
-            });
-          },
-          child: ReservationCard(
-            luggage: widget.luggage,
-            previewImagePath: widget.previewImagePath,
-            storageName: widget.storageName,
-            pickupTime: widget.pickupTime,
-            buttonBackgroundColor: widget.buttonBackgroundColor,
-            buttonText: widget.buttonText,
-            backgroundColor: widget.backgroundColor,
-            onButtonPressed: widget.onButtonPressed,
-          )
-        ),
-
-        // 확장 컨테이너 (GoogleMap)
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 300), // 애니메이션 지속 시간
-          curve: Curves.easeInOut, // 애니메이션 곡선
-          height: _isExpanded ? 300 : 0, // 확장 여부에 따라 높이 변경
-          child: _isExpanded
-          ? Container(
-              // Google Map Container
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(8),
-                ),
-              ),
-              child: GoogleMap(
-                onMapCreated: (controller) {
-                  _mapController = controller;
-                },
-                initialCameraPosition: const CameraPosition(
-                  target: LatLng(37.5665, 126.9780), // 서울의 위도, 경도
-                  zoom: 14,
-                ),
-                markers: {
-                  const Marker(
-                    markerId: MarkerId('example'),
-                    position: LatLng(37.5665, 126.9780), // 서울
-                    infoWindow: InfoWindow(title: '서울'),
-                  ),
-                },
-              ),
-            )
-          : const SizedBox.shrink(),
-        ),
-      ],
-    );
-  }
-
-     */
 }

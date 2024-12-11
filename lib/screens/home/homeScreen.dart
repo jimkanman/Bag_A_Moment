@@ -114,9 +114,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // 현재 위치 가져오기
     Position position = await Geolocator.getCurrentPosition();
-    setState(() {
-      _currentPosition = LatLng(position.latitude, position.longitude);
-    });
+    if (mounted){
+      setState(() {
+        _currentPosition = LatLng(position.latitude, position.longitude);
+      });
+    }
   }
 
   // 지도 이동 함수

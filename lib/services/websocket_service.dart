@@ -23,7 +23,7 @@ class WebSocketService {
   }
 
   void subscribe(String topic, Function(Map<String, dynamic>) onMessage) {
-    print("StompService: subscribing %topic");
+    print("StompService: subscribing $topic");
     _stompClient?.subscribe(
       destination: topic,
       callback: (StompFrame frame) {
