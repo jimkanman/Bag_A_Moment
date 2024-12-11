@@ -63,7 +63,7 @@ class StorageModel {
       phoneNumber: json['phoneNumber'],
       description: json['description'],
       notice: json['notice']??'',
-      hasDeliveryService: json['hasDeliveryService'],
+      hasDeliveryService: json['hasDeliveryService']??false,
       postalCode: json['postalCode'],
       detailedAddress: json['detailedAddress'],
       latitude: json['latitude']?.toDouble(),

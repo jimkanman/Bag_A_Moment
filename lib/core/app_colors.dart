@@ -22,4 +22,10 @@ class AppColors {
   static const Color textGray = Color(0xFF898181);
   static const Color textRed = Color(0xFFC92603);
   static const Color textBlue = Color(0xFF86C4FD);
+
+  //status component 색
+  static const Color statusRed = Color(0xFFFC7E7E);
+  static const Color statusblue = Color(0xFF7EBFFC);
+  static const Color statuspurple = Color(0xFF2C30B5);
+  static const Color statusgrey = Color(0xFF9E9D9D);
 }
