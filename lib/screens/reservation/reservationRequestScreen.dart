@@ -114,7 +114,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
           'topic/${location.deliveryId}/location',
               (json) {
                 // 메시지 도착 시
-
+                onWebSocketJsonResponse(json);
             print(json);
           });
     }
@@ -164,44 +164,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
   void OnStorageReservationButtonPress(int idx) {
     // TODO 예약상세 페이지로 라우팅?
-  }
-
-  Color determineDeliveryReservationCardButtonColor(String? status) {
-    switch(status?.toUpperCase()) {
-      case "PENDING":
-        return AppColors.backgroundLight;
-      case "ASSIGNED":
-        return AppColors.backgroundLight;
-      case "ON_DELIVERY":
-        return AppColors.primary;
-      case "COMPLETED":
-        return AppColors.backgroundDarkBlack;
-      default:
-        return AppColors.backgroundGray;
-    }
-  }
-
-  Color determineStorageReservationCardBackgroundColor(StorageReservation s) {
-    if(s.status.toLowerCase() == 'complete') return AppColors.backgroundGray;
-    print(s.endDateTime);
-    print(DateTime.now());
-    print(DateTime.parse(s.endDateTime));
-    bool isLate = DateTime.now().add(const Duration(hours:9)).isAfter(DateTime.parse(s.endDateTime));
-    print(isLate);
-    if(isLate) return AppColors.backgroundLightRed;
-    return Colors.white;
-  }
-
-  Text determineDeliveryReservationCardText(String? status) {
-    const TextStyle(color: AppColors.textDark, fontSize: 10);
-
-    switch(status?.toUpperCase()) {
-      case "PENDING": return const Text("배송 대기", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
-      case "ASSIGNED": return const Text("배정 완료", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
-      case "ON_DELIVERY": return const Text("배송 중", style: TextStyle(color: AppColors.textLight, fontSize: 10),);
-      case "COMPLETE": return const Text("배송 완료", style: TextStyle(color: AppColors.textLight, fontSize: 10),);
-      default: return const Text("배송 대기", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
-    }
   }
 
   /// 로그인 처리, JWT 가져옴, ApiService 초기화
@@ -262,6 +224,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         centerTitle: true,
         backgroundColor: Colors.white, // 민트색
         elevation: 0,
+        scrolledUnderElevation: 0,
         shadowColor: Colors.transparent,
         actions: [
           IconButton(
@@ -316,15 +279,13 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 children: [
                   for (int idx = 0; idx < _reservationsOnDelivery.length; idx++)
                     ExpandableReservationCard(
-                      buttonBackgroundColor: determineDeliveryReservationCardButtonColor(_reservationsOnDelivery[idx].status),
-                      buttonText: determineDeliveryReservationCardText(_reservationsOnDelivery[idx].deliveryReservation?.status),
                       luggage: _reservationsOnDelivery[idx].luggage,
                       previewImagePath: _reservationsOnDelivery[idx].previewImagePath,
                       storageName: _reservationsOnDelivery[idx].storageName,
                       pickupTime: StringTimeFormatter.formatTime(_reservationsOnDelivery[idx].deliveryReservation?.deliveryArrivalDateTime),
                       backgroundColor: Colors.white,
                       onButtonPressed: () => OnDeliveryReservationButtonPress(idx),
-                      deliveryReservation: _reservationsOnDelivery[idx].deliveryReservation,
+                      deliveryReservation: _reservationsOnDelivery[idx].deliveryReservation!,
                       deliveryLatitude: _deliveryLocations[idx].latitude,
                       deliveryLongitude: _deliveryLocations[idx].longitude,
                     ),
@@ -378,6 +339,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   // for (var reservation in _reservations)
                   for (int idx = 0; idx < _reservations.length; idx++)
                     ReservationCard(
+                      reservation: _reservations[idx],
                       buttonBackgroundColor: AppColors.primaryDark,
                       luggage: _reservations[idx].luggage,
                       previewImagePath: _reservations[idx].previewImagePath,

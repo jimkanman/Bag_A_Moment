@@ -6,6 +6,7 @@ import 'package:bag_a_moment/widgets/reservation_card.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/core/app_colors.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 
 
 
@@ -18,7 +19,7 @@ class ExpandableReservationCard extends StatefulWidget {
   final Text buttonText;
   final Color backgroundColor;
   final VoidCallback? onButtonPressed;
-  final DeliveryReservation? deliveryReservation;
+  final DeliveryReservation deliveryReservation;
   static final Map<int, GoogleMapController> googleMapControllers = {}; // Controller 저장용 MAP (deliveryId : 컨트롤러)
 
   // 추가 요소 (터치 시 GoogleMap 렌더링 관련
@@ -35,7 +36,7 @@ class ExpandableReservationCard extends StatefulWidget {
     Text? buttonText,
     Color? backgroundColor,
     this.onButtonPressed,
-    this.deliveryReservation,
+    required this.deliveryReservation,
     this.deliveryLatitude,
     this.deliveryLongitude,
   }):   luggage = luggage ?? const [],
@@ -54,6 +55,72 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
   bool _isExpanded = false;
   late GoogleMapController _mapController;
   final Set<Marker> _markers = {};
+
+  Widget determineElevatedButton(String? status) {
+
+
+    Text buttonText;
+    Color backgroundColor;
+
+    switch(status?.toUpperCase()) {
+      case "PENDING":
+        buttonText = const Text("배송 대기", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
+        backgroundColor = AppColors.backgroundLight;
+        break;
+      case "ASSIGNED":
+        buttonText = const Text("배정 완료", style: TextStyle(color: AppColors.textDark, fontSize: 10));
+        backgroundColor = AppColors.backgroundLight;
+        break;
+      case "ON_DELIVERY":
+        buttonText = const Text("배송 중", style: TextStyle(color: AppColors.textLight, fontSize: 10));
+        backgroundColor = AppColors.textDark;
+        break;
+      case "COMPLETED":
+        buttonText = const Text("배송 완료", style: TextStyle(color: Colors.white, fontSize: 10));
+        backgroundColor = AppColors.backgroundDarkBlack;
+        break;
+      default:
+        buttonText = const Text("배송 대기", style: TextStyle(color: AppColors.textDark, fontSize: 10));
+        backgroundColor = AppColors.backgroundLight;
+        print("DELIVERYRESERVATIONCARD: INVALID STATUS '$status'");
+
+    }
+    return RectangularElevatedButton(
+      borderRadius: 4,
+      onPressed: widget.onButtonPressed,
+      backgroundColor: backgroundColor,
+      child: buttonText,
+    );
+  }
+
+
+  Color determineDeliveryReservationCardButtonColor(String? status) {
+    switch(status?.toUpperCase()) {
+      case "PENDING":
+        return AppColors.backgroundLight;
+      case "ASSIGNED":
+        return AppColors.backgroundLight;
+      case "ON_DELIVERY":
+        return AppColors.primary;
+      case "COMPLETED":
+        return AppColors.backgroundDarkBlack;
+      default:
+        print("DELIVERYRESERVATIONCARD: INVALID STATUS '$status'");
+        return AppColors.backgroundGray;
+    }
+  }
+
+  Text determineDeliveryReservationCardText(String? status) {
+    const TextStyle(color: AppColors.textDark, fontSize: 10);
+
+    switch(status?.toUpperCase()) {
+      case "PENDING": return const Text("배송 대기", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
+      case "ASSIGNED": return const Text("배정 완료", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
+      case "ON_DELIVERY": return const Text("배송 중", style: TextStyle(color: AppColors.textLight, fontSize: 10),);
+      case "COMPLETE": return const Text("배송 완료", style: TextStyle(color: AppColors.textLight, fontSize: 10),);
+      default: return const Text("배송 대기", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
+    }
+  }
 
   Widget DeliveryStatusString(String status) {
     switch(status.toUpperCase()){
@@ -98,9 +165,8 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
       'assets/images/green_box_icon.png', // assets 경로
     );
 
-    final _tmpMarkes = [
-      if(widget.deliveryLatitude != null
-          && widget.deliveryLongitude != null)
+    final marks = [
+      if(widget.deliveryLatitude != null && widget.deliveryLongitude != null)
         Marker(
           markerId: const MarkerId('delivery'),
           position: LatLng(
@@ -108,37 +174,32 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
               widget.deliveryLongitude!),
           infoWindow: const InfoWindow(title: '배송맨'),
         ),
-
-      if(widget.deliveryReservation?.destinationLatitude != null
-          && widget.deliveryReservation?.destinationLongitude != null)
-        Marker(
-            markerId: const MarkerId('destination'),
-            position: LatLng(
-                widget.deliveryReservation!.destinationLatitude ?? 37.5665,
-                widget.deliveryReservation!.destinationLongitude ?? 126.9780),
-            infoWindow: const InfoWindow(title: '목적지'),
-            icon: storageRed
-        ),
-
-      if(widget.deliveryReservation?.storageLatitude != null
-          && widget.deliveryReservation?.storageLongitude != null)
-        Marker(
-            markerId: const MarkerId('storage'),
-            position: LatLng(
-                widget.deliveryReservation!.storageLatitude,
-                widget.deliveryReservation!.storageLongitude),
-            infoWindow: const InfoWindow(title: '배송지'),
-            icon: storageGreen
-        )
+      Marker(
+          markerId: const MarkerId('destination'),
+          position: LatLng(
+              widget.deliveryReservation.destinationLatitude ?? 37.5665,
+              widget.deliveryReservation.destinationLongitude ?? 126.9780),
+          infoWindow: const InfoWindow(title: '목적지'),
+          icon: storageRed
+      ),
+      Marker(
+          markerId: const MarkerId('storage'),
+          position: LatLng(
+              widget.deliveryReservation.storageLatitude,
+              widget.deliveryReservation.storageLongitude),
+          infoWindow: const InfoWindow(title: '배송지'),
+          icon: storageGreen
+      )
     ];
     print("ADDING MARKERS :");
-    for(var marker in _tmpMarkes)
+    for(var marker in marks) {
       print(marker);
+    }
     print("ADDING...");
 
     setState(() {
       _markers.addAll(
-        _tmpMarkes
+        marks
       );
     });
   }
@@ -155,6 +216,14 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
     // _addCustomMarker();
     return GestureDetector(
       onTap: () {
+        print("#### ONTAP ####");
+        if(widget.deliveryLatitude != null && widget.deliveryLongitude != null) {
+          print("MOVING CAMERA TO BAESONGMAN");
+          _mapController.moveCamera(
+              CameraUpdate.newLatLng(
+                  LatLng(widget.deliveryLatitude!, widget.deliveryLongitude!))
+          );
+        }
         setState(() {
           _isExpanded = !_isExpanded; // 카드 확장 여부 토글
         });
@@ -187,7 +256,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                 children: [
                   // 짐 관련 정보
                   Flexible(
-                    flex: 2,
+                    flex: 3,
                     child: Row(
                       children: [
                         const Icon(Icons.shopping_bag_outlined, size: 24.0, color: AppColors.textDark),
@@ -195,7 +264,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                         Text(
                           '${widget.luggage.length}개',
                           style: const TextStyle(
-                            fontSize: 16.0,
+                            fontSize: 12.0,
                             fontWeight: FontWeight.bold,
                             color: Colors.black,
                           ),
@@ -207,7 +276,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
 
                   // 가운데 이미지 + 보관소 정보
                   Flexible(
-                    flex: 4,
+                    flex: 6,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -243,7 +312,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
 
                   // 오른쪽 텍스트 및 버튼 (픽업 예정 시간 / 연장 요청 등)
                   Flexible(
-                    flex: 5,
+                    flex: 7,
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
@@ -257,9 +326,9 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             Text(
-                              '픽업 시간  ${widget.pickupTime}',
+                        '${DateFormat('MM').format(DateTime.parse(widget.deliveryReservation.deliveryArrivalDateTime))}월 ${DateTime.parse(widget.deliveryReservation.deliveryArrivalDateTime).day}일 ${widget.pickupTime}',
                               style: const TextStyle(
-                                fontSize: 14.0,
+                                fontSize: 13.0,
                                 color: AppColors.textDark,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -268,12 +337,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                             SizedBox(
                               height: 28,
                               width: double.infinity,
-                              child: RectangularElevatedButton(
-                                borderRadius: 4,
-                                onPressed: widget.onButtonPressed,
-                                backgroundColor: widget.buttonBackgroundColor,
-                                child: widget.buttonText,
-                              ),
+                              child: determineElevatedButton(widget.deliveryReservation.status)
                             ),
                           ],
                         ),
@@ -293,9 +357,9 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                     children: [
                       const Divider(thickness: 0.5, height: 3,),
 
-                     // 배송맨이 이동 중이에요!
+                     // 보관소에 보관 중이에요 / 배송맨이 이동 중이에요 / ...
                      Padding(
-                        padding: EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.all(8.0),
                         child: DeliveryStatusString(widget.deliveryReservation!.status)
                       ),
 

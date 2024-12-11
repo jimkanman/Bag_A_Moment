@@ -4,10 +4,11 @@ import 'package:bag_a_moment/models/storage_reservation.dart';
 import 'package:bag_a_moment/widgets/rectangular_elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/core/app_colors.dart';
+import 'package:intl/intl.dart';
 
 
 class ReservationCard extends StatelessWidget {
-  final StorageReservation? reservation;
+  final StorageReservation reservation;
   final List<Luggage> luggage;
   final String previewImagePath;
   final String storageName;
@@ -19,7 +20,7 @@ class ReservationCard extends StatelessWidget {
 
   const ReservationCard({
     super.key,
-    this.reservation,
+    required this.reservation,
     List<Luggage>? luggage,
     String? previewImagePath,
     String? storageName,
@@ -50,12 +51,12 @@ class ReservationCard extends StatelessWidget {
         text = const Text("수락 완료", style: TextStyle(color: AppColors.textDark, fontSize: 10),);
         break;
       case 'STORING':
-        backgroundColor = AppColors.primary;
+        backgroundColor = AppColors.primaryDark;
         text = const Text("보관 중", style: TextStyle(color: AppColors.textLight, fontSize: 10),);
         break;
       case 'COMPLETE':
         backgroundColor = AppColors.backgroundDarkBlack;
-        text = const Text("수령 완료", style: TextStyle(color: AppColors.textLight, fontSize: 10),);
+        text = const Text("수령 완료", style: TextStyle(color: Colors.white, fontSize: 10),);
         break;
       case 'REJECTED':
         backgroundColor = AppColors.backgroundLightRed;
@@ -99,7 +100,7 @@ class ReservationCard extends StatelessWidget {
           children: [
             // 짐 관련 정보
             Flexible(
-              flex: 2,
+              flex: 3,
               child: Row(
                 children: [
                   const Icon(Icons.shopping_bag_outlined, size: 24.0, color: AppColors.textDark),
@@ -107,7 +108,7 @@ class ReservationCard extends StatelessWidget {
                   Text(
                     '${luggage.length}개',
                     style: const TextStyle(
-                      fontSize: 16.0,
+                      fontSize: 12.0,
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
@@ -119,7 +120,7 @@ class ReservationCard extends StatelessWidget {
 
             // 가운데 이미지 + 보관소 정보
             Flexible(
-              flex: 4,
+              flex: 6,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -154,7 +155,7 @@ class ReservationCard extends StatelessWidget {
 
             // 오른쪽 텍스트 및 버튼 (픽업 예정 시간 / 연장 요청 등)
             Flexible(
-              flex: 5,
+              flex: 7,
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
@@ -168,9 +169,9 @@ class ReservationCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Text(
-                        '픽업 시간  $pickupTime',
+                        '${DateFormat('MM').format(DateTime.parse(reservation.endDateTime))}월 ${DateTime.parse(reservation.endDateTime).day}일  $pickupTime',
                         style: const TextStyle(
-                          fontSize: 14.0,
+                          fontSize: 13.0,
                           color: AppColors.textDark,
                           fontWeight: FontWeight.bold,
                         ),
