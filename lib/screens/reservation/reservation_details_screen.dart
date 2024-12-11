@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:bag_a_moment/models/luggage.dart';
 import 'package:bag_a_moment/models/storage_model.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';
-import 'package:bag_a_moment/widgets/network_image_rect.dart';
 import 'package:bag_a_moment/widgets/rectangular_elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/core/app_colors.dart';
@@ -12,10 +11,11 @@ import 'package:bag_a_moment/main.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:quickalert/quickalert.dart';
 
-import '../services/api_service.dart';
-import '../widgets/Jimkanman_bottom_navigation_bar.dart';
-import '../widgets/dialog.dart';
+import '../../services/api_service.dart';
+import '../../widgets/Jimkanman_bottom_navigation_bar.dart';
+import '../../widgets/dialog.dart';
 
 class ReservationDetailsScreen extends StatefulWidget {
   final StorageReservation reservation; // 예약 정보를 저장할 변수
@@ -33,6 +33,9 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
   int smallCount = 0;
   int mediumCount = 0;
   int largeCount = 0;
+  late final int smallPricePerHour;
+  late final int mediumPricePerHour;
+  late final int largePricePerHour;
   late final int userId;
   late final String? jwt;
   bool isLoading = true;
@@ -57,10 +60,22 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
     // ApiService 초기화
     _apiService = ApiService(defaultHeader: {'Authorization': jwt ?? ''});
     await fetchReservation();
+    await getPricePerHour();
     print("Reservation: ${reservation.id}");
     setState(() {
       isLoading = false; // 데이터 로드 완료
     });
+  }
+
+  Future<void> getPricePerHour() async {
+    final storageid = reservation.storageId;
+    print(storageid);
+    final StorageModel storageModel = await _apiService.get(
+        "storages/$storageid",
+        fromJson: (item) => StorageModel.fromJson(item));
+    smallPricePerHour = storageModel.backpackPricePerHour;
+    mediumPricePerHour = storageModel.carrierPricePerHour;
+    largePricePerHour = storageModel.miscellaneousItemPricePerHour;
   }
 
   Future<void> processLuggageAsync() async {
@@ -108,17 +123,13 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
       await showDialog(
         context: context,
         builder: (context) {
-          return AlertDialog(
-            title: Text('예약 상태가 변경되었습니다.'),
-            content: Text('예약 상태가 $status로 변경되었습니다.'),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('확인'),
-              ),
-            ],
+          return CustomDialogUI(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            title: "예약 상태 변경",
+            content: "예약 상태가 변경되었습니다.",
           );
         },
       );
@@ -188,29 +199,27 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
           children: [
             Expanded(
                 child: RectangularElevatedButton(
-                  onPressed: submitReservationStatus(
-                      reservation.id, 'REJECTED'),
-                  backgroundColor: AppColors.backgroundLightRed,
-                  borderRadius: 8,
-                  child: const Text(
-                    "거절하기",
-                    style: TextStyle(color: AppColors.textRed),
-                  ),
-                )),
+              onPressed: submitReservationStatus(reservation.id, 'REJECTED'),
+              backgroundColor: AppColors.backgroundLightRed,
+              borderRadius: 8,
+              child: const Text(
+                "거절하기",
+                style: TextStyle(color: AppColors.textRed),
+              ),
+            )),
             const SizedBox(
               width: 8,
             ),
             Expanded(
                 child: RectangularElevatedButton(
-                  onPressed: submitReservationStatus(
-                      reservation.id, 'APPROVED'),
-                  backgroundColor: AppColors.primaryDark,
-                  borderRadius: 8,
-                  child: const Text(
-                    "수락하기",
-                    style: TextStyle(color: AppColors.textLight),
-                  ),
-                )),
+              onPressed: submitReservationStatus(reservation.id, 'APPROVED'),
+              backgroundColor: AppColors.primaryDark,
+              borderRadius: 8,
+              child: const Text(
+                "수락하기",
+                style: TextStyle(color: AppColors.textLight),
+              ),
+            )),
           ],
         );
       case 'APPROVED':
@@ -218,20 +227,21 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
           children: [
             Expanded(
                 child: RectangularElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                _CheckAndStoreScreen(reservation: reservation,)));
-                  },
-                  backgroundColor: AppColors.primaryDark,
-                  borderRadius: 8,
-                  child: const Text(
-                    "예약인원이 도착했어요",
-                    style: TextStyle(color: AppColors.textLight),
-                  ),
-                )),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => _CheckAndStoreScreen(
+                              reservation: reservation,
+                            )));
+              },
+              backgroundColor: AppColors.primaryDark,
+              borderRadius: 8,
+              child: const Text(
+                "예약인원이 도착했어요",
+                style: TextStyle(color: AppColors.textLight),
+              ),
+            )),
           ],
         );
       case 'STORING':
@@ -239,15 +249,14 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
           children: [
             Expanded(
                 child: RectangularElevatedButton(
-                  onPressed: submitReservationStatus(
-                      reservation.id, 'COMPLETE'),
-                  backgroundColor: AppColors.backgroundLightRed,
-                  borderRadius: 8,
-                  child: const Text(
-                    "보관 종료",
-                    style: TextStyle(color: AppColors.textRed),
-                  ),
-                )),
+              onPressed: submitReservationStatus(reservation.id, 'COMPLETE'),
+              backgroundColor: AppColors.backgroundLightRed,
+              borderRadius: 8,
+              child: const Text(
+                "보관 종료",
+                style: TextStyle(color: AppColors.textRed),
+              ),
+            )),
           ],
         );
       default:
@@ -316,10 +325,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             Container(
               padding: EdgeInsets.symmetric(
                   vertical: 24,
-                  horizontal: MediaQuery
-                      .of(context)
-                      .size
-                      .width * 0.3),
+                  horizontal: MediaQuery.of(context).size.width * 0.3),
               decoration: BoxDecoration(
                   color: AppColors.backgroundLight,
                   borderRadius: BorderRadius.circular(8),
@@ -339,7 +345,8 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.luggage, color: AppColors.primaryDark),
+                            Icon(Icons.shopping_bag,
+                                color: AppColors.primaryDark),
                             Text(' 소형',
                                 style: TextStyle(
                                     fontSize: 14, fontWeight: FontWeight.w700)),
@@ -347,6 +354,10 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                         ),
                         Spacer(),
                         Text(smallCount.toString(),
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w700)),
+                        Spacer(),
+                        Text(smallPricePerHour.toString() + "원",
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
@@ -368,6 +379,10 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                         Text(mediumCount.toString(),
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
+                        Spacer(),
+                        Text(mediumPricePerHour.toString() + "원",
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
                     ),
                     const SizedBox(
@@ -377,7 +392,8 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.luggage, color: AppColors.primaryDark),
+                            Icon(Icons.shopping_bag_outlined,
+                                color: AppColors.primaryDark),
                             Text(' 대형',
                                 style: TextStyle(
                                     fontSize: 14, fontWeight: FontWeight.w700)),
@@ -385,6 +401,10 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                         ),
                         Spacer(),
                         Text(largeCount.toString(),
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w700)),
+                        Spacer(),
+                        Text(largePricePerHour.toString() + "원",
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
@@ -410,61 +430,39 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
               width: double.infinity,
               color: Colors.white,
               child: Row(
-                // TODO image 반복문으로 순회 -> 2개 이상이면 슬라이딩하도록
                 children: [
                   SizedBox(
                     width: 300,
                     height: 200, // 이미지 슬라이더의 높이
                     child: dummyImages.length == 1
                         ? Center(
-                      // 사진이 1개인 경우
-                      child: Image.network(
-                        dummyImages[0],
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                        : SizedBox(
-                      // 사진이 2개 이상인 경우
-                      child: PageView.builder(
-                        controller: PageController(
-                            viewportFraction:
-                            dummyImages.length == 2 ? 0.8 : 1.0),
-                        itemCount: reservation.luggage.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0),
+                            // 사진이 1개인 경우
                             child: Image.network(
-                              reservation.luggage[index].imagePath??
-                                  AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
+                              dummyImages[0],
                               fit: BoxFit.cover,
                             ),
-                          );
-                        },
-                      ),
-                    ),
+                          )
+                        : SizedBox(
+                            // 사진이 2개 이상인 경우
+                            child: PageView.builder(
+                              controller: PageController(
+                                  viewportFraction:
+                                      dummyImages.length == 2 ? 0.8 : 1.0),
+                              itemCount: reservation.luggage.length,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: Image.network(
+                                    reservation.luggage[index].imagePath ??
+                                        AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
+                                    fit: BoxFit.cover,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                   ),
-
-                  /*
-
-                  Expanded(
-                    child: NetworkImageRect(
-                      url: 'https://via.placeholder.com/150',
-                      width: 125,
-                      height: 125,
-                      borderRadius: 8,
-                    )
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: NetworkImageRect(
-                      url: 'https://via.placeholder.com/150',
-                      width: 125,
-                      height: 125,
-                      borderRadius: 8,
-                    ),
-                  ),
-                   */
                 ],
               ),
             ),
@@ -503,88 +501,88 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
           bottom: 8,
         ),
         child: reservation.status.toUpperCase() == 'COMPLETE' ||
-            reservation.status.toUpperCase() == 'REJECTED'
+                reservation.status.toUpperCase() == 'REJECTED'
             ? Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    '만료되거나 거절된 주문입니다.',
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        )
-            : Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    '결제 예상금액',
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '만료되거나 거절된 주문입니다.',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        reservation.paymentAmount.toString(),
-                        /* TODO 가격 */
-                        style: const TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          '결제 예상금액',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600),
                         ),
-                      ),
-                      const SizedBox(
-                        width: 8,
-                      ),
-                      const Text(
-                        '짐',
-                        style: TextStyle(
-                            fontSize: 24,
-                            color: AppColors.textDark,
-                            fontWeight: FontWeight.w600),
-                      ),
-                      const Text(
-                        '포인트',
-                        style: TextStyle(
-                            fontSize: 24,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              reservation.paymentAmount.toString(),
+                              /* TODO 가격 */
+                              style: const TextStyle(
+                                fontSize: 40,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            const Text(
+                              '짐',
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  color: AppColors.textDark,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                            const Text(
+                              '포인트',
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(height: 8),
+                  const InformationStatement(
+                    content: "금액은 실 보관 시 달라질 수 있어요",
+                    size: 12,
+                  ),
+                  buildBottomButton(reservation.status),
                 ],
               ),
-            ),
-            const SizedBox(height: 8),
-            const InformationStatement(
-              content: "금액은 실 보관 시 달라질 수 있어요",
-              size: 12,
-            ),
-            buildBottomButton(reservation.status),
-          ],
-        ),
       ),
       bottomNavigationBar: null, // TODO
     );
@@ -620,10 +618,12 @@ class InformationStatement extends StatelessWidget {
 
 class _CheckAndStoreScreen extends StatefulWidget {
   final StorageReservation reservation;
+
   const _CheckAndStoreScreen({
     Key? key,
     required this.reservation,
   }) : super(key: key);
+
   @override
   State<_CheckAndStoreScreen> createState() => _CheckAndStoreScreenState();
 }
@@ -647,8 +647,9 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
   void initState() {
     super.initState();
     initialize();
-    reservation=widget.reservation;
+    reservation = widget.reservation;
   }
+
   Future<void> processLuggageAsync() async {
     await Future.forEach(reservation.luggage, (element) async {
       switch (element.type) {
@@ -666,14 +667,18 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
       }
     });
   }
+
   Future<void> getPricePerHour() async {
-    final storageid=reservation.storageId;
+    final storageid = reservation.storageId;
     print(storageid);
-    final StorageModel storageModel=await _apiService.get("storages/$storageid", fromJson: (item) => StorageModel.fromJson(item));
-    smallPricePerHour=storageModel.backpackPricePerHour;
-    mediumPricePerHour=storageModel.carrierPricePerHour;
-    largePricePerHour=storageModel.miscellaneousItemPricePerHour;
+    final StorageModel storageModel = await _apiService.get(
+        "storages/$storageid",
+        fromJson: (item) => StorageModel.fromJson(item));
+    smallPricePerHour = storageModel.backpackPricePerHour;
+    mediumPricePerHour = storageModel.carrierPricePerHour;
+    largePricePerHour = storageModel.miscellaneousItemPricePerHour;
   }
+
   Future<void> initialize() async {
     jwt = await secureStorage.read(key: 'auth_token');
     String? userIdString = await secureStorage.read(key: 'user_id');
@@ -694,9 +699,10 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
       isLoading = false; // 데이터 로드 완료
     });
   }
+
   Future<void> _pickImage() async {
     final pickedImage =
-    await ImagePicker().pickImage(source: ImageSource.camera);
+        await ImagePicker().pickImage(source: ImageSource.camera);
     if (pickedImage != null) {
       setState(() {
         _selectedImage = File(pickedImage.path);
@@ -704,10 +710,9 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    if(isLoading){
+    if (isLoading) {
       return Center(
         child: CircularProgressIndicator(),
       );
@@ -715,7 +720,11 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text('짐 확인 및 보관'),
+        scrolledUnderElevation: 0,
+        title: const Text(
+          '짐 확인 및 보관',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -726,10 +735,7 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          width: MediaQuery
-              .of(context)
-              .size
-              .width,
+          width: MediaQuery.of(context).size.width,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           clipBehavior: Clip.antiAlias,
           decoration: ShapeDecoration(
@@ -823,7 +829,7 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
               Container(
                 width: double.infinity,
                 padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 20),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -845,7 +851,8 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                               borderRadius: BorderRadius.circular(4)),
                         ),
                         child: Text(
-                            DateFormat("MM/dd HH:mm").format(DateTime.parse(reservation.startDateTime)),
+                          DateFormat("MM/dd HH:mm").format(
+                              DateTime.parse(reservation.startDateTime)),
                           style: TextStyle(
                             color: Color(0xFF2CB598),
                             fontSize: 13,
@@ -894,7 +901,8 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                            DateFormat("MM/dd HH:mm").format(DateTime.parse(reservation.endDateTime)),
+                              DateFormat("MM/dd HH:mm").format(
+                                  DateTime.parse(reservation.endDateTime)),
                               style: TextStyle(
                                 color: Color(0xFF2CB598),
                                 fontSize: 13,
@@ -997,306 +1005,331 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
           bottom: 8,
         ),
         child: reservation.status.toUpperCase() == 'COMPLETE' ||
-            reservation.status.toUpperCase() == 'REJECTED'
+                reservation.status.toUpperCase() == 'REJECTED'
             ? Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: 24,
-                  horizontal: MediaQuery
-                      .of(context)
-                      .size
-                      .width * 0.3),
-              decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                        offset: const Offset(0.5, 1.5),
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 0.05,
-                        spreadRadius: 0.5),
-                  ]),
-              child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.luggage, color: AppColors.primaryDark),
-                            Text(' 소형',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w700)),
-                          ],
-                        ),
-                        Spacer(),
-                        Text(smallCount.toString(),
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.luggage, color: AppColors.primaryDark),
-                            Text(' 중형',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w700)),
-                          ],
-                        ),
-                        Spacer(),
-                        Text(mediumCount.toString(),
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.luggage, color: AppColors.primaryDark),
-                            Text(' 대형',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w700)),
-                          ],
-                        ),
-                        Spacer(),
-                        Text(largeCount.toString(),
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    '만료되거나 거절된 주문입니다.',
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        vertical: 24,
+                        horizontal: MediaQuery.of(context).size.width * 0.3),
+                    decoration: BoxDecoration(
+                        color: AppColors.backgroundLight,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                              offset: const Offset(0.5, 1.5),
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 0.05,
+                              spreadRadius: 0.5),
+                        ]),
+                    child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.luggage,
+                                      color: AppColors.primaryDark),
+                                  Text(' 소형',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                              Spacer(),
+                              Text(smallCount.toString(),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Row(
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.luggage,
+                                      color: AppColors.primaryDark),
+                                  Text(' 중형',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                              Spacer(),
+                              Text(mediumCount.toString(),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Row(
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.luggage,
+                                      color: AppColors.primaryDark),
+                                  Text(' 대형',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                              Spacer(),
+                              Text(largeCount.toString(),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        )
-            : Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(
-                  vertical: 24,
-                  horizontal: MediaQuery
-                      .of(context)
-                      .size
-                      .width * 0.3),
-              decoration: BoxDecoration(
-                  color: AppColors.backgroundLight,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: [
-                    BoxShadow(
-                        offset: const Offset(0.5, 1.5),
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 0.05,
-                        spreadRadius: 0.5),
-                  ]),
-              child: Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Row(
-                          children: [
-                            Icon(Icons.luggage, color: AppColors.primaryDark),
-                            Text(' 소형',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w700)),
-                          ],
+                        Text(
+                          '만료되거나 거절된 주문입니다.',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w600),
                         ),
-                        Spacer(),
-                        Text(smallCount.toString(),
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
-                        Spacer(),
-                        Text(smallPricePerHour.toString(),
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
                     ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.luggage, color: AppColors.primaryDark),
-                            Text(' 중형',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w700)),
-                          ],
-                        ),
-                        Spacer(),
-                        Text(mediumCount.toString(),
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
-                        Spacer(),
-                        Text(mediumPricePerHour.toString(),
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.luggage, color: AppColors.primaryDark),
-                            Text(' 대형',
-                                style: TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.w700)),
-                          ],
-                        ),
-                        Spacer(),
-                        Text(largeCount.toString(),
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w700)),
-                        Spacer(),
-                        Text(largePricePerHour.toString(),style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  const Text(
-                    '결제 예상금액',
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        reservation.paymentAmount.toString(),
-                        /* TODO 가격 지금 짐 추가된거 반영할 것 */
-                        style: const TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
-                        ),
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                        vertical: 24,
+                        horizontal: MediaQuery.of(context).size.width * 0.3),
+                    decoration: BoxDecoration(
+                        color: AppColors.backgroundLight,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                              offset: const Offset(0.5, 1.5),
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 0.05,
+                              spreadRadius: 0.5),
+                        ]),
+                    child: Center(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.luggage,
+                                      color: AppColors.primaryDark),
+                                  Text(' 소형',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                              Spacer(),
+                              Text(smallCount.toString(),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                              Spacer(),
+                              Text(smallPricePerHour.toString(),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Row(
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.luggage,
+                                      color: AppColors.primaryDark),
+                                  Text(' 중형',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                              Spacer(),
+                              Text(mediumCount.toString(),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                              Spacer(),
+                              Text(mediumPricePerHour.toString(),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 8,
+                          ),
+                          Row(
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.luggage,
+                                      color: AppColors.primaryDark),
+                                  Text(' 대형',
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                              Spacer(),
+                              Text(largeCount.toString(),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                              Spacer(),
+                              Text(largePricePerHour.toString(),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                            ],
+                          ),
+                        ],
                       ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          '결제 예상금액',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              reservation.paymentAmount.toString(),
+                              /* TODO 가격 지금 짐 추가된거 반영할 것 */
+                              style: const TextStyle(
+                                fontSize: 40,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            const Text(
+                              '짐',
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  color: AppColors.textDark,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                            const Text(
+                              '포인트',
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const InformationStatement(
+                    content: "금액은 실 보관 시 달라질 수 있어요",
+                    size: 12,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: RectangularElevatedButton(
+                        onPressed:
+                            submitReservationStatus(reservation.id, 'REJECTED'),
+                        backgroundColor: AppColors.backgroundLightRed,
+                        borderRadius: 8,
+                        child: const Text(
+                          "거절하기",
+                          style: TextStyle(color: AppColors.textRed),
+                        ),
+                      )),
                       const SizedBox(
                         width: 8,
                       ),
-                      const Text(
-                        '짐',
-                        style: TextStyle(
-                            fontSize: 24,
-                            color: AppColors.textDark,
-                            fontWeight: FontWeight.w600),
-                      ),
-                      const Text(
-                        '포인트',
-                        style: TextStyle(
-                            fontSize: 24,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w600),
-                      ),
+                      Expanded(
+                          child: RectangularElevatedButton(
+                        onPressed:
+                          submitReservationStatus(reservation.id, 'STORING'),
+                        backgroundColor: AppColors.primaryDark,
+                        borderRadius: 8,
+                        child: const Text(
+                          "보관하기",
+                          style: TextStyle(color: AppColors.textLight),
+                        ),
+                      )),
                     ],
-                  ),
+                  )
                 ],
               ),
-            ),
-            const SizedBox(height: 8),
-            const InformationStatement(
-              content: "금액은 실 보관 시 달라질 수 있어요",
-              size: 12,
-            ),
-            Row(
-              children: [
-                Expanded(
-                    child: RectangularElevatedButton(
-                      onPressed: submitReservationStatus(
-                          reservation.id, 'REJECTED'),
-                      backgroundColor: AppColors.backgroundLightRed,
-                      borderRadius: 8,
-                      child: const Text(
-                        "거절하기",
-                        style: TextStyle(color: AppColors.textRed),
-                      ),
-                    )),
-                const SizedBox(
-                  width: 8,
-                ),
-                Expanded(
-                    child: RectangularElevatedButton(
-                      onPressed:(){
-                        submitReservationStatus(reservation.id, 'STORING');
-                      },
-                      backgroundColor: AppColors.primaryDark,
-                      borderRadius: 8,
-                      child: const Text(
-                        "보관하기",
-                        style: TextStyle(color: AppColors.textLight),
-                      ),
-                    )),
-              ],
-            )
-          ],
-        ),
       ),
     );
   }
 
   submitReservationStatus(int reservation_id, String status) {
     return () async {
-      try{
+      try {
         await _apiService.patch(
           'reservations/$reservation_id/status?status=$status',
           fromJson: (json) => json,
         );
-        showDialog(
+        await showDialog(
           context: context,
-          builder: (context){
-            return CustomDialogUI(padding: EdgeInsets.symmetric(horizontal: 12),onPressed: (){},text: "완료",); // 위젯으로 만들어놓은 UI가져오기
+          builder: (context) {
+            return CustomDialogUI(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              title: "예약 상태 변경",
+              content: "예약 상태가 변경되었습니다.",
+            ); // 위젯으로 만들어놓은 UI가져오기
           },
         );
+        if(status=='STORING'){
+          Navigator.pop(context);
+        }
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -1305,7 +1338,7 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
           ),
         );
         print('Reservation status updated to $status');
-      }catch(e){
+      } catch (e) {
         //alert 띄우기
         showDialog(
           context: context,
@@ -1331,7 +1364,6 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
     };
   }
 
-
   Widget buildJimCard() {
     return Container(
       width: double.infinity,
@@ -1340,8 +1372,7 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.all(12),
-      child:
-      Column(
+      child: Column(
         children: reservation.luggage.map((item) {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8), // 각 카드 사이의 간격
@@ -1355,9 +1386,10 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                       item.type == 'BAG'
                           ? '소형 짐'
                           : item.type == 'LUGGAGE'
-                          ? '중형 짐'
-                          : '대형 짐',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                              ? '중형 짐'
+                              : '대형 짐',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                     ),
                   ],
                 ),
@@ -1380,15 +1412,15 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                               height: 150,
                               decoration: ShapeDecoration(
                                 image: DecorationImage(
-                                  image: NetworkImage(
-                                      item.imagePath ?? AppConstants.DEFAULT_PREVIEW_IMAGE_PATH),
+                                  image: NetworkImage(item.imagePath ??
+                                      AppConstants.DEFAULT_PREVIEW_IMAGE_PATH),
                                   fit: BoxFit.fill,
                                 ),
                                 shape: RoundedRectangleBorder(
                                   side: BorderSide(
                                     width: 1,
-                                    color: Colors.black.withOpacity(
-                                        0.30000001192092896),
+                                    color: Colors.black
+                                        .withOpacity(0.30000001192092896),
                                   ),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -1401,8 +1433,8 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                     FilledButton(
                       style: FilledButton.styleFrom(
                         minimumSize: Size(100, 50),
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 12),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         elevation: 2,
                         backgroundColor: AppColors.primaryVeryLight,
                         side: const BorderSide(

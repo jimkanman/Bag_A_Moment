@@ -100,10 +100,6 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
     _apiService = ApiService(defaultHeader: {'Authorization' : jwt ?? ''});
   }
 
-  Future<void> fillDummyData() async {
-    storages = List.generate(3, (index) => StorageModel(), growable: true);
-    reservations = List.generate(3, (index) => StorageReservation());
-  }
 
   /// API로 나의 보관소 & 최근 예약 호출
   Future<void> fetchApiData() async {
@@ -122,6 +118,13 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
 
   @override
   Widget build(BuildContext context) {
+    if(isStorageLoading || isReservationLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

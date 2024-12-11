@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 class CustomDialogUI extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final VoidCallback onPressed;
-  final String text;
-  const CustomDialogUI({super.key, required this.padding, required this.onPressed, required this.text});
+  final String content;
+  final String title;
+  const CustomDialogUI({super.key, required this.padding, required this.onPressed, required this.content, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +45,7 @@ class CustomDialogUI extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          '모달 제목',
+                          title,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
@@ -70,11 +71,11 @@ class CustomDialogUI extends StatelessWidget {
                         Container(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Text(
-                                '모달 내용',
+                                 content,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Color(0xFF343432),
@@ -97,8 +98,8 @@ class CustomDialogUI extends StatelessWidget {
                     decoration: BoxDecoration(color: Colors.white),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           height: 44,
@@ -107,7 +108,7 @@ class CustomDialogUI extends StatelessWidget {
                             color: Color(0xFF2CB598),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Primarybtn(padding: padding, onPressed: onPressed, text: text)
+                          child: Primarybtn(padding: padding, onPressed: onPressed, text: "완료")
                         ),
                       ],
                     ),
