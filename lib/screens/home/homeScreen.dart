@@ -375,22 +375,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-
-  // 2. 마커 및 리스트 생성 루프
-  Future<void> _fetchAndAddMarkers(List<dynamic> storages) async {
-    if (storages.isEmpty) {
-      print('근처에 보관소 없음!');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('근처에 보관소가 없습니다.')),
-      );
-    } else {
-      for (var storage in storages) {
-        await _addMarkers(storage);
-        print('Added marker and recommendation for storage: ${storage['id']}');
-      }
-    }
-  }
-
     //2. 마커 추가
     Future<void> _addMarkers(Map<String, dynamic> storage) async {
       print('Adding marker for storage: ${storage['id']}');
