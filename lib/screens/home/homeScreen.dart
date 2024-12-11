@@ -388,6 +388,9 @@ class _HomeScreenState extends State<HomeScreen> {
           markerId: MarkerId(storage['id'].toString()),
           position: LatLng(storage['latitude'], storage['longitude']),
           icon: bagIcon,
+            infoWindow: InfoWindow(
+              title: storage['name'], // 보관소 이름
+            ),
             onTap: () {
               setState(() {
                 //여기는 출력 잘 됨
@@ -886,36 +889,54 @@ class DraggableScrollableBottomSheet extends StatelessWidget {
               // 2. 추천 짐스팟 Row
               RecommendationTitle(),
               // 3. 목록 표시
-              ListView.builder(
-                shrinkWrap: true, // 내부 스크롤을 위해 추가
-                physics: NeverScrollableScrollPhysics(), // 외부 스크롤에만 반응
-                  controller: scrollController,
-                  itemCount:  markers.length,  // _markers 리스트의 길이를 기준으로? 일단 10개만?
-                  itemBuilder: (BuildContext context, int index) {
-                    return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0), // 리스트 간의 간격 조정
+              Expanded(
+            child: ListView.builder(
+                controller: scrollController, // DraggableScrollableSheet와 연동
+                itemCount: markers.length, // 전달받은 markers 리스트의 길이를 기준으로
+                itemBuilder: (BuildContext context, int index) {
+                  // 각 marker를 가져옵니다.
+                  final marker = markers[index];
+
+                  // Marker 객체의 `infoWindow.title`을 이름으로 사용
+                  final markerName = marker.infoWindow.title ?? 'Unknown Storage';
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0), // 리스트 간의 간격 조정
                     child: ListTile(
-                      leading: Icon(Icons.storage),
-                      title: Text("상도 스토리지 $index"),
+                      leading: const Icon(Icons.storage), // 왼쪽에 표시할 아이콘
+                      title: Text(
+                        markerName, // 보관소 이름
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       subtitle: Row(
                         children: [
+                          // Chip 위젯들을 추가하여 관련 정보를 표시
                           Chip(
-                            label: Text("근접 보관"),
+                            label: Text("근접 보관"), // 임의의 예제 데이터
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Chip(
                             label: Text("냉장"),
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Chip(
                             label: Text("24시간"),
                           ),
                         ],
                       ),
+                      onTap: () {
+                        // 리스트 항목 클릭 시 동작
+                        print('Selected Marker: $markerName');
+                      },
                     ),
-                    );
-                  },
-                ),
+                  );
+                },
+              ),
+          ),
+
             ],
           ),
         );
