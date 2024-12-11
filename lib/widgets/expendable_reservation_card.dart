@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:bag_a_moment/core/app_colors.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+
+import '../models/map_controller_notifier.dart';
 
 
 
@@ -57,8 +60,6 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
   final Set<Marker> _markers = {};
 
   Widget determineElevatedButton(String? status) {
-
-
     Text buttonText;
     Color backgroundColor;
 
@@ -211,19 +212,20 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
   }
 
   @override
+  void dispose() {
+    print("DISPONSE RESERVATION CARD");
+    // Provider에서 컨트롤러 제거
+    context.read<MapControllerProvider>().removeController(widget.deliveryReservation.deliveryId);
+    // GoogleMapController 리소스 정리
+    _mapController.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    print("ExpendableReservationCard: title: ${widget.storageName}, luggage: ${widget.luggage}, pickupTime: ${widget.pickupTime} ");
-    // _addCustomMarker();
     return GestureDetector(
       onTap: () {
-        print("#### ONTAP ####");
-        if(widget.deliveryLatitude != null && widget.deliveryLongitude != null) {
-          print("MOVING CAMERA TO BAESONGMAN");
-          _mapController.moveCamera(
-              CameraUpdate.newLatLng(
-                  LatLng(widget.deliveryLatitude!, widget.deliveryLongitude!))
-          );
-        }
         setState(() {
           _isExpanded = !_isExpanded; // 카드 확장 여부 토글
         });
@@ -373,16 +375,20 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                           child: GoogleMap(
                             // 맵 생성 완료 후
                             onMapCreated: (controller) {
+                              // 마커 생성
                               _addCustomMarker();
+                              // 컨트롤러 할당
                               _mapController = controller;
+                              // Provider에 컨트롤러 저장
+                              context.read<MapControllerProvider>().setController(widget.deliveryReservation.deliveryId, controller);
                               if(widget.deliveryLatitude != null && widget.deliveryLongitude != null) {
                                 // 시작 위치 주어진 경우 해당 위치로 이동
                                 controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryLatitude!, widget.deliveryLongitude!)));
                               } else {
                                 // 시작 위치 주어지지 않은 경우 (= 배송 시작이 아닌 경우) 보관소 위치를 보여줌
-                                controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryReservation!.storageLatitude, widget.deliveryReservation!.storageLongitude)));
+                                controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryReservation.storageLatitude, widget.deliveryReservation!.storageLongitude)));
                               }
-                              ExpandableReservationCard.googleMapControllers[widget.deliveryReservation?.deliveryId ?? -1] = controller;
+                              ExpandableReservationCard.googleMapControllers[widget.deliveryReservation.deliveryId] = controller;
                             },
                             initialCameraPosition: const CameraPosition(
                               target: LatLng(37.5665, 126.9780), // 서울
