@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:io';
-import 'package:bag_a_moment/screens/payment.dart';
+import 'package:bag_a_moment/screens/reservation/payment.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../main.dart';
+import '../../../main.dart';
 import 'package:bag_a_moment/StorageDetailModel.dart';
 
-import 'deliveryRequest.dart'; //api 모델로 받아옴
+import '../../reservation/deliveryRequestScreen.dart'; //api 모델로 받아옴
 
 
 // 상세 페이지
@@ -113,8 +113,20 @@ Future<void> fetchStorageDetails() async {
     return Scaffold(
       appBar: AppBar(
         title: isLoading
-            ? Text('Loading...') // 로딩 중일 때
-            : Text('${storageDetails?.name ?? 'Unknown'}'),
+            ? Text('Loading...', style: TextStyle(
+          fontSize: 15, // 텍스트 크기 설정
+          fontWeight: FontWeight.bold,
+          color: Colors.black, // 텍스트 색상
+        ),
+      )
+            : Text(
+          '${storageDetails?.name ?? 'Unknown'}',
+          style: TextStyle(
+            fontSize: 15, // 텍스트 크기 설정
+            fontWeight: FontWeight.bold, // 필요에 따라 추가
+            color: Colors.black, // 텍스트 색상
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
@@ -126,10 +138,11 @@ Future<void> fetchStorageDetails() async {
         ),
         ),
 
-      body:  SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
+      body: Container(
+      color: Colors.white, // 원하는 배경색 설정
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(25.0),
+
           child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -162,29 +175,42 @@ Future<void> fetchStorageDetails() async {
 
 
             // 주소 정보
-            Row(children: [
-              Text(
+            Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 0), // 좌우 16px 패딩 추가
+            child:
+              Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
                 '주소',
                 style: TextStyle(
-                  fontSize:22,
+                  fontSize:16,
                   fontWeight: FontWeight.bold,
                   color: Colors.grey,
                 ),
               ),
 
-              SizedBox(width: 20),
-
-              Expanded( // Text가 화면 너비를 차지하도록 제한
-                child:Text('${storageDetails?.detailedAddress ?? 'Unknown'}',
-
-                style: TextStyle(fontSize: 18, color: Colors.black),
+                SizedBox(height: 7),
+              Text('${storageDetails?.detailedAddress ?? 'Unknown'}',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
               ),
+
+              ],
+            ),
+        ),
+
+            SizedBox(height: 25),
+
+            Text(
+              '공지사항',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
               ),
-            ],
             ),
 
-            SizedBox(height: 18),
-
+            SizedBox(height: 15),
 
 
             // 공지사항
@@ -192,59 +218,130 @@ Future<void> fetchStorageDetails() async {
               width: double.infinity, // 화면 가로 크기에 맞게 확장
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade200,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1), // 그림자 색상 및 투명도
+                    blurRadius: 5, // 그림자 흐림 정도
+                    spreadRadius: 2, // 그림자 퍼짐 정도
+                    offset: Offset(0, 2), // 그림자의 위치 (x, y)
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.grey.shade300, // 테두리 색상 (연한 회색)
+                  width: 1, // 테두리 두께
+                ),
               ),
+
               child: Column(
+
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
                   Text(
-                    '${storageDetails?.notice ?? '공지사항'}',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                    '${storageDetails?.notice ?? '언제든지 편하게 방문주세요!'}',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.black87),
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                   '${storageDetails?.description}'?? '새로 오픈했습니다! ',
-                    style: TextStyle(fontSize: 14, color: Colors.black),
-                  ),
+
                 ],
               ),
             ),
-            SizedBox(height: 18),
+            SizedBox(height: 25),
 
-            // 운영 정보: 세부 정보 표현할것
-            SizedBox(height: 8),
+
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '보관소 설명',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+                SizedBox(height: 15),
+                Container(
+                  width: double.infinity, // 화면 가로 크기에 맞게 확장
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1), // 그림자 색상 및 투명도
+                        blurRadius: 5, // 그림자 흐림 정도
+                        spreadRadius: 2, // 그림자 퍼짐 정도
+                        offset: Offset(0, 2), // 그림자의 위치 (x, y)
+                      ),
+                    ],
+                    border: Border.all(
+                      color: Colors.grey.shade300, // 테두리 색상 (연한 회색)
+                      width: 1, // 테두리 두께
+                    ),
+                  ),
+                  child:Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                        Row(
+                          children: [
+                            SizedBox(width: 8),
+                            Text(
+                              '${storageDetails?.description ?? '환영합니다'}',
+                              style: TextStyle(fontSize: 13, color: Colors.black), // 동일한 크기 적용
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+
+            SizedBox(height: 25),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   '운영 정보',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Colors.grey,
                   ),
                 ),
-                SizedBox(height: 8),
+                SizedBox(height: 15),
                 Container(
-                  width: double.infinity, // 화면 가로 크기에 맞게 확장
-                  padding: EdgeInsets.all(12), // 내부 여백
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200, // 배경색
-                    borderRadius: BorderRadius.circular(8), // 둥근 모서리 처리
-                  ),
+                    width: double.infinity, // 화면 가로 크기에 맞게 확장
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1), // 그림자 색상 및 투명도
+                          blurRadius: 5, // 그림자 흐림 정도
+                          spreadRadius: 1, // 그림자 퍼짐 정도
+                          offset: Offset(0, 2), // 그림자의 위치 (x, y)
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.grey.shade300, // 테두리 색상 (연한 회색)
+                        width: 1, // 테두리 두께
+                      ),
+                    ),
                   child:Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        children: [
-                          Icon(Icons.access_time, color: Colors.black), // 운영 시간 아이콘
-                          SizedBox(width: 8), // 간격
-                          Text(
-                            '${storageDetails?.openingTime} - ${storageDetails?.closingTime}',
-                            style: TextStyle(fontSize: 16, color: Colors.black54), // 동일한 크기 적용
-                          ),
+                          children: [
+                            Icon(Icons.access_time, size: 16, color: Colors.black), // 운영 시간 아이콘
+                            SizedBox(width: 8), // 간격
+                            Text(
+                              '${storageDetails?.openingTime} - ${storageDetails?.closingTime}',
+                              style: TextStyle(fontSize: 13, color: Colors.black), // 동일한 크기 적용
+                            ),
                           ]//text
                       ),
                       SizedBox(height: 8), // 각 항목 간 간격
@@ -253,30 +350,18 @@ Future<void> fetchStorageDetails() async {
                           Icon(Icons.calendar_today, size: 16, color: Color(0xFFF44336)), // 휴무 아이콘
                           SizedBox(width: 8),
                           Text(
-                            '휴무일: ${storageDetails?.closingTime ?? '연중무휴'}',
-                            style: TextStyle(fontSize: 16, color: Colors.black54), // 동일한 크기 적용
+                            '연중무휴',
+                            //'휴무일: ${storageDetails?.closingTime ?? '연중무휴'}',
+                            style: TextStyle(fontSize: 14, color: Colors.black), // 동일한 크기 적용
                           ),
                         ],
                       ),
-                        SizedBox(height: 8), // 각 항목 간 간격
-                        Row(
-                          children: [
-                            Icon(Icons.emoji_emotions, size: 16, color: Colors.black54), // 환영 메시지 아이콘
-                            SizedBox(width: 8),
-                            Text(
-                              '보관소 소개: ${storageDetails?.description ?? '환영합니다'}',
-                              style: TextStyle(fontSize: 16, color: Colors.black54), // 동일한 크기 적용
-                            ),
-                          ],
-                        ),
+                      SizedBox(height: 8), // 각 항목 간 간격
                     ],
-
-
-                ),
-      )
+                  ),
+                )
               ],
             ),
-
 
             SizedBox(height: 16),
 
@@ -287,86 +372,101 @@ Future<void> fetchStorageDetails() async {
               children: (storageDetails?.storageOptions ?? []).map((option) {
                 return Chip(
                   label: Text(
+                    //TODO: 태그 추가
                     option == 'TWENTY_FOUR_HOURS' ? '24시간' : option, // "24hours"는 "24시간"으로 표시
                     style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                      fontFamily: 'Paperlogy',
                   ),
-
                   ),
-                  backgroundColor: Color(0xFF4DD9C6),
+                  backgroundColor: Color(0xFF80E3D6),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12), // 둥근 모서리
-                    side: BorderSide.none, // 외곽선 제거
+                    //side: BorderSide.none, // 외곽선 제거 -> 작동x
+                    side: BorderSide(
+                      color: Color(0xFF80E3D6),// 테두리 색상 지정
+                      width: 0.1, // 테두리 두께
+                    ),
                   ),
                 );
               }).toList(),
             ),
 
-          SizedBox(height: 80),
+            SizedBox(height: 80),
 
+          ]
+        ),
 
-          // 하단 버튼들
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
+      ),
+      ),
+      // 하단 버튼 고정
+      bottomNavigationBar: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: ElevatedButton(
                 onPressed: () {
                   print('배송 버튼 클릭');
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DeliveryrequestScreen(info: info,
-                        //???  빈배열 보냄
-                      ),
+                      builder: (context) => DeliveryrequestScreen(info: info),
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFB3EDE5),
-                  minimumSize: Size(160, 50), // 버튼의 최소 크기 (너비, 높이)
-                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  minimumSize: Size(120, 50),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // 둥근 모서리 설정 (12px)
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text('배송', style: TextStyle(color: Color(0xFF43CBBA), fontSize: 20, fontFamily: 'Paperlogy',)),
+                child: Text(
+                  '배송',
+                  style: TextStyle(
+                    color: Color(0xFF43CBBA),
+                    fontSize: 15,
+                  ),
+                ),
               ),
-              SizedBox(width: 10,),
-              ElevatedButton(
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: ElevatedButton(
                 onPressed: () {
                   print('보관 버튼 클릭');
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ReservationScreen( info: info,
-
-                      ),
+                      builder: (context) => ReservationScreen(info: info),
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFF4DD9C6),
-                  minimumSize: Size(160, 50), // 버튼의 최소 크기 (너비, 높이)
-                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  minimumSize: Size(120, 50),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // 둥근 모서리 설정 (12px)
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text('보관',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontFamily: 'Paperlogy',)),
+                child: Text(
+                  '보관',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                  ),
+                ),
               ),
-              // ... (Other sections)
-            ],
-          ),
+            ),
+          ],
+        ),
 
-          ]
-    ),
-    ),
-      )
+      ),
     );
   }
 }

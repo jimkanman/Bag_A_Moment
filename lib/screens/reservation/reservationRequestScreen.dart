@@ -16,6 +16,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+//예약 조회 페이지
 class ReservationScreen extends StatefulWidget {
   @override
   _ReservationScreenState createState() => _ReservationScreenState();

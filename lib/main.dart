@@ -1,21 +1,17 @@
 import 'dart:convert';
 
-import 'package:bag_a_moment/models/storage_reservation.dart';
-import 'package:bag_a_moment/rounter/locations.dart';
-import 'package:bag_a_moment/screens/reservation_details_screen.dart';
-import 'package:bag_a_moment/screens/storageManage.dart';
+
+import 'package:bag_a_moment/screens/storage/storageManage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:bag_a_moment/screens/loading_screen.dart';
-import 'package:bag_a_moment/screens/home_screen.dart';
-import 'package:bag_a_moment/screens/reservation.dart';
-import 'package:bag_a_moment/screens/storage.dart';
-import 'package:bag_a_moment/screens/myhome.dart';
-import 'package:bag_a_moment/screens/auth_screen.dart';
+import 'package:bag_a_moment/screens/others/loadingScreen.dart';
+import 'package:bag_a_moment/screens/home/homeScreen.dart';
+import 'package:bag_a_moment/screens/reservation/reservationRequestScreen.dart';
+import 'package:bag_a_moment/screens/mypage/mypageHomeScreen.dart';
+import 'package:bag_a_moment/screens/others/loginScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:bag_a_moment/api_response.dart';
-import 'widgets/marker_details_widget.dart';
 import 'theme.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 

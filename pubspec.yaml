@@ -84,6 +84,7 @@ flutter:
     - assets/images/box_icon3.png
     - assets/images/background.png
     - assets/images/check-circle-broken.png
+    - assets/images/smallmarker.png
   fonts:
     - family: Paperlogy
       fonts:

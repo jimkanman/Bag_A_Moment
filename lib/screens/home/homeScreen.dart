@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:bag_a_moment/screens/detailed_page.dart';
+import 'package:bag_a_moment/screens/home/afterMarker/StorageDetailPage.dart';
 import 'package:bag_a_moment/widgets/marker_details_widget.dart';
 import 'package:http/http.dart' as http;
 import 'package:bag_a_moment/model/searchModel.dart';
 import 'package:bag_a_moment/service/storageService.dart';
 
-import '../main.dart';
+import '../../main.dart';
 
 //홈화면 클래스 생성
 class HomeScreen extends StatefulWidget {
@@ -384,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // fromAssetImage를 사용하여 BitmapDescriptor 생성, 이미지로 아이콘 설정
       final BitmapDescriptor bagIcon = await BitmapDescriptor.fromAssetImage(
         ImageConfiguration(size: Size(150, 150)), // 크기 설정
-        'assets/images/box_icon3.png', // 파일 경로
+        'assets/images/smallmarker.png', // 파일 경로
       );
 
       // 이에 따라 지도 상에 마커 표현하기
@@ -498,7 +498,7 @@ class _HomeScreenState extends State<HomeScreen> {
             top: MediaQuery.of(context).size.height / 2 - 20,
             left: MediaQuery.of(context).size.width / 2 - 150,
             width: 320, // 명시적 너비
-            height: 100, // 명시적 높이
+            height: 120, // 명시적 높이
             child: _buildMarkerInfoWidget(context),
           )
             :SizedBox.shrink(),
@@ -530,9 +530,13 @@ class _HomeScreenState extends State<HomeScreen> {
           _showExtraContainer = !_showExtraContainer; // 상태 변경
         });
       },
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+        maxWidth: 320, // 최대 너비
+        maxHeight: MediaQuery.of(context).size.height / 3, // 최대 높이
+        ),
       child:  Container(
-        width: 320,
-        height: 100,
+
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -612,9 +616,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       spacing: 8, // 태그 사이 간격
                       runSpacing: 4, // 줄 간격
                       children: (_selectedMarkerInfo!['tags'] as List<String>)
-                          .map((tag) => Container(
-                        width: 60,
-                        height: 20,
+                          .map((tag) => IntrinsicWidth(
+                        child: Container(
+
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
@@ -624,13 +628,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Text(
                           tag == 'TWENTY_FOUR_HOURS' ? '24시간' : tag,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 7,
                             fontFamily: 'Paperlogy',
                             fontWeight: FontWeight.w400, // Regular
                             color: Color(0xFFE0F7F5),
                           ),
+                          overflow: TextOverflow.ellipsis, // 넘칠 경우 "..." 표시
                         ),
-                      ))
+                      ),
+                      ),
+                      )
                           .toList(),
                     ),
 
@@ -641,6 +648,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
 
         ),
+      ),
       ),
     );
   }

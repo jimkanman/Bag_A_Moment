@@ -1,15 +1,13 @@
 import 'package:bag_a_moment/main.dart';
 import 'package:bag_a_moment/models/storage_model.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';
-import 'package:bag_a_moment/screens/addStorage.dart';
-import 'package:bag_a_moment/screens/storage.dart';
-import 'package:bag_a_moment/screens/registerStorage.dart';
+import 'package:bag_a_moment/screens/storage/registerStorageScreen.dart';
 import 'package:bag_a_moment/services/api_service.dart';
 import 'package:bag_a_moment/widgets/reservation_card_for_storage_manage_screen.dart';
 import 'package:bag_a_moment/widgets/storage_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'detailed_page.dart';
+import '../home/afterMarker/StorageDetailPage.dart';
 
 class StorageManagementPage extends StatefulWidget {
   const StorageManagementPage({super.key});
@@ -49,33 +47,27 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
     // TODO 예약 fetch 후 마감된 예약은 필터링
     try {
       List<StorageReservation> allReservations = [];
-      // for (var storage in storages) {
-      //   try {
-      //     print("storage ${storage.id}의 예약을 불러옵니다.");
-      //     final storageReservations = await _apiService.get(
-      //       "storages/${storage.id}/reservations",
-      //       fromJson: (json) => (json as List<dynamic>)
-      //           .map((item) => StorageReservation.fromJson(item))
-      //           .toList(),
-      //     );
-      //     print(storageReservations);
-      //     allReservations.addAll(storageReservations);
-      //   } catch (e) {
-      //     if (e.toString().contains('404')) {
-      //       print("Storage ${storage.id}에는 예약이 없습니다. 빈 리스트를 추가합니다.");
-      //       // 예약이 없으면 아무 작업도 하지 않거나 빈 리스트를 추가 (사실상 필요 없음)
-      //     } else {
-      //       print("Storage ${storage.id}에서 예상치 못한 오류 발생: $e");
-      //       // 예외가 발생했지만 다음 스토리지로 넘어갑니다.
-      //     }
-      //   }
-      // }
-      allReservations=await _apiService.get(
-        "users/${userId}/storages/reservations",
-        fromJson: (json) => (json as List<dynamic>)
-            .map((item) => StorageReservation.fromJson(item))
-            .toList(),
-      );
+      for (var storage in storages) {
+        try {
+          print("storage ${storage.id}의 예약을 불러옵니다.");
+          final storageReservations = await _apiService.get(
+            "storages/${storage.id}/reservations",
+            fromJson: (json) => (json as List<dynamic>)
+                .map((item) => StorageReservation.fromJson(item))
+                .toList(),
+          );
+          print(storageReservations);
+          allReservations.addAll(storageReservations);
+        } catch (e) {
+          if (e.toString().contains('404')) {
+            print("Storage ${storage.id}에는 예약이 없습니다. 빈 리스트를 추가합니다.");
+            // 예약이 없으면 아무 작업도 하지 않거나 빈 리스트를 추가 (사실상 필요 없음)
+          } else {
+            print("Storage ${storage.id}에서 예상치 못한 오류 발생: $e");
+            // 예외가 발생했지만 다음 스토리지로 넘어갑니다.
+          }
+        }
+      }
 
       setState(() {
         reservations = allReservations;
@@ -108,6 +100,10 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
     _apiService = ApiService(defaultHeader: {'Authorization' : jwt ?? ''});
   }
 
+  Future<void> fillDummyData() async {
+    storages = List.generate(3, (index) => StorageModel(), growable: true);
+    reservations = List.generate(3, (index) => StorageReservation());
+  }
 
   /// API로 나의 보관소 & 최근 예약 호출
   Future<void> fetchApiData() async {
@@ -115,6 +111,7 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
     await initialize(); // jwt & apiService 시작
     await fetchMyStorages(); // 나의 보관소 호출
     await fetchRecentReservations(); // 최근 예약 호출
+    // await fillDummyData();
   }
 
   @override
@@ -125,12 +122,6 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (isReservationLoading || isStorageLoading) {
-      // 로딩 중일 때
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -146,6 +137,10 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black), // 뒤로가기 버튼
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24.0),
@@ -161,6 +156,7 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
                 child: IconButton(
                   icon: const Icon(Icons.add),
                   onPressed: () async {
+                    // TODO 라우팅 검토 (추가 정보 없이 StorageScreen으로 가면 안될 거 같지??)
                     Navigator.push(context, MaterialPageRoute(builder: (context) => StorageScreen()));
                   },
                 ),
