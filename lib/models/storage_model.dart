@@ -9,6 +9,7 @@ import 'package:bag_a_moment/core/app_constants.dart';
 class StorageModel {
   final int id;
   final String name;
+  final String notice;
   final int ownerId;
   final String phoneNumber;
   final String description;
@@ -24,12 +25,14 @@ class StorageModel {
   final int miscellaneousItemPricePerHour;
   final String termsAndConditions;
   final String status;
+  final bool? isOpen;
   final List<String> images;
   final List<String> storageOptions;
 
   StorageModel({
     required this.id,
     required this.name,
+    required this.notice,
     required this.ownerId,
     required this.phoneNumber,
     required this.description,
@@ -47,7 +50,7 @@ class StorageModel {
     required this.status,
     required this.images,
     required this.storageOptions,
-
+    this.isOpen
   });
 
   factory StorageModel.fromJson(Map<String, dynamic> json) {
@@ -55,6 +58,7 @@ class StorageModel {
       return StorageModel(
         id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
         name: json['name']?.toString() ?? '',
+        notice: json['notice'] ?? '',
         ownerId: json['ownerId'] is int ? json['ownerId'] : int.tryParse(json['ownerId'].toString()) ?? 0,
         phoneNumber: json['phoneNumber']?.toString() ?? '',
         description: json['description']?.toString() ?? '',
@@ -80,6 +84,7 @@ class StorageModel {
             ?.map((e) => e.toString())
             .toList() ??
             [],
+        isOpen: json['isOpen'] ?? false,
         storageOptions: (json['storageOptions'] as List<dynamic>?)
             ?.map((e) => e.toString())
             .toList() ??
