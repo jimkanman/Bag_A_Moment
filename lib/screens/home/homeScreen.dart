@@ -487,8 +487,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             //2. 현위치 버튼
             Positioned(
-              bottom: 20,
-              right: 50,
+              bottom: 90,
+              right: 10,
                 child: Container(
                     decoration: BoxDecoration(
                     shape: BoxShape.circle, // 버튼을 동그라미로 설정
