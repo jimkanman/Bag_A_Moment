@@ -22,6 +22,21 @@ class Luggage {
       imagePath: json['imagePath']??null,
     );
   }
+  Luggage copyWith({
+    String? type,
+    int? width,
+    int? depth,
+    int? height,
+    String? imagePath,
+  }) {
+    return Luggage(
+      type: type ?? this.type,
+      width: width ?? this.width,
+      depth: depth ?? this.depth,
+      height: height ?? this.height,
+      imagePath: imagePath ?? this.imagePath,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {

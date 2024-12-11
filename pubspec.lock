@@ -25,6 +25,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  bottom_picker:
+    dependency: "direct main"
+    description:
+      name: bottom_picker
+      sha256: "5d52cf94cfe41e3cc448101552f9b2e9faa810e3609e18432280431fb7dd676a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.9.0"
   characters:
     dependency: transitive
     description:
@@ -744,14 +752,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
-  quickalert:
-    dependency: "direct main"
-    description:
-      name: quickalert
-      sha256: b5d62b1e20b08cc0ff5f40b6da519bdc7a5de6082f13d90572cf4e72eea56c5e
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   sanitize_html:
     dependency: transitive
     description:

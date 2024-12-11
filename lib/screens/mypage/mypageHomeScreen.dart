@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:bag_a_moment/screens/others/loginScreen.dart';
+import 'package:bag_a_moment/widgets/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -111,7 +112,6 @@ class myhome_bar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 48,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(),
@@ -130,7 +130,6 @@ class myhome_bar extends StatelessWidget {
                     fontSize: 20,
                     fontFamily: 'Pretendard',
                     fontWeight: FontWeight.w600,
-                    height: 0.05,
                     letterSpacing: -0.50,
                   ),
                 ),
@@ -141,7 +140,6 @@ class myhome_bar extends StatelessWidget {
                     fontSize: 20,
                     fontFamily: 'Pretendard',
                     fontWeight: FontWeight.w600,
-                    height: 0.05,
                     letterSpacing: -0.50,
                   ),
                 ),
@@ -161,15 +159,7 @@ class myhome_bar extends StatelessWidget {
                   height: 24,
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(),
-                  child: FlutterLogo(),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 24,
-                  height: 24,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(),
-                  child: FlutterLogo(),
+                  child:Icon(Icons.settings_outlined,),
                 ),
               ],
             ),
@@ -370,10 +360,20 @@ class settingbox extends StatelessWidget {
           InkWell(
             onTap: () {
               Userinfo.logout();
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    (Route<dynamic> route) => false, // 모든 이전 경로 제거
-              );
+              showDialog(context: context, builder: 
+              (context){
+                return CustomTrueFalseDialogUI(
+                  context: context,
+                  title: '로그아웃',
+                  content: '로그아웃 하시겠습니까?',
+                  onPressed: () {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          (Route<dynamic> route) => false, // 모든 이전 경로 제거
+                    );
+                  }, padding: EdgeInsets.all(0),
+                );
+              });
             },
             child: Container(
               width: double.infinity,

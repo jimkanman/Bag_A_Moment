@@ -18,6 +18,14 @@ class StorageReservation {
   final int paymentAmount;
   final String status;
 
+  StorageReservation copyWith({
+    List<Luggage>? luggage,
+  }) {
+    return StorageReservation(
+      luggage: luggage ?? this.luggage,
+    );
+  }
+
   const StorageReservation({
     this.id = 0,
     this.memberId = 0,
@@ -26,7 +34,7 @@ class StorageReservation {
     this.storageName = "보관소",
     this.storageAddress = "서울특별시 흑석로 84 209관 519호",
     this.previewImagePath = AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
-    this.luggage = const [Luggage(type: 'MISCELLANEOUS_ITEM', width: 5, depth: 5, height: 5)],
+    this.luggage = const [],
     this.deliveryReservation,
     this.startDateTime = '2024-01-01T10:00:00',
     this.endDateTime = '2024-01-01T18:00:00',

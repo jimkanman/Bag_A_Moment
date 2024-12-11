@@ -11,7 +11,6 @@ import 'package:bag_a_moment/main.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
-import 'package:quickalert/quickalert.dart';
 
 import '../../services/api_service.dart';
 import '../../widgets/Jimkanman_bottom_navigation_bar.dart';
@@ -325,7 +324,7 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             Container(
               padding: EdgeInsets.symmetric(
                   vertical: 24,
-                  horizontal: MediaQuery.of(context).size.width * 0.3),
+                  horizontal: MediaQuery.of(context).size.width * 0.2),
               decoration: BoxDecoration(
                   color: AppColors.backgroundLight,
                   borderRadius: BorderRadius.circular(8),
@@ -432,36 +431,30 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
               child: Row(
                 children: [
                   SizedBox(
-                    width: 300,
+                    width: 250,
                     height: 200, // 이미지 슬라이더의 높이
                     child: dummyImages.length == 1
                         ? Center(
                             // 사진이 1개인 경우
                             child: Image.network(
-                              dummyImages[0],
+                              reservation.luggage[0].imagePath??
+                                  AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
                               fit: BoxFit.cover,
                             ),
                           )
-                        : SizedBox(
-                            // 사진이 2개 이상인 경우
-                            child: PageView.builder(
-                              controller: PageController(
-                                  viewportFraction:
-                                      dummyImages.length == 2 ? 0.8 : 1.0),
-                              itemCount: reservation.luggage.length,
-                              itemBuilder: (context, index) {
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: Image.network(
-                                    reservation.luggage[index].imagePath ??
-                                        AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
-                                    fit: BoxFit.cover,
-                                  ),
-                                );
-                              },
-                            ),
+                        : Center(
+                          child: PageView.builder(
+                            controller: PageController(viewportFraction: 0.8),
+                            itemCount: reservation.luggage.length,
+                            itemBuilder: (context, index) {
+                              return Image.network(
+                                reservation.luggage[index].imagePath ??
+                                    AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
+                                fit: BoxFit.cover,
+                              );
+                            },
                           ),
+                        ),
                   ),
                 ],
               ),
@@ -714,7 +707,9 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
   Widget build(BuildContext context) {
     if (isLoading) {
       return Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: AppColors.primaryDark,
+        ),
       );
     }
     return Scaffold(
