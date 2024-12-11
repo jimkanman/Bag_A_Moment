@@ -53,13 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
   LatLng? _selectedMarkerPosition;
   // 3. 마커 리스트
   final List<Marker> _markers = [];
-  // 검색된 마커 리스트
-  //List<Marker> _filteredMarkers = [];
-  String? _selectedStorageId; //선택된 마커 아이디
-  String? _selectedName; // 선택된 마커의 이름
-  String? _selectedImageUrl; // 선택된 마커의 이미지 URL
-  List<String>? _selectedTags; // 선택된 마커의 태그
-  Offset? _markerScreenPosition; // 마커의 화면상 좌표
+
+
 
 
   // 5. 검색 필터 변수
@@ -505,7 +500,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
             //5.하단 슬라이드 바
-            DraggableScrollableBottomSheet(),
+            DraggableScrollableBottomSheet(
+            markers: _markers, // 마커 리스트를 전달
+            ),
            
           ],
 
@@ -836,12 +833,15 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class DraggableScrollableBottomSheet extends StatelessWidget {
+  final List<Marker> markers; // 마커 리스트를 받을 변수
+  DraggableScrollableBottomSheet({required this.markers}); // 생성자 추가
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.2,
-      minChildSize: 0.2,
-      maxChildSize: 0.8,
+      initialChildSize: 0.05, // 화면의 5%만 보이도록 설정
+      minChildSize: 0.05, // 최소 높이를 검은색 바 부분만 보이도록 설정
+      maxChildSize: 0.8, // 최대 높이 설정
       builder: (BuildContext context, ScrollController scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -858,19 +858,43 @@ class DraggableScrollableBottomSheet extends StatelessWidget {
               ),
             ],
           ),
-          child: Column(
+          child: ListView(
+            controller: scrollController,
+            padding: EdgeInsets.only(top: 8), // 위쪽 패딩을 8로 줄임
             children: [
-              // 1. 작은 검은색 바
-              SmallDragBar(),
+
+              //1. 작은 검은색 바
+              Align(
+                alignment: Alignment.center, // 화면 중앙 정렬
+                child: GestureDetector(
+                  onVerticalDragUpdate: (details) {
+                    // 드래그 이벤트를 ScrollController에 전달
+                    scrollController.jumpTo(scrollController.offset - details.delta.dy);
+                  },
+                  child: Container(
+                    width: 40, // 검은색 바의 너비
+                    height: 4,  // 검은색 바의 높이
+                    margin: EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ),
+
               // 2. 추천 짐스팟 Row
               RecommendationTitle(),
               // 3. 목록 표시
-              Expanded(
-                child: ListView.builder(
+              ListView.builder(
+                shrinkWrap: true, // 내부 스크롤을 위해 추가
+                physics: NeverScrollableScrollPhysics(), // 외부 스크롤에만 반응
                   controller: scrollController,
-                  itemCount: 10,
+                  itemCount:  markers.length,  // _markers 리스트의 길이를 기준으로? 일단 10개만?
                   itemBuilder: (BuildContext context, int index) {
-                    return ListTile(
+                    return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0), // 리스트 간의 간격 조정
+                    child: ListTile(
                       leading: Icon(Icons.storage),
                       title: Text("상도 스토리지 $index"),
                       subtitle: Row(
@@ -888,10 +912,10 @@ class DraggableScrollableBottomSheet extends StatelessWidget {
                           ),
                         ],
                       ),
+                    ),
                     );
                   },
                 ),
-              ),
             ],
           ),
         );
@@ -919,7 +943,7 @@ class RecommendationTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Row(
         children: [
           Text(
@@ -930,12 +954,6 @@ class RecommendationTitle extends StatelessWidget {
             ),
           ),
           Spacer(),
-          IconButton(
-            icon: Icon(Icons.filter_alt),
-            onPressed: () {
-              // 필터 버튼 동작 정의
-            },
-          ),
         ],
       ),
     );
