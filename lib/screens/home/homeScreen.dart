@@ -881,7 +881,9 @@ class DraggableScrollableBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
       initialChildSize: 0.1, // 화면의 5%만 보이도록 설정
+
       minChildSize: 0.05, // 최소 높이를 검은색 바 부분만 보이도록 설정
+
       maxChildSize: 0.8, // 최대 높이 설정
 
 
@@ -924,17 +926,30 @@ class DraggableScrollableBottomSheet extends StatelessWidget {
               ),
 
               // 2. 추천 짐스팟 Row
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: RecommendationTitle(),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              //   child: RecommendationTitle(),
+              // ),
               // 3. 스크롤 가능한 리스트뷰
               Expanded( // 남은 공간을 스크롤 가능하도록 만듦
                 child: ListView.builder(
                   controller: scrollController, // DraggableScrollableSheet와 연동
-                  itemCount: markers.length, // 마커 리스트의 길이를 기준으로
+                  itemCount: markers.length + 1, // 마커 리스트의 길이를 기준으로 +1 (추천짐스팟 글씨)
                   padding: EdgeInsets.zero,
                   itemBuilder: (context, index) {
+                    if (index == 0) {
+                      // 첫 번째 항목으로 추천 짐스팟 표시
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: Text(
+                          "추천 짐스팟",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      );
+                    }
                     final marker = markers[index];
                     final markerInfo = markerDetails[marker.markerId.value]; // 매핑된 마커 정보 가져오기
 
