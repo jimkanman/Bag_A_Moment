@@ -140,10 +140,6 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black), // 뒤로가기 버튼
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24.0),
