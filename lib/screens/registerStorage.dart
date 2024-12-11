@@ -16,13 +16,6 @@ class _StorageRegisterScreenState extends State<StorageRegistraterScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _postalCodeController = TextEditingController(); // 추가된 필드
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _backpackPriceController = TextEditingController(); // 추가된 필드
-  final TextEditingController _carrierPriceController = TextEditingController(); // 추가된 필드
-  final TextEditingController _miscellaneousPriceController = TextEditingController(); // 추가된 필드
-  final TextEditingController _refundPolicyController = TextEditingController();
-  final List<String> _availableOptions = ["PARKING",
-    "CART", "BOX", "CCTV", "INSURANCE", "REFRIGERATION", "VALUABLES", "OTHER"];
   final Map<String, String> optionTranslations = {
     'PARKING': '주차 가능',
     'CART': '카트 사용',
@@ -41,9 +34,6 @@ class _StorageRegisterScreenState extends State<StorageRegistraterScreen> {
   TimeOfDay? _openTime;
   TimeOfDay? _closeTime;
   File? _selectedImage;
-  File? _selectedFile;
-  List<String> _storageOptions = [];
-
   Future<void> _pickTime(bool isOpeningTime) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -69,14 +59,6 @@ class _StorageRegisterScreenState extends State<StorageRegistraterScreen> {
     }
   }
 
-  Future<void> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
-    if (result != null) {
-      setState(() {
-        _selectedFile = File(result.files.single.path!);
-      });
-    }
-  }
 
 
 

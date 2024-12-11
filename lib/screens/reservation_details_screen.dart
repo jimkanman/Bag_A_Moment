@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:bag_a_moment/models/luggage.dart';
 import 'package:bag_a_moment/models/storage_model.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';
 import 'package:bag_a_moment/widgets/network_image_rect.dart';
@@ -9,8 +10,12 @@ import 'package:bag_a_moment/core/app_colors.dart';
 import 'package:bag_a_moment/core/app_constants.dart';
 import 'package:bag_a_moment/main.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:logger/logger.dart';
 
 import '../services/api_service.dart';
+import '../widgets/Jimkanman_bottom_navigation_bar.dart';
+import '../widgets/dialog.dart';
 
 class ReservationDetailsScreen extends StatefulWidget {
   final StorageReservation reservation; // 예약 정보를 저장할 변수
@@ -100,7 +105,23 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
       );
       //
       print('Reservation status updated to $status');
-      //현재페이지 리다이렉트
+      await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('예약 상태가 변경되었습니다.'),
+            content: Text('예약 상태가 $status로 변경되었습니다.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('확인'),
+              ),
+            ],
+          );
+        },
+      );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -198,7 +219,6 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             Expanded(
                 child: RectangularElevatedButton(
                   onPressed: () {
-                    //TODO : 짐수령 스크린으로 이동
                     Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -409,14 +429,14 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
                         controller: PageController(
                             viewportFraction:
                             dummyImages.length == 2 ? 0.8 : 1.0),
-                        itemCount: dummyImages.length,
+                        itemCount: reservation.luggage.length,
                         itemBuilder: (context, index) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8.0),
                             child: Image.network(
-                              // imageUrls[index],
-                              dummyImages[index],
+                              reservation.luggage[index].imagePath??
+                                  AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
                               fit: BoxFit.cover,
                             ),
                           );
@@ -614,6 +634,9 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
   int smallCount = 0;
   int mediumCount = 0;
   int largeCount = 0;
+  late final int smallPricePerHour;
+  late final int mediumPricePerHour;
+  late final int largePricePerHour;
   late final int userId;
   late final String? jwt;
   bool isLoading = true;
@@ -645,10 +668,11 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
   }
   Future<void> getPricePerHour() async {
     final storageid=reservation.storageId;
-    final StorageModel storageModel=await _apiService.get("storages/$storageid", fromJson: (json) => json);
-    storageModel.backpackPricePerHour;
-    storageModel.carrierPricePerHour;
-    storageModel.miscellaneousItemPricePerHour;
+    print(storageid);
+    final StorageModel storageModel=await _apiService.get("storages/$storageid", fromJson: (item) => StorageModel.fromJson(item));
+    smallPricePerHour=storageModel.backpackPricePerHour;
+    mediumPricePerHour=storageModel.carrierPricePerHour;
+    largePricePerHour=storageModel.miscellaneousItemPricePerHour;
   }
   Future<void> initialize() async {
     jwt = await secureStorage.read(key: 'auth_token');
@@ -664,6 +688,7 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
     // ApiService 초기화
     _apiService = ApiService(defaultHeader: {'Authorization': jwt ?? ''});
     await processLuggageAsync();
+    await getPricePerHour();
     print("Reservation: ${reservation.id}");
     setState(() {
       isLoading = false; // 데이터 로드 완료
@@ -671,7 +696,7 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
   }
   Future<void> _pickImage() async {
     final pickedImage =
-    await ImagePicker().pickImage(source: ImageSource.gallery);
+    await ImagePicker().pickImage(source: ImageSource.camera);
     if (pickedImage != null) {
       setState(() {
         _selectedImage = File(pickedImage.path);
@@ -820,7 +845,7 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                               borderRadius: BorderRadius.circular(4)),
                         ),
                         child: Text(
-                          reservation.startDateTime,
+                            DateFormat("MM/dd HH:mm").format(DateTime.parse(reservation.startDateTime)),
                           style: TextStyle(
                             color: Color(0xFF2CB598),
                             fontSize: 13,
@@ -869,7 +894,7 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              reservation.endDateTime,
+                            DateFormat("MM/dd HH:mm").format(DateTime.parse(reservation.endDateTime)),
                               style: TextStyle(
                                 color: Color(0xFF2CB598),
                                 fontSize: 13,
@@ -944,114 +969,7 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        FlutterLogo(size: 20,),
-                        SizedBox(width: 8),
-                        reservation.luggage[0].type == 'BAG'//TODO
-                            ? Text('소형 짐', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700))
-                            : reservation.luggage[0].type == 'LUGGAGE'
-                            ? Text('중형 짐', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700))
-                            : Text('대형 짐', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 150,
-                          height: 150,
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                left: 0,
-                                top: 0,
-                                child: Container(
-                                  width: 150,
-                                  height: 150,
-                                  decoration: ShapeDecoration(
-                                    image: DecorationImage(
-                                      image: _selectedImage != null
-                                          ? FileImage(
-                                          _selectedImage!) // 수정된 부분
-                                          : NetworkImage(
-                                          "https://via.placeholder.com/156x148"),
-                                      fit: BoxFit.fill,
-                                    ),
-                                    shape: RoundedRectangleBorder(
-                                      side: BorderSide(
-                                        width: 1,
-                                        color: Colors.black.withOpacity(
-                                            0.30000001192092896),
-                                      ),
-                                      borderRadius:
-                                      BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        FilledButton(
-                          style: FilledButton.styleFrom(
-                            minimumSize: Size(100, 50),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 24, vertical: 12),
-                            elevation: 2,
-                            backgroundColor: AppColors.primaryVeryLight,
-                            side: const BorderSide(
-                              color: AppColors.primaryDark,
-                              width: 1,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onPressed: _pickImage,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                clipBehavior: Clip.antiAlias,
-                                decoration: BoxDecoration(),
-                                child: FlutterLogo(),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                '사진 첨부하기',
-                                style: TextStyle(
-                                  color: AppColors.textDark,
-                                  fontSize: 14,
-                                  fontFamily: 'Pretendard',
-                                  fontWeight: FontWeight.w800,
-                                  height: 0.17,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              buildJimCard(),
               const SizedBox(height: 16),
             ],
           ),
@@ -1221,6 +1139,10 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                         Text(smallCount.toString(),
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
+                        Spacer(),
+                        Text(smallPricePerHour.toString(),
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
                     ),
                     const SizedBox(
@@ -1238,6 +1160,10 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                         ),
                         Spacer(),
                         Text(mediumCount.toString(),
+                            style: TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w700)),
+                        Spacer(),
+                        Text(mediumPricePerHour.toString(),
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
@@ -1259,6 +1185,9 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                         Text(largeCount.toString(),
                             style: TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
+                        Spacer(),
+                        Text(largePricePerHour.toString(),style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
                     ),
                   ],
@@ -1337,12 +1266,13 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
                 ),
                 Expanded(
                     child: RectangularElevatedButton(
-                      onPressed: submitReservationStatus(
-                          reservation.id, 'APPROVED'),
+                      onPressed:(){
+                        submitReservationStatus(reservation.id, 'STORING');
+                      },
                       backgroundColor: AppColors.primaryDark,
                       borderRadius: 8,
                       child: const Text(
-                        "수락하기",
+                        "보관하기",
                         style: TextStyle(color: AppColors.textLight),
                       ),
                     )),
@@ -1356,20 +1286,168 @@ class _CheckAndStoreScreenState extends State<_CheckAndStoreScreen> {
 
   submitReservationStatus(int reservation_id, String status) {
     return () async {
-      await _apiService.patch(
-        'reservations/$reservation_id/status?status=$status',
-        fromJson: (json) => json,
-      );
-      //
-      print('Reservation status updated to $status');
-      //현재페이지 리다이렉트
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              ReservationDetailsScreen(reservation: reservation),
-        ),
-      );
+      try{
+        await _apiService.patch(
+          'reservations/$reservation_id/status?status=$status',
+          fromJson: (json) => json,
+        );
+        showDialog(
+          context: context,
+          builder: (context){
+            return CustomDialogUI(padding: EdgeInsets.symmetric(horizontal: 12),onPressed: (){},text: "완료",); // 위젯으로 만들어놓은 UI가져오기
+          },
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                ReservationDetailsScreen(reservation: reservation),
+          ),
+        );
+        print('Reservation status updated to $status');
+      }catch(e){
+        //alert 띄우기
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('오류'),
+              content: Text(
+                '예상치 못한 오류가 발생했습니다.',
+                style: const TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  child: const Text('확인'),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // 다이얼로그 닫기
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
     };
+  }
+
+
+  Widget buildJimCard() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(12),
+      child:
+      Column(
+        children: reservation.luggage.map((item) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8), // 각 카드 사이의 간격
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.luggage, color: AppColors.primaryDark),
+                    SizedBox(width: 12),
+                    Text(
+                      item.type == 'BAG'
+                          ? '소형 짐'
+                          : item.type == 'LUGGAGE'
+                          ? '중형 짐'
+                          : '대형 짐',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 150,
+                      height: 150,
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            child: Container(
+                              width: 150,
+                              height: 150,
+                              decoration: ShapeDecoration(
+                                image: DecorationImage(
+                                  image: NetworkImage(
+                                      item.imagePath ?? AppConstants.DEFAULT_PREVIEW_IMAGE_PATH),
+                                  fit: BoxFit.fill,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  side: BorderSide(
+                                    width: 1,
+                                    color: Colors.black.withOpacity(
+                                        0.30000001192092896),
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    FilledButton(
+                      style: FilledButton.styleFrom(
+                        minimumSize: Size(100, 50),
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        elevation: 2,
+                        backgroundColor: AppColors.primaryVeryLight,
+                        side: const BorderSide(
+                          color: AppColors.primaryDark,
+                          width: 1,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      onPressed: _pickImage,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 36,
+                            height: 36,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(),
+                            child: Icon(Icons.camera_alt_outlined,
+                                color: AppColors.primaryDark),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            '사진 첨부하기',
+                            style: TextStyle(
+                              color: AppColors.textDark,
+                              fontSize: 14,
+                              fontFamily: 'Pretendard',
+                              fontWeight: FontWeight.w800,
+                              height: 0.17,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        }).toList(), // List를 반환
+      ),
+    );
   }
 }

@@ -3,12 +3,14 @@ class Luggage {
   final int? width;
   final int? depth;
   final int? height;
+  final String? imagePath;
 
   const Luggage({
     required this.type,
     required this.width,
     required this.depth,
     required this.height,
+    this.imagePath
   });
 
   factory Luggage.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,7 @@ class Luggage {
       width: json['width'],
       depth: json['depth'],
       height: json['height'],
+      imagePath: json['imagePath']??null,
     );
   }
 
@@ -26,6 +29,7 @@ class Luggage {
       'width': width,
       'depth': depth,
       'height': height,
+      'imagePath': imagePath,
     };
   }
 }

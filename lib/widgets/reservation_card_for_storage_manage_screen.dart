@@ -125,7 +125,6 @@ class ReservationManageCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              // TODO
               print('상세보기 클릭됨');
               print("reservation id:${reservation.id}");
               Navigator.push(

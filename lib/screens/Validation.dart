@@ -70,9 +70,9 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
   final _formKey = GlobalKey<FormState>();
   String description = '';
   List<Map<String, String>> items = [
-    {'label': '여행용 가방', 'price': '0','data':'backpackPrice'}, // backpackPrice
-    {'label': '캐리어', 'price': '0','data':'carrierPrice'},      // carrierPrice
-    {'label': '기타 가방', 'price': '0','data':'miscellaneousPrice'},   // miscellaneousPrice
+    {'label': '소형', 'price': '0','data':'backpackPrice'}, // backpackPrice
+    {'label': '중형', 'price': '0','data':'carrierPrice'},      // carrierPrice
+    {'label': '대형', 'price': '0','data':'miscellaneousPrice'},   // miscellaneousPrice
   ];
   String refundPolicy = '';
   File? _selectedFile;
@@ -147,7 +147,7 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
           children: [
             // 라벨
             Container(
-              width: 100,
+              width: 100,height: 32,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: ShapeDecoration(
                 shape: RoundedRectangleBorder(
@@ -158,7 +158,11 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const FlutterLogo(size: 20),
+                  item['label'] == '대형'
+                      ? const Icon(Icons.shopping_bag_outlined, size: 16, color: Color(0xFF2CB598))
+                      : item['label'] == '중형'
+                        ? const Icon(Icons.luggage, size: 16, color: Color(0xFF2CB598))
+                        : const Icon(Icons.shopping_bag, size: 16, color: Color(0xFF2CB598)),
                   const SizedBox(width: 4),
                   Text(
                     item['label']!,
@@ -182,7 +186,8 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
             ),
             // 가격 입력 TextField
             Container(
-              width: 80, // TextField의 고정 너비
+              width: 80,
+              height: 32,
               child: TextField(
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
@@ -192,9 +197,14 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
                   fontWeight: FontWeight.w600,
                 ),
                 decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  isDense: true, // 간격 축소
-                  contentPadding: EdgeInsets.all(8), // 내부 여백 조정
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.textGray),
+                    borderRadius: BorderRadius.all(Radius.circular(4)),
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primaryDark, width: 2),
+                  ),
+                  contentPadding: EdgeInsets.zero,
                 ),
                 onChanged: (value) {
                   setState(() {
