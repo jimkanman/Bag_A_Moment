@@ -18,24 +18,9 @@ class MyPageMainScreen extends StatefulWidget {
 
 class _MyPageMainScreenState extends State<MyPageMainScreen> {
   Map<String, dynamic>? _userData;
-  Map<String, int> _volumeData = {};
-  static const platform = MethodChannel("com.example.example/message");
 
-  Future<void> _fetchVolumeData() async {
-    try {
-      final Map<dynamic, dynamic> result =
-      await platform.invokeMethod('getVolumeAndroid');
-      setState(() {
-        _volumeData = {
-          'width': result['width'],
-          'height': result['height'],
-          'depth': result['depth'],
-        };
-      });
-    } on PlatformException catch (e) {
-      print("Failed to get volume: '${e.message}'.");
-    }
-  }
+
+
 
   @override
   void initState() {
