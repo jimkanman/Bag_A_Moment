@@ -52,9 +52,10 @@ class _StorageScreenState extends State<StorageScreen> {
 
   // 배송 서비스 여부를 저장하는 boolean 변수
   bool _deliveryService = false;
+  bool _timeall = true;
 
-  TimeOfDay _openTime=TimeOfDay(hour: 9, minute: 0);
-  TimeOfDay _closeTime=TimeOfDay(hour: 18, minute: 0);
+  TimeOfDay _openTime = TimeOfDay(hour: 9, minute: 0);
+  TimeOfDay _closeTime = TimeOfDay(hour: 18, minute: 0);
   File? _selectedImage;
   File? _selectedFile;
   List<String> _storageOptions = [];
@@ -170,6 +171,8 @@ class _StorageScreenState extends State<StorageScreen> {
             Navigator.pop(context);
           },
         ),
+        elevation: 0,
+        scrolledUnderElevation: 0,
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -187,7 +190,6 @@ class _StorageScreenState extends State<StorageScreen> {
               print('Closing Time: ${_closeTime?.format(context)}');
               print('Selected Image: ${_selectedImage?.path}');
 
-
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -195,7 +197,7 @@ class _StorageScreenState extends State<StorageScreen> {
                     name: _nameController.text,
                     phone: _phoneController.text,
                     address:
-                    "${_addressController.text} ${_detailaddressController.text}",
+                        "${_addressController.text} ${_detailaddressController.text}",
                     postalCode: receiverZipController.text,
                     openTime: _openTime?.format(context),
                     closeTime: _closeTime?.format(context),
@@ -285,7 +287,9 @@ class _StorageScreenState extends State<StorageScreen> {
                       validator: (value) =>
                           value!.isEmpty ? '보관소 이름을 입력해주세요' : null,
                     ),
-                    const SizedBox(height: 20,),
+                    const SizedBox(
+                      height: 20,
+                    ),
                     const SizedBox(
                       width: double.infinity,
                       child: Text(
@@ -306,7 +310,9 @@ class _StorageScreenState extends State<StorageScreen> {
                       validator: (value) =>
                           value!.isEmpty ? '연락처를 입력해주세요' : null,
                     ),
-                    const SizedBox(height: 20,),
+                    const SizedBox(
+                      height: 20,
+                    ),
                     const SizedBox(
                       width: double.infinity,
                       child: Text(
@@ -327,8 +333,8 @@ class _StorageScreenState extends State<StorageScreen> {
                       readOnly: true,
                       controller: _addressController,
                       decoration: const InputDecoration(
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 10),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                         border: OutlineInputBorder(),
                         focusedBorder: OutlineInputBorder(
                           borderSide:
@@ -383,7 +389,11 @@ class _StorageScreenState extends State<StorageScreen> {
                               width: 18,
                               clipBehavior: Clip.antiAlias,
                               decoration: BoxDecoration(),
-                              child: FlutterLogo(),
+                              child: Icon(
+                                Icons.info_outline,
+                                color: AppColors.primaryDark,
+                                size: 18,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             const Text(
@@ -447,11 +457,10 @@ class _StorageScreenState extends State<StorageScreen> {
                                       shape: RoundedRectangleBorder(
                                         side: BorderSide(
                                           width: 1,
-                                          color: Colors.black.withOpacity(
-                                              0.30000001192092896),
+                                          color: Colors.black
+                                              .withOpacity(0.30000001192092896),
                                         ),
-                                        borderRadius:
-                                            BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(8),
                                       ),
                                     ),
                                   ),
@@ -485,7 +494,11 @@ class _StorageScreenState extends State<StorageScreen> {
                                   height: 36,
                                   clipBehavior: Clip.antiAlias,
                                   decoration: BoxDecoration(),
-                                  child: FlutterLogo(),
+                                  child: Icon(
+                                    Icons.add_a_photo,
+                                    color: AppColors.primaryDark,
+                                    size: 28,
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
                                 const Text(
@@ -609,29 +622,29 @@ class _StorageScreenState extends State<StorageScreen> {
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  FilledButton(
-                                    onPressed: () {
-
+                                  Checkbox(
+                                    value: _timeall,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _timeall = value!;
+                                      });
                                     },
-                                    style: FilledButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 8),
-                                      elevation: 2,
-                                      backgroundColor: AppColors.primaryDark,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(5),
-                                      ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(2),
                                     ),
-                                    child: Text("일괄 적용",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontFamily: 'Inter',
-                                          fontWeight: FontWeight.w600,
-                                          height: 0.10,
-                                        )),
+                                    side: BorderSide(
+                                      color: AppColors.primaryDark,
+                                      width: 2,
+                                    ),
+                                    activeColor: AppColors.primaryDark,
                                   ),
+                                  Text("일괄 적용",
+                                      style: TextStyle(
+                                        color: AppColors.primaryDark,
+                                        fontSize: 14,
+                                        fontFamily: 'Inter',
+                                        fontWeight: FontWeight.w600,
+                                      )),
                                 ],
                               ),
                             ),
@@ -663,6 +676,7 @@ class DatePickerWidget extends StatelessWidget {
   final VoidCallback onPickCloseTime;
   final TimeOfDay? opentime;
   final TimeOfDay? closeTime;
+
   const DatePickerWidget({
     super.key,
     required this.date, // 필수 입력값으로 선언
@@ -695,12 +709,10 @@ class DatePickerWidget extends StatelessWidget {
           FilledButton(
             onPressed: onPickOpenTime,
             style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 6, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius:
-                BorderRadius.circular(5),
+                borderRadius: BorderRadius.circular(5),
                 side: BorderSide(
                   color: AppColors.primaryDark,
                   width: 1,
@@ -722,26 +734,25 @@ class DatePickerWidget extends StatelessWidget {
           FilledButton(
             onPressed: onPickCloseTime,
             style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 6, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius:
-                BorderRadius.circular(5),
+                borderRadius: BorderRadius.circular(5),
                 side: BorderSide(
                   color: AppColors.primaryDark,
                   width: 1,
                 ),
               ),
             ),
-            child: Text(closeTime == null ? "마감 시각" : closeTime!.format(context),
-                style: TextStyle(
-                  color: AppColors.primaryDark,
-                  fontSize: 14,
-                  fontFamily: 'Inter',
-                  fontWeight: FontWeight.w600,
-                  height: 0.10,
-                )),
+            child:
+                Text(closeTime == null ? "마감 시각" : closeTime!.format(context),
+                    style: TextStyle(
+                      color: AppColors.primaryDark,
+                      fontSize: 14,
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w600,
+                      height: 0.10,
+                    )),
           ),
         ],
       ),
