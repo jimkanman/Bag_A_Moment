@@ -381,8 +381,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // fromAssetImage를 사용하여 BitmapDescriptor 생성, 이미지로 아이콘 설정
       final BitmapDescriptor bagIcon = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(150, 150)), // 크기 설정
-        'assets/images/smallmarker.png', // 파일 경로
+        ImageConfiguration(size: Size(80, 80)), // 크기 설정
+        'assets/images/box_icon3.png', // 파일 경로
       );
 
       // 이에 따라 지도 상에 마커 표현하기
@@ -459,7 +459,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               initialCameraPosition: CameraPosition(
                 target: _initialPosition,
-                zoom: 14.0,
+                zoom: 20.0,
               ),
               markers: Set.from(_markers),
               onTap: (_) {
