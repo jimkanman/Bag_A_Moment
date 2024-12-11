@@ -78,4 +78,27 @@ class DeliveryReservation {
       'status': status,
     };
   }
+
+  @override
+  String toString() {
+    return '''
+DeliveryReservation {
+  id: $id,
+  deliveryId: $deliveryId,
+  storageId: $storageId,
+  deliveryArrivalDateTime: $deliveryArrivalDateTime,
+  luggage: ${luggage?.map((l) => l.toString()).join(', ') ?? 'null'},
+  storageAddress: $storageAddress,
+  storagePostalCode: $storagePostalCode,
+  storageLatitude: $storageLatitude,
+  storageLongitude: $storageLongitude,
+  destinationAddress: $destinationAddress,
+  destinationPostalCode: $destinationPostalCode,
+  destinationLatitude: $destinationLatitude,
+  destinationLongitude: $destinationLongitude,
+  distance: $distance,
+  status: $status
+}
+''';
+  }
 }

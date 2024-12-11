@@ -31,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isSearchActive = false;
 
 
+
   // dispose에서 컨트롤러 해제
   @override
   void dispose() {
@@ -53,13 +54,10 @@ class _HomeScreenState extends State<HomeScreen> {
   LatLng? _selectedMarkerPosition;
   // 3. 마커 리스트
   final List<Marker> _markers = [];
-  // 검색된 마커 리스트
-  //List<Marker> _filteredMarkers = [];
-  String? _selectedStorageId; //선택된 마커 아이디
-  String? _selectedName; // 선택된 마커의 이름
-  String? _selectedImageUrl; // 선택된 마커의 이미지 URL
-  List<String>? _selectedTags; // 선택된 마커의 태그
-  Offset? _markerScreenPosition; // 마커의 화면상 좌표
+  final Map<String, Map<String, dynamic>> _markerDetails = {}; // 마커 상세 정보 매핑
+
+
+
 
 
   // 5. 검색 필터 변수
@@ -114,9 +112,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // 현재 위치 가져오기
     Position position = await Geolocator.getCurrentPosition();
-    setState(() {
-      _currentPosition = LatLng(position.latitude, position.longitude);
-    });
+    if (mounted){
+      setState(() {
+        _currentPosition = LatLng(position.latitude, position.longitude);
+      });
+    }
   }
 
   // 지도 이동 함수
@@ -383,8 +383,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // fromAssetImage를 사용하여 BitmapDescriptor 생성, 이미지로 아이콘 설정
       final BitmapDescriptor bagIcon = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(150, 150)), // 크기 설정
-        'assets/images/smallmarker.png', // 파일 경로
+        ImageConfiguration(size: Size(80, 80)), // 크기 설정
+        'assets/images/box_icon3.png', // 파일 경로
       );
 
       // 이에 따라 지도 상에 마커 표현하기
@@ -424,9 +424,19 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           //받은 정보로 마커 위에 정보를 보이기.
           _markers.add(marker);
+          _markerDetails[storage['id'].toString()] = {
+            'name': storage['name'],
+            'address': storage['detailedAddress'],
+            'description': storage['description'],
+            'tags': List<String>.from(storage['storageOptions'] ?? []),
+            'previewImagePath': storage['previewImagePath'] ??
+                'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png',
+          };
+
         }); // 상태 갱신
       // 디버깅용: 전체 마커 개수 확인
       print('Total markers added: ${_markers.length}');
+      print('Total recommendations: ${_storages.length}');
       print('Storage id: ${storage['id']}');
       print('기본 이미지: ${storage['previewImagePath']}'); //얘는 대체 어디서 온거? - 서버 기본 이미지
       print('스토리지 이미지: ${storage['previewImagePath']}'); //여기가 널로 나옴
@@ -451,7 +461,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               initialCameraPosition: CameraPosition(
                 target: _initialPosition,
-                zoom: 14.0,
+                zoom: 20.0,
               ),
               markers: Set.from(_markers),
               onTap: (_) {
@@ -463,8 +473,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             //2. 현위치 버튼
             Positioned(
-              bottom: 20,
-              right: 50,
+              bottom: 90,
+              right: 10,
                 child: Container(
                     decoration: BoxDecoration(
                     shape: BoxShape.circle, // 버튼을 동그라미로 설정
@@ -505,8 +515,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
             //5.하단 슬라이드 바
-            DraggableScrollableBottomSheet(),
-           
+            DraggableScrollableBottomSheet(
+
+              markers: _markers,
+              markerDetails: _markerDetails, // 상세 정보 전달
+            ),
+
           ],
 
 
@@ -836,12 +850,29 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class DraggableScrollableBottomSheet extends StatelessWidget {
+  final List<Marker> markers; // 마커 리스트를 받을 변수
+  final Map<String, Map<String, dynamic>> markerDetails; // 마커 상세 정보 매핑
+  DraggableScrollableBottomSheet({
+    clipBehavior = Clip.hardEdge,
+    required this.markers,
+    required this.markerDetails,
+  });// 생성자 추가
+
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.2,
-      minChildSize: 0.2,
-      maxChildSize: 0.8,
+      initialChildSize: 0.1, // 화면의 5%만 보이도록 설정
+
+      minChildSize: 0.05, // 최소 높이를 검은색 바 부분만 보이도록 설정
+
+      maxChildSize: 0.8, // 최대 높이 설정
+
+
       builder: (BuildContext context, ScrollController scrollController) {
         return Container(
           decoration: BoxDecoration(
@@ -859,46 +890,173 @@ class DraggableScrollableBottomSheet extends StatelessWidget {
             ],
           ),
           child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. 작은 검은색 바
-              SmallDragBar(),
+              // 1. 검은색 바
+              GestureDetector(
+                onVerticalDragUpdate: (details) {
+                  // 드래그 이벤트를 ScrollController에 전달
+                  scrollController.jumpTo(scrollController.offset - details.delta.dy);
+                },
+                child: Center(
+                  child: Container(
+                    width: 40, // 검은색 바의 너비
+                    height: 4, // 검은색 바의 높이
+                    margin: EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+              ),
+
               // 2. 추천 짐스팟 Row
-              RecommendationTitle(),
-              // 3. 목록 표시
-              Expanded(
+              // Padding(
+              //   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              //   child: RecommendationTitle(),
+              // ),
+              // 3. 스크롤 가능한 리스트뷰
+              Expanded( // 남은 공간을 스크롤 가능하도록 만듦
                 child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: 10,
-                  itemBuilder: (BuildContext context, int index) {
-                    return ListTile(
-                      leading: Icon(Icons.storage),
-                      title: Text("상도 스토리지 $index"),
-                      subtitle: Row(
-                        children: [
-                          Chip(
-                            label: Text("근접 보관"),
+                  controller: scrollController, // DraggableScrollableSheet와 연동
+                  itemCount: markers.length + 1, // 마커 리스트의 길이를 기준으로 +1 (추천짐스팟 글씨)
+                  padding: EdgeInsets.zero,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      // 첫 번째 항목으로 추천 짐스팟 표시
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: Text(
+                          "추천 짐스팟",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
-                          SizedBox(width: 8),
-                          Chip(
-                            label: Text("냉장"),
-                          ),
-                          SizedBox(width: 8),
-                          Chip(
-                            label: Text("24시간"),
-                          ),
-                        ],
+                        ),
+                      );
+                    } else if (index - 1 >= markers.length) {
+                      // 유효하지 않은 인덱스 접근 방지
+                      return SizedBox.shrink();
+                    }
+                    final marker = markers[index - 1];
+                    final markerInfo = markerDetails[marker.markerId.value]; // 매핑된 마커 정보 가져오기
+
+                    return GestureDetector(
+                      onTap: () {
+                        // 마커 클릭 시 동작
+                        print('Selected marker: $markerInfo');
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 왼쪽: 이미지
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                markerInfo?['previewImagePath'] ??
+                                    'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png',
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // 오른쪽: 텍스트 정보
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    markerInfo?['name'] ?? 'Unknown',
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    markerInfo?['address'] ?? 'Unknown Address',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
                 ),
               ),
-            ],
-          ),
+
+
+
+
+            ]
+          )
         );
-      },
+      }
     );
   }
 }
+
+
+              // ListView.builder(
+              //   shrinkWrap: true, // 내부 스크롤을 위해 추가
+              //   physics: NeverScrollableScrollPhysics(), // 외부 스크롤에만 반응
+              //     controller: scrollController,
+              //     itemCount:  markers.length,  // _markers 리스트의 길이를 기준으로? 일단 10개만?
+              //     itemBuilder: (BuildContext context, int index) {
+              //       return Padding(
+              //           padding: const EdgeInsets.symmetric(vertical: 4.0), // 리스트 간의 간격 조정
+              //       child: ListTile(
+              //         leading: Icon(Icons.storage),
+              //         title: Text("상도 스토리지 $index"),
+              //         subtitle: Row(
+              //           children: [
+              //             Chip(
+              //               label: Text("근접 보관"),
+              //             ),
+              //             SizedBox(width: 8),
+              //             Chip(
+              //               label: Text("냉장"),
+              //             ),
+              //             SizedBox(width: 8),
+              //             Chip(
+              //               label: Text("24시간"),
+              //             ),
+              //           ],
+              //         ),
+              //       ),
+              //       );
+              //     },
+              //   ),
+
+
+
+
 
 class SmallDragBar extends StatelessWidget {
   @override
@@ -919,7 +1077,7 @@ class RecommendationTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Row(
         children: [
           Text(
@@ -930,12 +1088,6 @@ class RecommendationTitle extends StatelessWidget {
             ),
           ),
           Spacer(),
-          IconButton(
-            icon: Icon(Icons.filter_alt),
-            onPressed: () {
-              // 필터 버튼 동작 정의
-            },
-          ),
         ],
       ),
     );

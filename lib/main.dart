@@ -9,9 +9,11 @@ import 'package:bag_a_moment/screens/home/homeScreen.dart';
 import 'package:bag_a_moment/screens/reservation/reservationRequestScreen.dart';
 import 'package:bag_a_moment/screens/mypage/mypageHomeScreen.dart';
 import 'package:bag_a_moment/screens/others/loginScreen.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'package:bag_a_moment/api_response.dart';
+import 'models/map_controller_notifier.dart';
 import 'theme.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -26,11 +28,16 @@ Future<void> loadStoredValues() async {
   print('Global Token: $globalToken');
   print('Global User ID: $globalUserId');
 }
-
 //모든 플러터 위젯 시작점
 void main() {
-  runApp(JimApp());
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => MapControllerProvider()),
+    ],
+    child: JimApp()
+  ));
 }
+
 
 class JimApp extends StatelessWidget {
   const JimApp({Key? key}) : super(key: key);
@@ -168,27 +175,30 @@ class _InitialScreenState extends State<InitialScreen> {
 }
 
 
-
+final GlobalKey<MainScreenBottomState> mainScreenKey = GlobalKey();
 //하단바
 class MainBottomScreen extends StatefulWidget {
+  MainBottomScreen({Key? key}) : super(key: mainScreenKey);
+
   @override
-  _MainScreenBottomState createState() => _MainScreenBottomState();
+  MainScreenBottomState createState() => MainScreenBottomState();
 }
 
 //하단 메뉴바
-class _MainScreenBottomState extends State<MainBottomScreen>
+class MainScreenBottomState extends State<MainBottomScreen>
     with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
 
   // 페이지 목록
-  final List<Widget> _pages = [
+  /*final List<Widget> _pages = [
     HomeScreen(), // 홈 (지도 페이지)
     ReservationScreen(), // 예약 내역 페이지
     StorageManagementPage(), // 내보관소 페이지
     MyPageMainScreen(), // 마이페이지
-  ];
+  ];*/
 
-  void _onItemTapped(int index) {
+  void navigateTo(int index) {
+    // index번째 탭으로 이동
     setState(() {
       print("탭 선택: $index");
       _selectedIndex = index;
@@ -198,7 +208,7 @@ class _MainScreenBottomState extends State<MainBottomScreen>
   Widget _buildPage(int index) {
     switch (index) {
       case 0:
-        return HomeScreen();
+        return const HomeScreen();
       case 1:
         return ReservationScreen();
       case 2:
@@ -242,7 +252,7 @@ class _MainScreenBottomState extends State<MainBottomScreen>
         currentIndex: _selectedIndex,
         selectedItemColor: Color(0xFF21B2A6),
         unselectedItemColor: Colors.grey.shade600, // 클릭되지 않은 탭 색상 (회색)
-        onTap: _onItemTapped, // 탭 변경 시 호출
+        onTap: navigateTo, // 탭 변경 시 호출
       ),
     );
   }

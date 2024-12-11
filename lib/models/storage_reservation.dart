@@ -45,6 +45,8 @@ class StorageReservation {
   factory StorageReservation.fromJson(Map<String, dynamic> json) {
     return StorageReservation(
       id: json['id'],
+      memberId: json['memberId'],
+      memberNickname: json['memberNickname'],
       storageId: json['storageId'],
       memberId: json['memberId'],
       memberNickname: json['memberNickname'],
@@ -55,11 +57,34 @@ class StorageReservation {
           .toList()
           : [],
       deliveryReservation:
-      json['deliveryReservation'] != null ? DeliveryReservation.fromJson(json['deliveryReservation']) : DeliveryReservation(),
+        json['deliveryReservation'] != null
+            ? DeliveryReservation.fromJson(json['deliveryReservation'])
+            : null,
       startDateTime: json['startDateTime'],
       endDateTime: json['endDateTime'],
       paymentAmount: json['paymentAmount'],
       status: json['status'],
     );
+  }
+
+  @override
+  String toString() {
+    return '''
+StorageReservation {
+  id: $id,
+  memberId: $memberId,
+  memberNickname: $memberNickname,
+  storageId: $storageId,
+  storageName: $storageName,
+  storageAddress: $storageAddress,
+  previewImagePath: $previewImagePath,
+  luggage: ${luggage.map((l) => l.toString()).join(', ')},
+  deliveryReservation: ${deliveryReservation?.toString() ?? 'null'},
+  startDateTime: $startDateTime,
+  endDateTime: $endDateTime,
+  paymentAmount: $paymentAmount,
+  status: $status
+}
+''';
   }
 }

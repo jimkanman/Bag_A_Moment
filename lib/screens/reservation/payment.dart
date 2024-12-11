@@ -365,6 +365,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     );
   }
 
+
   //에러 팝업
   void _showErrorDialog(String message) {
     showDialog(
@@ -410,6 +411,27 @@ class _ReservationScreenState extends State<ReservationScreen> {
     print('Small Bag Count: $smallBagCount');
     print('Large Bag Count: $largeBagCount');
     print('Special Bag Count: $mediumBagCount');
+
+    //AR 카메라에서 받은 w,h,d 값 리스트에 저장
+    List<Map<String, dynamic>> luggageData = [];
+    Future<void> _addBagData() async {
+      try {
+        final Map<dynamic, dynamic> result = await platform.invokeMethod('getVolumeAndroid');
+        setState(() {
+          luggageData.add({
+            'type': 'CUSTOM', // 필요한 경우 유형을 지정
+            'width': result['width'],
+            'height': result['height'],
+            'depth': result['depth'],
+          });
+        });
+        print('추가된 데이터: $luggageData');
+      } on PlatformException catch (e) {
+        print("Failed to get volume: '${e.message}'");
+      }
+    }
+
+
 
     // 서버로 데이터를 전송할 body??
     //TODO:  가방 크기 일단 랜덤값 넣음!!! AR 카메라에서 가져온 크기로 수정할 것채
@@ -551,6 +573,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
+
       body: SingleChildScrollView(
         child: Container(
           width: MediaQuery.of(context).size.width,
