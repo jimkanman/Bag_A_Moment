@@ -9,7 +9,7 @@ class WebSocketService {
   void connect() {
     _stompClient = StompClient(
       config: StompConfig(
-        url: 'ws://3.35.175.114/connection', // 서버의 WebSocket URL
+        url: 'ws://3.35.175.114:8080/connection', // 서버의 WebSocket URL
         onConnect: onConnect,
         onWebSocketError: (error) => print('WebSocket Error: $error'),
       ),
@@ -23,8 +23,8 @@ class WebSocketService {
   }
 
   void subscribe(String topic, Function(Map<String, dynamic>) onMessage) {
-    print("StompService: subscribing %topic");
-    _stompClient?.subscribe(
+    print("StompService: subscribing $topic");
+    _stompClient!.subscribe(
       destination: topic,
       callback: (StompFrame frame) {
         print('StompService: received ${frame.body}');
