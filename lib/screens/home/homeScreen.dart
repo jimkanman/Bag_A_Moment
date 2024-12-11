@@ -933,8 +933,11 @@ class DraggableScrollableBottomSheet extends StatelessWidget {
                           ),
                         ),
                       );
+                    } else if (index - 1 >= markers.length) {
+                      // 유효하지 않은 인덱스 접근 방지
+                      return SizedBox.shrink();
                     }
-                    final marker = markers[index];
+                    final marker = markers[index - 1];
                     final markerInfo = markerDetails[marker.markerId.value]; // 매핑된 마커 정보 가져오기
 
                     return GestureDetector(
