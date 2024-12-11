@@ -384,7 +384,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                       storageName: _reservations[idx].storageName,
                       pickupTime: StringTimeFormatter.formatTime(_reservations[idx].endDateTime),
                       buttonText: const Text("연장 요청"),
-                      backgroundColor: determineStorageReservationCardBackgroundColor(_reservations[idx]),
+                      backgroundColor: Colors.white/*determineStorageReservationCardBackgroundColor(_reservations[idx])*/,
                       onButtonPressed: () => OnStorageReservationButtonPress(idx),
                       // 다른 보관소 데이터 전달...
                     ),
