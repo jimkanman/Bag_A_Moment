@@ -489,7 +489,7 @@ class _HomeScreenState extends State<HomeScreen> {
               myLocationButtonEnabled: false,
 
               initialCameraPosition: CameraPosition(
-                target: _initialPosition,
+                target: _currentPosition,
                 zoom: 16.35,
               ),
               markers: Set.from(_markers),
