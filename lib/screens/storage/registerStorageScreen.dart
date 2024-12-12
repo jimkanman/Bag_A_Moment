@@ -518,7 +518,11 @@ class _StorageScreenState extends State<StorageScreen> {
                               width: 18,
                               clipBehavior: Clip.antiAlias,
                               decoration: BoxDecoration(),
-                              child: FlutterLogo(),
+                              child: const Icon(
+                                Icons.info_outline,
+                                color: AppColors.primaryDark,
+                                size: 18,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             const Text(

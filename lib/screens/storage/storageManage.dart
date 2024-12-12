@@ -212,7 +212,30 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
 
           // 최근 예약 섹션
           const SizedBox(height: 16,),
-          const Text('최근 예약', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,),),
+          const Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: '처리중',
+                  style: TextStyle(
+                    color: Color(0xFF2CB598),
+                    fontSize: 20,
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                TextSpan(
+                  text: '인 예약이에요',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontFamily: 'Pretendard',
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 16),
           for(var reservation in reservations)
             ReservationManageCard(reservation: reservation,),
