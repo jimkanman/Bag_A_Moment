@@ -446,6 +446,19 @@ class _HomeScreenState extends State<HomeScreen> {
       print('----------------------');
       }
 
+  // 태그 맵 정의
+  final Map<String, String> tagMap = {
+    'PARKING': '주차 가능',
+    'CART': '카트 사용',
+    'BOX': '박스 제공',
+    'TWENTY_FOUR_HOURS': '24시간',
+    'CCTV': 'CCTV 설치',
+    'INSURANCE': '보험 제공',
+    'REFRIGERATION': '냉장 보관',
+    'VALUABLES': '귀중품 보관',
+    'OTHER': '기타',
+  };
+
 
 
 
@@ -630,6 +643,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 8),
                     // 태그 리스트
                     Wrap(
+
                       spacing: 8, // 태그 사이 간격
                       runSpacing: 4, // 줄 간격
                       children: (_selectedMarkerInfo!['tags'] as List<String>)
@@ -642,16 +656,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Color(0xFF3AC4B0),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          tag == 'TWENTY_FOUR_HOURS' ? '24시간' : tag,
-                          style: TextStyle(
-                            fontSize: 7,
-                            fontFamily: 'Paperlogy',
-                            fontWeight: FontWeight.w400, // Regular
-                            color: Color(0xFFE0F7F5),
+                          // child 부분 수정
+                          child: Text(
+                            tagMap[tag] ?? tag, // tagMap에서 태그에 해당하는 값이 없으면 기본적으로 영어 태그를 표시
+                            style: TextStyle(
+                              fontSize: 7,
+                              fontFamily: 'Paperlogy',
+                              fontWeight: FontWeight.w400, // Regular
+                              color: Color(0xFFE0F7F5),
+                            ),
+                            overflow: TextOverflow.ellipsis, // 넘칠 경우 "..." 표시
                           ),
-                          overflow: TextOverflow.ellipsis, // 넘칠 경우 "..." 표시
-                        ),
                       ),
                       ),
                       )
