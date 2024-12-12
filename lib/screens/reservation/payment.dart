@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:bag_a_moment/screens/reservation/reservationSuccess.dart';
 import 'package:bag_a_moment/screens/reservation/reservation_details_screen.dart';
 import 'package:bag_a_moment/widgets/dialog.dart';
@@ -179,7 +180,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
       );
     });
     _updateBagCounts();
-    _calculateTotalPrice();
     _selectedImage.add(null);
   }
 
@@ -974,12 +974,14 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        _calculateTotalPrice().toString(),
-                        style: const TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
+                      AnimatedFlipCounter(
+                        duration: Duration(milliseconds: 300),
+                        value: _calculateTotalPrice(),
+                        curve: Curves.easeInOutCubicEmphasized,
+                        textStyle: const TextStyle(
+                          fontSize: 36,
+                          color: AppColors.primaryDark,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(
