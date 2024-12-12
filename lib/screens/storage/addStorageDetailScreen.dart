@@ -73,9 +73,9 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
   final _formKey = GlobalKey<FormState>();
   String description = '';
   List<Map<String, String>> items = [
-    {'label': '여행용 가방', 'price': '0','data':'backpackPrice'}, // backpackPrice
-    {'label': '캐리어', 'price': '0','data':'carrierPrice'},      // carrierPrice
-    {'label': '기타 가방', 'price': '0','data':'miscellaneousPrice'},   // miscellaneousPrice
+    {'label': '소형', 'price': '0','data':'backpackPrice'}, // backpackPrice
+    {'label': '중형', 'price': '0','data':'carrierPrice'},      // carrierPrice
+    {'label': '대형', 'price': '0','data':'miscellaneousPrice'},   // miscellaneousPrice
   ];
   String refundPolicy = '';
   File? _selectedFile;
@@ -186,23 +186,30 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
             // 가격 입력 TextField
             Container(
               width: 80, // TextField의 고정 너비
-              child: TextField(
+              child:
+              TextField(
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
-                controller: TextEditingController(text: item['price']),
+                controller: TextEditingController(text: item['price'])..selection = TextSelection.collapsed(offset: item['price']!.length),
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
+                cursorColor: AppColors.primaryDark,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   isDense: true, // 간격 축소
                   contentPadding: EdgeInsets.all(8), // 내부 여백 조정
+                  focusedBorder:
+                  OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primaryDark),
+                  ),
                 ),
                 onChanged: (value) {
                   setState(() {
                     items[index]['price'] = value; // 값 업데이트
                   });
+
                 },
               ),
             ),
@@ -305,6 +312,8 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
               Navigator.pop(context);
             },
           ),
+          elevation: 0,
+          scrolledUnderElevation: 0,
         ),
         bottomNavigationBar: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -312,6 +321,7 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
             onPressed: () {
               // 서버로 데이터 전송
               _submitApiData(context);
+              MaterialPageRoute(builder: (context) => addStorageSuccessScreen());
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF31BEB0),

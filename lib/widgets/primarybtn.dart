@@ -69,7 +69,7 @@ class PrimaryLightbtn extends StatelessWidget {
         ),
         child: Text(
           text,
-          style: const TextStyle(color: Colors.black), // 텍스트 스타일
+          style: const TextStyle(color: AppColors.primaryDark), // 텍스트 스타일
         ),
       ),
     );

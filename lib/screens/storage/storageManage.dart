@@ -1,3 +1,4 @@
+import 'package:bag_a_moment/core/app_colors.dart';
 import 'package:bag_a_moment/main.dart';
 import 'package:bag_a_moment/models/storage_model.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';
@@ -44,7 +45,6 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
   /// 최근 예약 API 호출
   Future<void> fetchRecentReservations() async {
 
-    // TODO 예약 fetch 후 마감된 예약은 필터링
     try {
       List<StorageReservation> allReservations = [];
       for (var storage in storages) {
@@ -100,10 +100,6 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
     _apiService = ApiService(defaultHeader: {'Authorization' : jwt ?? ''});
   }
 
-  Future<void> fillDummyData() async {
-    storages = List.generate(3, (index) => StorageModel(), growable: true);
-    reservations = List.generate(3, (index) => StorageReservation());
-  }
 
   /// API로 나의 보관소 & 최근 예약 호출
   Future<void> fetchApiData() async {
@@ -122,8 +118,18 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
 
   @override
   Widget build(BuildContext context) {
+    if(isStorageLoading || isReservationLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.primaryDark,
+            backgroundColor: Colors.white,
+          ),
+        ),
+      );
+    }
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundMypage,
       appBar: AppBar(
         title: const Text(
           '내 보관소',
@@ -137,10 +143,6 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black), // 뒤로가기 버튼
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24.0),
@@ -150,13 +152,53 @@ class _StorageManagementPageState extends State<StorageManagementPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('나의 보관소', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,),),
+              const Text.rich(
+                TextSpan(
+                  children: [
+                    TextSpan(
+                      text: '내 ',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 20,
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '보관소',
+                      style: TextStyle(
+                        color: Color(0xFF2CB598),
+                        fontSize: 20,
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '는 ',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 20,
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '지금',
+                      style: TextStyle(
+                        color: Color(0xFF2CB598),
+                        fontSize: 20,
+                        fontFamily: 'Pretendard',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
               Align(
                 alignment: Alignment.centerRight,
                 child: IconButton(
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(Icons.add_box,color: AppColors.primaryDark,size: 25),
                   onPressed: () async {
-                    // TODO 라우팅 검토 (추가 정보 없이 StorageScreen으로 가면 안될 거 같지??)
                     Navigator.push(context, MaterialPageRoute(builder: (context) => StorageScreen()));
                   },
                 ),

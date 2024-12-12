@@ -1,10 +1,8 @@
 import 'package:bag_a_moment/models/luggage.dart';
-import 'package:bag_a_moment/models/storage_model.dart';
 import 'package:bag_a_moment/models/storage_reservation.dart';
-import 'package:bag_a_moment/screens/reservation/ReservationDetailsScreen.dart';
+import 'package:bag_a_moment/screens/reservation/reservation_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/core/app_colors.dart';
-import 'package:bag_a_moment/models/storage_reservation.dart';
 
 class ReservationManageCard extends StatelessWidget {
   final StorageReservation reservation;
@@ -54,7 +52,7 @@ class ReservationManageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 125,
+      height: 150,
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -123,15 +121,8 @@ class ReservationManageCard extends StatelessWidget {
               ],
             ),
           ),
-
-          // 예약 확인하기 버튼
-          GestureDetector(
-            onTap: () { },
-            child: const Text("예약 확인하기", style: TextStyle(color: AppColors.textDark, fontSize: 14),)
-          ),
           TextButton(
             onPressed: () {
-              // TODO
               print('상세보기 클릭됨');
               print("reservation id:${reservation.id}");
               Navigator.push(
