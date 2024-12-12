@@ -10,71 +10,62 @@ class StorageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-      ),
-    
-      child: Row(
-        children: [
-          Container(width: 70, height: 70,
-            child: Image(image: NetworkImage(storage.images[0]))//TODO 나중에 대표이미지?
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StorageDetailPage(storageId: storage.id, ),
           ),
-          const SizedBox(width: 16),
-
-          // 보관소 정보
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text( storage.name ,style: const TextStyle( fontSize: 16, fontWeight: FontWeight.bold,), overflow: TextOverflow.ellipsis,),
-                const SizedBox(height: 4),
-                Text(storage.detailedAddress, style: const TextStyle(fontSize: 10, overflow: TextOverflow.ellipsis),
-                ),
-              ],
-            ),
+        );
+      },
+      child: Container(
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
           ),
 
-          // 상태 텍스트
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: Row(
             children: [
-              // 상태 텍스트 (검수 중 or REJECTED)
-              Text(
-                storage.status == 'REJECTED' ? '검수 거절' : '',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
+              Container(width: 70, height: 70,
+                child: Image(image: NetworkImage(storage.images[0]))
+              ),
+              const SizedBox(width: 16),
+
+              // 보관소 정보
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text( storage.name ,style: const TextStyle( fontSize: 16, fontWeight: FontWeight.bold,), overflow: TextOverflow.ellipsis,),
+                    const SizedBox(height: 4),
+                    Text(storage.detailedAddress, style: const TextStyle(fontSize: 10, overflow: TextOverflow.ellipsis),
+                    ),
+                  ],
                 ),
               ),
 
-              // 상세보기
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    // TODO
-                    print('상세보기 클릭됨');
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => StorageDetailPage(storageId: storage.id, ), // TODO 보관소 주인용 페이지 만들기
-                      ),
-                    );
-                  },
-                  child: const Text('상세보기', style: TextStyle( color: Colors.blue,),),
-                ),
+              // 상태 텍스트
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 상태 텍스트 (검수 중 or REJECTED)
+                  Text(
+                    storage.status == 'REJECTED' ? '검수 거절' : '',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-
-        ],
-      ),
+        ),
     );
   }
 }
