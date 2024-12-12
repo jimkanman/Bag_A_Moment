@@ -5,7 +5,7 @@ class DeliveryReservation {
   final int deliveryId;
   final int storageId;
   final String deliveryArrivalDateTime;
-  final List<Luggage>? luggage;
+  final List<Luggage> luggage;
   final String storageAddress;
   final String? storagePostalCode;
   final double storageLatitude;
@@ -22,7 +22,7 @@ class DeliveryReservation {
     this.deliveryId = 0,
     this.storageId = 0,
     this.deliveryArrivalDateTime = '2024-01-01T10:00:00',
-    this.luggage,
+    this.luggage=const [],
     this.storageAddress = '서울특별시 출발지 주소',
     this.storagePostalCode = '12345',
     this.storageLatitude = 37.504708,
@@ -34,6 +34,13 @@ class DeliveryReservation {
     this.distance = 0.0,
     this.status = 'ON_DELIVERY',
   });
+  DeliveryReservation copyWith({
+    List<Luggage>? luggage,
+  }) {
+    return DeliveryReservation(
+      luggage: luggage ?? this.luggage,
+    );
+  }
 
   factory DeliveryReservation.fromJson(Map<String, dynamic> json) {
     return DeliveryReservation(

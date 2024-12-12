@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 
+import 'package:bag_a_moment/core/app_colors.dart';
 import 'package:bag_a_moment/screens/storage/storageManage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -239,8 +240,11 @@ class MainScreenBottomState extends State<MainBottomScreen>
         index: _selectedIndex,
         children: _pages,
       ), // 현재 선택된 페이지*/
+      backgroundColor: Colors.white,
       body: _buildPage(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.map),
@@ -261,8 +265,8 @@ class MainScreenBottomState extends State<MainBottomScreen>
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Color(0xFF21B2A6),
-        unselectedItemColor: Colors.grey.shade600, // 클릭되지 않은 탭 색상 (회색)
+        selectedItemColor: AppColors.primaryDark,
+        unselectedItemColor: AppColors.statusgrey, // 클릭되지 않은 탭 색상 (회색)
         onTap: navigateTo, // 탭 변경 시 호출
       ),
     );
