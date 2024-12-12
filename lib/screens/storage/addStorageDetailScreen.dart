@@ -161,7 +161,7 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const FlutterLogo(size: 20),
+                  const Icon(Icons.shopping_bag,color:AppColors.primaryDark,size: 20),
                   const SizedBox(width: 4),
                   Text(
                     item['label']!,
@@ -281,12 +281,7 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
         files: files,
         fromJson: (data) => data, // 응답 처리 (필요시 매핑 함수 작성)
       );
-
       print("요청 성공: $result");
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => StorageManagementPage()),
-            (Route<dynamic> route) => false, // 모든 이전 경로 제거
-      );
     } catch (e) {
       print("요청 중 오류 발생: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -323,7 +318,9 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
             onPressed: () {
               // 서버로 데이터 전송
               _submitApiData(context);
-              MaterialPageRoute(builder: (context) => addStorageSuccessScreen());
+              print("성공");
+              Navigator.push(context,
+              MaterialPageRoute(builder: (context) => addStorageSuccessScreen()));
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFF31BEB0),
@@ -607,10 +604,15 @@ class addStorageSuccessScreen extends StatelessWidget {
                   height: 200,
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(),
-                  child: FlutterLogo(),
+                  child: Image.asset(
+                    'assets/images/check-circle-broken.png', // 이미지를 넣을 경로
+                    //이미지가 안나옴
+                    height: 150, // 이미지 크기 설정
+                    width: 150,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                Text(
+                const Text(
                   '보관소 등록을 완료했어요',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -618,7 +620,6 @@ class addStorageSuccessScreen extends StatelessWidget {
                     fontSize: 16,
                     fontFamily: 'Pretandard',
                     fontWeight: FontWeight.w600,
-                    height: 0.08,
                     letterSpacing: 0.50,
                   ),
                 ),
@@ -635,11 +636,9 @@ class addStorageSuccessScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Primarybtn(padding: const EdgeInsets.all(0), onPressed: (){
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (context) => HomeScreen()),
-                              (Route<dynamic> route) => false, // 모든 이전 경로 제거
-                        );
+                      Primarybtn(padding: const EdgeInsets.all(0),
+                          onPressed: (){
+                        Navigator.of(context).popUntil((route) => route.isFirst);
                       }, text: "내 보관소로 이동하기")
                     ],
                   ),

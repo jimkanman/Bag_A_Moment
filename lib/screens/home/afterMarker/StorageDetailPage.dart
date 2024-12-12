@@ -121,6 +121,18 @@ void initState() {
     }
   }
 
+  // 태그 맵 정의
+  final Map<String, String> tagMap = {
+    'PARKING': '주차 가능',
+    'CART': '카트 사용',
+    'BOX': '박스 제공',
+    'TWENTY_FOUR_HOURS': '24시간',
+    'CCTV': 'CCTV 설치',
+    'INSURANCE': '보험 제공',
+    'REFRIGERATION': '냉장 보관',
+    'VALUABLES': '귀중품 보관',
+    'OTHER': '기타',
+  };
 
 
 
@@ -404,11 +416,11 @@ void initState() {
                       // 옵션 정보
                       Wrap(
                         spacing: 8,
-                        runSpacing: 8,
+                        runSpacing: 1,
                         children: (storageDetails?.storageOptions ?? [])
                             .map((option) => Chip(
                           label: Text(
-                            translateOption(option),
+                            tagMap[option] ?? option,
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -427,10 +439,6 @@ void initState() {
                 )
               ],
             ),
-
-            const SizedBox(height: 16),
-
-
 
             SizedBox(height: 80),
 
