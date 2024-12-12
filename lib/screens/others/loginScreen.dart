@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:bag_a_moment/main.dart';
 import 'package:bag_a_moment/screens/home/homeScreen.dart';
 import 'package:bag_a_moment/screens/others/signupScreen.dart';
+import 'package:bag_a_moment/widgets/rectangular_elevated_button.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -104,40 +105,37 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        backgroundColor: Color(0xFF49E0C0), actions: [
-        ],
-      ),
-      body: Stack(
-          children: [
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(), // 키보드 닫기
+        child: Stack(
+            children: [
             Container(
-              decoration: BoxDecoration(
-              image: DecorationImage(
-              image: AssetImage('assets/images/background.png'), // 배경 이미지 경로
-              fit: BoxFit.cover, // 화면에 맞게 이미지 크기 조정
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/background.png'), // 배경 이미지 경로
+                  fit: BoxFit.cover, // 화면에 맞게 이미지 크기 조정
+                ),
               ),
             ),
-          ),
-
-        SingleChildScrollView(
-          child: Center(
+        
+          Center(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                   child: Image.asset(
-                     'assets/images/mainLogo.png',
-                     height: 100,
-                   ),
-                ),
-                SizedBox(height: 40),
-          
-                SizedBox(
-                    width: 300,
-                    height: 100,
-                    child: TextField(
+              padding: const EdgeInsets.all(32.0),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.75,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                       child: Image.asset(
+                         'assets/images/login_logo_transparent.png',
+                         width: double.infinity
+                       ),
+                    ),
+                    const SizedBox(height: 40),
+        
+                    // 아이디 입력창
+                    TextField(
                       controller: _idController,
                       decoration: InputDecoration(
                           labelText: 'ID 입력',
@@ -147,89 +145,79 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         labelStyle: TextStyle(
                             color: Color(0xFF0C4944),
-          
+        
                           ),
                         filled: true,
                         fillColor: Colors.white,
                       ),
                       style: TextStyle(fontSize: 16, color: Color(0xFF0C4944)), // 텍스트 스타일
                     ),
-          
-                ),
-                SizedBox(
-                  width: 300,
-                  height: 100,
-                  child: TextField(
-                    obscureText: !_isPasswordVisible, // 비밀번호 가림 처리
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: '비밀번호',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        borderSide: BorderSide.none,
-                      ),
-                      labelStyle: TextStyle(
-                        color: Color(0xFF0C4944),
-          
-                      ),
-                      filled: true,
-                      fillColor: Colors.white,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _isPasswordVisible
-                              ? Icons.visibility
-                              : Icons.visibility_off,
+                    const SizedBox(height: 12,),
+        
+                    // 비밀번호 입력창
+                    TextField(
+                      obscureText: !_isPasswordVisible, // 비밀번호 가림 처리
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        labelText: '비밀번호',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                          borderSide: BorderSide.none,
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible; // 상태 변경
-                          });
-                        },
+                        labelStyle: TextStyle(
+                          color: Color(0xFF0C4944),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible; // 상태 변경
+                            });
+                          },
+                        ),
+                      ),
+                      style: TextStyle(fontSize: 16, color: Color(0xFF0C4944)),
+                    ),
+                    const SizedBox(height: 24),
+        
+                    // 로그인 버튼
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.75,
+                      height: 48,
+                      child: RectangularElevatedButton(
+                        onPressed: _login,
+                        backgroundColor: Colors.black,
+                        borderRadius: 8.0,
+                        child: const Text('시작하기', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
                     ),
-                    style: TextStyle(fontSize: 16, color: Color(0xFF0C4944)), // 텍스트 스타일
-          
-                  ),
-                ),
-          
-                ElevatedButton(
-                  onPressed: _login,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF80E3D6),
-                    foregroundColor: Color(0xFFE0F7F5),
-                  ),
-                  child: Text('로그인',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                  ),
-                ),
-                ),
-                SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed:() {
-                    Navigator.push( context, MaterialPageRoute(builder: (context) => SignupScreen()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF80E3D6),
-                    foregroundColor: Color(0xFFE0F7F5),
-                  ),
-                    child: Text('회원가입',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+        
+                    // 회원가입 버튼
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => SignupScreen())); },
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text("계정이 없으신가요? ", style: TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.normal),),
+                          Text("회원가입", style: TextStyle(fontSize: 14, color: Colors.deepPurple, fontWeight: FontWeight.bold),),
+                        ],
+                      ),
                     ),
-                  ),
+        
+                  ],
                 ),
-              ],
-            ),
+              ),
           ),
           ),
+        ],
         ),
-      ],
       ),
     );
   }
