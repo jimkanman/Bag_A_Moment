@@ -40,7 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // 1-1. 초기 맵 위치 설정 (위도, 경도) - 사용자 현위치로 수정
   late GoogleMapController _mapController;
-  final LatLng _initialPosition = const LatLng(37.5045563, 126.9569379); // 중앙대 위치 넣음
   LatLng _currentPosition = const LatLng(37.5045563, 126.9569379);
   final double _currentLatitude = 37.5045563; // 사용자의 현재 위도
   final double _currentLongitude = 126.9569379; // 사용자의 현재 경도
@@ -61,7 +60,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // 5. 검색 필터 변수
   String _location = "현위치";
-  int _selectedItems = 1; // 초기값 설정
+  int _selectedItems  = 1; // 초기값 설정
+  int _smallBagItems =1;
+  int _mediumBagItems =1;
+  int _largeBagItems =1;
   DateTimeRange? _selectedDateRange;
   TimeOfDay? _fromTime;
   TimeOfDay? _toTime;
@@ -110,7 +112,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     // 현재 위치 가져오기
-    Position position = await Geolocator.getCurrentPosition();
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
     if (mounted){
       setState(() {
         _currentPosition = LatLng(position.latitude, position.longitude);
@@ -459,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
               myLocationButtonEnabled: false,
 
               initialCameraPosition: CameraPosition(
-                target: _initialPosition,
+                target: _currentPosition,
                 zoom: 20.0,
               ),
               markers: Set.from(_markers),
@@ -766,31 +770,91 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildFilterOptions() {
     return Column(
       children: [
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
+            // 소형 가방
             Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.remove),
+                  icon: Icon(Icons.remove, size: 20), // 아이콘 크기 줄이기
                   onPressed: () {
                     setState(() {
-                      if (_selectedItems > 1) _selectedItems--;
+                      if (_smallBagItems > 0) _smallBagItems--;
                     });
                   },
                 ),
-                SizedBox(width: 5),
-                Icon(Icons.shopping_bag, color: Color(0xFF43CBBA)),
+
+                Icon(Icons.backpack, color: Color(0xFF43CBBA), size: 20),
+                SizedBox(width: 3), // 간격 조정
                 Text(
-                  "캐리어 $_selectedItems개",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  "소형 $_smallBagItems개",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(width: 5),
+                SizedBox(width: 3), // 간격 조정
                 IconButton(
-                  icon: Icon(Icons.add),
+                  icon: Icon(Icons.add, size: 20),
                   onPressed: () {
                     setState(() {
-                      _selectedItems++;
+                      _smallBagItems++;
+                    });
+                  },
+                ),
+              ],
+            ),
+            // 중형 가방
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.remove, size: 20),
+                  onPressed: () {
+                    setState(() {
+                      if (_mediumBagItems > 0) _mediumBagItems--;
+                    });
+                  },
+                ),
+                SizedBox(width: 3),
+                Icon(Icons.shopping_bag, color: Color(0xFF43CBBA), size: 20),
+                SizedBox(width: 3),
+                Text(
+                  "중형 $_mediumBagItems개",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(width: 3),
+                IconButton(
+                  icon: Icon(Icons.add, size: 20),
+                  onPressed: () {
+                    setState(() {
+                      _mediumBagItems++;
+                    });
+                  },
+                ),
+              ],
+            ),
+            // 대형 가방
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.remove, size: 20),
+                  onPressed: () {
+                    setState(() {
+                      if (_largeBagItems > 0) _largeBagItems--;
+                    });
+                  },
+                ),
+                SizedBox(width: 3),
+                Icon(Icons.luggage, color: Color(0xFF43CBBA), size: 20),
+                SizedBox(width: 3),
+                Text(
+                  "대형 $_largeBagItems개",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(width: 3),
+                IconButton(
+                  icon: Icon(Icons.add, size: 20),
+                  onPressed: () {
+                    setState(() {
+                      _largeBagItems++;
                     });
                   },
                 ),
@@ -798,12 +862,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               children: [
-                Icon(Icons.calendar_today, color: Color(0xFF43CBBA)),
+                IconButton(
+                  icon: Icon(Icons.date_range, color: Color(0xFF4DD9C6),),
+                  onPressed: _pickDateRange,
+                ),
                 SizedBox(width: 5),
                 Text(
                   _selectedDateRange == null
@@ -813,10 +881,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            IconButton(
-              icon: Icon(Icons.date_range),
-              onPressed: _pickDateRange,
-            ),
+
           ],
         ),
         Row(
@@ -824,7 +889,10 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.access_time, color: Color(0xFF43CBBA)),
+                IconButton(
+                  icon: Icon(Icons.schedule, color: Color(0xFF4DD9C6),),
+                  onPressed: _pickTimeRange,
+                ),
                 SizedBox(width: 5),
                 Text(
                   _fromTime == null || _toTime == null
@@ -834,10 +902,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            IconButton(
-              icon: Icon(Icons.schedule),
-              onPressed: _pickTimeRange,
-            ),
+
           ],
         ),
       ],
