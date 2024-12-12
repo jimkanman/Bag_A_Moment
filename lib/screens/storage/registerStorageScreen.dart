@@ -74,6 +74,8 @@ class _StorageScreenState extends State<StorageScreen> {
         }
       });
     }
+    print("OPENTIME: $_openTime");
+    print("CLOSETIME: $_closeTime");
   }
 
   Future<void> _pickImage() async {
@@ -97,8 +99,8 @@ class _StorageScreenState extends State<StorageScreen> {
   }
 
   String _formatTimeOfDayToHHMM(TimeOfDay time) {
-    final hour = _openTime.hour.toString().padLeft(2, '0');
-    final minute = _openTime.minute.toString().padLeft(2, '0');
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
 
@@ -189,11 +191,10 @@ class _StorageScreenState extends State<StorageScreen> {
               print('디버깅디버깅디버깅디버깅디버깅');
               print('Name: ${_nameController.text}');
               print('Phone: ${_phoneController.text}');
-              print(
-                  'Address: ${_addressController.text} ${_detailaddressController.text}');
+              print('Address: ${_addressController.text} ${_detailaddressController.text}');
               print('Postal Code: ${receiverZipController.text}');
-              print('Opening Time: ${_openTime.format(context)}');
-              print('Closing Time: ${_closeTime.format(context)}');
+              print('Opening Time: ${_formatTimeOfDayToHHMM(_openTime)}, $_openTime');
+              print('Closing Time: ${_formatTimeOfDayToHHMM(_closeTime)}, $_closeTime');
               print('Selected Image: ${_selectedImage?.path}');
 
               Navigator.push(
