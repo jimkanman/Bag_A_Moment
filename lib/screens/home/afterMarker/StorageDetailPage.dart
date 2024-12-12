@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:io';
 import 'package:bag_a_moment/screens/reservation/payment.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../../core/app_colors.dart';
 import '../../../main.dart';
 import 'package:bag_a_moment/StorageDetailModel.dart';
 
@@ -31,6 +33,7 @@ class _StorageDetailPageState extends State<StorageDetailPage> {
     phoneNumber: '',
     description: '',
     notice: '',
+    hasDeliveryService: true,
     postalCode: '',
     detailedAddress: '',
     latitude: 0.0,
@@ -45,8 +48,7 @@ class _StorageDetailPageState extends State<StorageDetailPage> {
     storageOptions: [],
   );
 
-
-
+  late Position currentPosition;
   bool isLoading = true;
 
 @override
@@ -62,37 +64,62 @@ void initState() {
   //final String url = 'http://3.35.175.114:8080/storages/nearby?latitude=37.5045563&longitude=126.9569379&radius=10000';
 
 
-Future<void> fetchStorageDetails() async {
-  final url = Uri.parse('http://3.35.175.114:8080/storages/${widget.storageId}');
-  final token = secureStorage.read(key: 'auth_token');
-  try {
-    final response = await http.get(url,
-      headers: {
-        'Authorization': '$token', // 토큰 추가
-        'Content-Type': 'application/json',
-      },
-    );
+  Future<void> fetchStorageDetails() async {
+    final url = Uri.parse('http://3.35.175.114:8080/storages/${widget.storageId}');
+    final token = secureStorage.read(key: 'auth_token');
+    try {
+      currentPosition = await Geolocator.getCurrentPosition(); // 현재 위치 가져오기
+      final response = await http.get(url,
+        headers: {
+          'Authorization': '$token', // 토큰 추가
+          'Content-Type': 'application/json',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes));
-      final decodedData = json.decode(utf8.decode(response.bodyBytes));
-      print('해당 데이터값: ${data['data']}');
-      setState(() {
-        storageDetails = StorageDetail.fromJson(data['data']); // 데이터를 모델로 변환. 이 부분 잘 모르겠음
-        isLoading = false;
-        print('현재 storageDEtailes에 저장된것${storageDetails}');
-      });
-    } else {
-      print('Failed to fetch storage details. Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
+      
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+        final decodedData = json.decode(utf8.decode(response.bodyBytes));
+        print('해당 데이터값: ${data['data']}');
+        setState(() {
+          storageDetails = StorageDetail.fromJson(data['data']); // 데이터를 모델로 변환. 이 부분 잘 모르겠음
+          isLoading = false;
+          print('현재 storageDEtailes에 저장된것${storageDetails}');
+        });
+      } else {
+        print('Failed to fetch storage details. Status Code: ${response.statusCode}');
+        print('Response Body: ${response.body}');
+      }
+    } catch (error) {
+      print('Error fetching storage details: $error');
+      //지금 여기
     }
-  } catch (error) {
-    print('Error fetching storage details: $error');
-    //지금 여기
   }
 
-
-}
+  String translateOption(String option) {
+    switch(option.toUpperCase()) {
+      case 'PARKING':
+        return '주차 가능';
+      case 'CART':
+        return '카트 제공';
+      case 'BOX':
+        return '박스 제공';
+      case 'TWENTY_FOUR_HOURS':
+        return '24시간';
+      case 'CCTV':
+        return 'CCTV';
+      case 'INSURANCE':
+        return '보험 제공';
+      case 'REFRIGERATION':
+        return '냉장 보관';
+      case 'VALUABLES':
+        return '귀중품 보관';
+      case 'OTHER':
+      default:
+        return '기타';
+    }
+  }
 
 
 
@@ -147,7 +174,7 @@ Future<void> fetchStorageDetails() async {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 보관소 이미지
-            Container(
+            SizedBox(
               height: 200,
               width: double.infinity,
               child: (storageDetails?.images?.isNotEmpty ?? false)
@@ -181,19 +208,38 @@ Future<void> fetchStorageDetails() async {
               Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                '주소',
-                style: TextStyle(
-                  fontSize:16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
+                const Text(
+                  '주소',
+                  style: TextStyle(
+                    fontSize:16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
+                const SizedBox(height: 7),
+                Row(
+                  children: [
+                    Text(storageDetails?.detailedAddress ?? '보관소 주소',
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
 
-                SizedBox(height: 7),
-              Text('${storageDetails?.detailedAddress ?? 'Unknown'}',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
-              ),
+                    Spacer(),
+                    if (storageDetails != null)
+                    Row(
+                      children: [
+                        const Text("(", style: TextStyle(fontSize: 12, color: AppColors.textGray),),
+                        Text(
+                          (Geolocator.distanceBetween(
+                              storageDetails!.latitude, storageDetails!.longitude,
+                              currentPosition.latitude, currentPosition.longitude) / 1000).toStringAsFixed(1)
+                          , style: const TextStyle(fontSize: 12, color: AppColors.textGray),
+                        ),
+                        const Text("m)", style: TextStyle(fontSize: 12, color: AppColors.textGray),)
+                      ],
+                    ),
+
+                  ],
+                ),
 
               ],
             ),
@@ -222,10 +268,9 @@ Future<void> fetchStorageDetails() async {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1), // 그림자 색상 및 투명도
-                    blurRadius: 5, // 그림자 흐림 정도
-                    spreadRadius: 2, // 그림자 퍼짐 정도
-                    offset: Offset(0, 2), // 그림자의 위치 (x, y)
+                    color: Colors.black.withOpacity(0.075), // 그림자 색상 및 투명도
+                    blurRadius: 2, // 그림자 흐림 정도
+                    spreadRadius: 1.25, // 그림자 퍼짐 정도
                   ),
                 ],
                 border: Border.all(
@@ -240,7 +285,7 @@ Future<void> fetchStorageDetails() async {
                 children: [
 
                   Text(
-                    '${storageDetails?.notice ?? '언제든지 편하게 방문주세요!'}',
+                    storageDetails?.notice ?? '언제나 열려있습니다!\n언제든지 편하게 연락주세요',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.black87),
                   ),
 
@@ -270,10 +315,9 @@ Future<void> fetchStorageDetails() async {
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1), // 그림자 색상 및 투명도
-                        blurRadius: 5, // 그림자 흐림 정도
-                        spreadRadius: 2, // 그림자 퍼짐 정도
-                        offset: Offset(0, 2), // 그림자의 위치 (x, y)
+                        color: Colors.black.withOpacity(0.075), // 그림자 색상 및 투명도
+                        blurRadius: 2, // 그림자 흐림 정도
+                        spreadRadius: 1.25, // 그림자 퍼짐 정도
                       ),
                     ],
                     border: Border.all(
@@ -320,10 +364,9 @@ Future<void> fetchStorageDetails() async {
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1), // 그림자 색상 및 투명도
-                          blurRadius: 5, // 그림자 흐림 정도
-                          spreadRadius: 1, // 그림자 퍼짐 정도
-                          offset: Offset(0, 2), // 그림자의 위치 (x, y)
+                          color: Colors.black.withOpacity(0.075), // 그림자 색상 및 투명도
+                          blurRadius: 2, // 그림자 흐림 정도
+                          spreadRadius: 1.25, // 그림자 퍼짐 정도
                         ),
                       ],
                       border: Border.all(
@@ -331,21 +374,21 @@ Future<void> fetchStorageDetails() async {
                         width: 1, // 테두리 두께
                       ),
                     ),
-                  child:Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                           children: [
-                            Icon(Icons.access_time, size: 16, color: Colors.black), // 운영 시간 아이콘
-                            SizedBox(width: 8), // 간격
+                            const Icon(Icons.access_time, size: 16, color: Colors.black), // 운영 시간 아이콘
+                            const SizedBox(width: 8), // 간격
                             Text(
                               '${storageDetails?.openingTime} - ${storageDetails?.closingTime}',
-                              style: TextStyle(fontSize: 13, color: Colors.black), // 동일한 크기 적용
+                              style: const TextStyle(fontSize: 13, color: Colors.black), // 동일한 크기 적용
                             ),
                           ]//text
                       ),
-                      SizedBox(height: 8), // 각 항목 간 간격
-                      Row(
+                      const SizedBox(height: 8), // 각 항목 간 간격
+                      const Row(
                         children: [
                           Icon(Icons.calendar_today, size: 16, color: Color(0xFFF44336)), // 휴무 아이콘
                           SizedBox(width: 8),
@@ -356,43 +399,38 @@ Future<void> fetchStorageDetails() async {
                           ),
                         ],
                       ),
-                      SizedBox(height: 8), // 각 항목 간 간격
+                      const SizedBox(height: 8), // 각 항목 간 간격
+
+                      // 옵션 정보
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: (storageDetails?.storageOptions ?? [])
+                            .map((option) => Chip(
+                          label: Text(
+                            translateOption(option),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          backgroundColor: AppColors.backgroundDarkBlack,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12), // 둥근 모서리
+                          ),
+                        )).toList(),
+                      ),
                     ],
                   ),
                 )
               ],
             ),
 
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-            // 옵션 정보
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: (storageDetails?.storageOptions ?? []).map((option) {
-                return Chip(
-                  label: Text(
-                    //TODO: 태그 추가
-                    option == 'TWENTY_FOUR_HOURS' ? '24시간' : option, // "24hours"는 "24시간"으로 표시
-                    style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  ),
-                  backgroundColor: Color(0xFF80E3D6),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // 둥근 모서리
-                    //side: BorderSide.none, // 외곽선 제거 -> 작동x
-                    side: BorderSide(
-                      color: Color(0xFF80E3D6),// 테두리 색상 지정
-                      width: 0.1, // 테두리 두께
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
+
 
             SizedBox(height: 80),
 
@@ -412,6 +450,7 @@ Future<void> fetchStorageDetails() async {
               child: ElevatedButton(
                 onPressed: () {
                   print('배송 버튼 클릭');
+                  if(storageDetails?.hasDeliveryService == false) return;
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -420,7 +459,9 @@ Future<void> fetchStorageDetails() async {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFB3EDE5),
+                  backgroundColor: storageDetails?.hasDeliveryService == true
+                      ? AppColors.primaryVeryLight
+                      : AppColors.backgroundDarkBlack,
                   minimumSize: Size(120, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -429,13 +470,15 @@ Future<void> fetchStorageDetails() async {
                 child: Text(
                   '배송',
                   style: TextStyle(
-                    color: Color(0xFF43CBBA),
+                    color: storageDetails?.hasDeliveryService == true
+                    ? AppColors.textDark
+                    : Colors.white,
                     fontSize: 15,
                   ),
                 ),
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
@@ -448,16 +491,16 @@ Future<void> fetchStorageDetails() async {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF4DD9C6),
+                  backgroundColor: AppColors.primaryDark,
                   minimumSize: Size(120, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   '보관',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textLight,
                     fontSize: 15,
                   ),
                 ),

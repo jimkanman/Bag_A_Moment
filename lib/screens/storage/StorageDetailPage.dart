@@ -29,7 +29,7 @@ class _StorageDetailPageState extends State<StorageDetailPage> {
     'CART': '카트 사용',
     'BOX': '박스 제공',
     'TWENTY_FOUR_HOURS': '24시간',
-    'CCTV': 'CCTV 설치',
+    'CCTV': 'CCTV',
     'INSURANCE': '보험 제공',
     'REFRIGERATION': '냉장 보관',
     'VALUABLES': '귀중품 보관',
@@ -42,6 +42,7 @@ class _StorageDetailPageState extends State<StorageDetailPage> {
     phoneNumber: '',
     description: '',
     notice: '',
+    hasDeliveryService: true,
     postalCode: '',
     detailedAddress: '',
     latitude: 0.0,
@@ -86,7 +87,7 @@ Future<void> fetchStorageDetails() async {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(utf8.decode(response.bodyBytes));
-      final decodedData = json.decode(utf8.decode(response.bodyBytes));
+      // final decodedData = json.decode(utf8.decode(response.bodyBytes));
       print('해당 데이터값: ${data['data']}');
       setState(() {
         storageDetails = StorageDetail.fromJson(data['data']); // 데이터를 모델로 변환. 이 부분 잘 모르겠음
@@ -143,7 +144,7 @@ Future<void> fetchStorageDetails() async {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.grey),
+          icon: const Icon(Icons.arrow_back, color: Colors.grey),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -158,6 +159,8 @@ Future<void> fetchStorageDetails() async {
           child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const Divider(thickness: 1,),
+            const SizedBox(height: 4,),
             // 보관소 이미지
             Container(
               height: 200,
@@ -175,7 +178,7 @@ Future<void> fetchStorageDetails() async {
                   );
                 },
               )
-                  : Center(
+                  : const Center(
                      child: Text(
                   "No Image Available",
                   style: TextStyle(color: Colors.grey, fontSize: 16),
@@ -193,7 +196,7 @@ Future<void> fetchStorageDetails() async {
               Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                 '주소',
                 style: TextStyle(
                   fontSize:16,
@@ -202,9 +205,9 @@ Future<void> fetchStorageDetails() async {
                 ),
               ),
 
-                SizedBox(height: 7),
-              Text('${storageDetails?.detailedAddress ?? 'Unknown'}',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                const SizedBox(height: 7),
+              Text(storageDetails?.detailedAddress ?? '보관소 주소',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
               ),
 
               ],
@@ -234,10 +237,9 @@ Future<void> fetchStorageDetails() async {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1), // 그림자 색상 및 투명도
-                    blurRadius: 5, // 그림자 흐림 정도
-                    spreadRadius: 2, // 그림자 퍼짐 정도
-                    offset: Offset(0, 2), // 그림자의 위치 (x, y)
+                    color: Colors.black.withOpacity(0.075), // 그림자 색상 및 투명도
+                    blurRadius: 2, // 그림자 흐림 정도
+                    spreadRadius: 1.25, // 그림자 퍼짐 정도
                   ),
                 ],
                 border: Border.all(
@@ -282,10 +284,9 @@ Future<void> fetchStorageDetails() async {
                     borderRadius: BorderRadius.circular(8),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1), // 그림자 색상 및 투명도
-                        blurRadius: 5, // 그림자 흐림 정도
-                        spreadRadius: 2, // 그림자 퍼짐 정도
-                        offset: Offset(0, 2), // 그림자의 위치 (x, y)
+                        color: Colors.black.withOpacity(0.075), // 그림자 색상 및 투명도
+                        blurRadius: 2, // 그림자 흐림 정도
+                        spreadRadius: 1.25, // 그림자 퍼짐 정도
                       ),
                     ],
                     border: Border.all(
@@ -332,10 +333,9 @@ Future<void> fetchStorageDetails() async {
                       borderRadius: BorderRadius.circular(8),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1), // 그림자 색상 및 투명도
-                          blurRadius: 5, // 그림자 흐림 정도
-                          spreadRadius: 1, // 그림자 퍼짐 정도
-                          offset: Offset(0, 2), // 그림자의 위치 (x, y)
+                          color: Colors.black.withOpacity(0.075), // 그림자 색상 및 투명도
+                          blurRadius: 2, // 그림자 흐림 정도
+                          spreadRadius: 1.25, // 그림자 퍼짐 정도
                         ),
                       ],
                       border: Border.all(
@@ -348,18 +348,18 @@ Future<void> fetchStorageDetails() async {
                     children: [
                       Row(
                           children: [
-                            Icon(Icons.access_time_filled, size: 16, color: AppColors.primaryDark), // 운영 시간 아이콘
-                            SizedBox(width: 8), // 간격
+                            const Icon(Icons.access_time_filled, size: 16, color: Colors.black), // 운영 시간 아이콘
+                            const SizedBox(width: 8), // 간격
                             Text(
                               '${storageDetails?.openingTime} - ${storageDetails?.closingTime}',
-                              style: TextStyle(fontSize: 13, color: Colors.black), // 동일한 크기 적용
+                              style: const TextStyle(fontSize: 13, color: Colors.black), // 동일한 크기 적용
                             ),
                           ]//text
                       ),
-                      SizedBox(height: 8), // 각 항목 간 간격
-                      Row(
+                      const SizedBox(height: 8), // 각 항목 간 간격
+                      const Row(
                         children: [
-                          Icon(Icons.calendar_today, size: 16, color: AppColors.primaryDark), // 휴무 아이콘
+                          Icon(Icons.calendar_today, size: 16, color: Color(0xFFF44336)), // 휴무 아이콘
                           SizedBox(width: 8),
                           Text(
                             '연중무휴',
@@ -368,45 +368,35 @@ Future<void> fetchStorageDetails() async {
                           ),
                         ],
                       ),
-                      SizedBox(height: 8), // 각 항목 간 간격
+                      const SizedBox(height: 8), // 각 항목 간 간격
+                      // 옵션 정보
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 0.1,
+                        children: (storageDetails?.storageOptions ?? [])
+                            .map((option) => Chip(
+                          label: Text(
+                            optionTranslations[option] ?? '기타',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          backgroundColor: AppColors.backgroundDarkBlack,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12), // 둥근 모서리
+                          ),
+                        )).toList(),
+                      ),
                     ],
                   ),
                 )
               ],
             ),
 
-            SizedBox(height: 16),
-
-            // 옵션 정보
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: (storageDetails?.storageOptions ?? []).map((option) {
-                return Chip(
-                  label: Text(
-                    //TODO: 태그 추가
-                    optionTranslations[option]!, // "24hours"는 "24시간"으로 표시
-                    style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  ),
-                  backgroundColor: Color(0xFF80E3D6),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // 둥근 모서리
-                    //side: BorderSide.none, // 외곽선 제거 -> 작동x
-                    side: BorderSide(
-                      color: Color(0xFF80E3D6),// 테두리 색상 지정
-                      width: 0.1, // 테두리 두께
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
 
           ]
         ),

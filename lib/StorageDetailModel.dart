@@ -5,6 +5,7 @@ class StorageDetail {
   final String phoneNumber;
   final String? description;
   final String? notice;
+  final bool? hasDeliveryService;
   final String postalCode;
   final String detailedAddress;
   final double latitude;
@@ -23,6 +24,7 @@ class StorageDetail {
     required this.name,
     required this.ownerId,
     required this.phoneNumber,
+    this.hasDeliveryService,
     this.description,
     this.notice,
     required this.postalCode,
@@ -47,6 +49,7 @@ class StorageDetail {
       phoneNumber: json['phoneNumber'],
       description: json['description'],
       notice: json['notice'],
+      hasDeliveryService: json['hasDeliveryService'],
       postalCode: json['postalCode'],
       detailedAddress: json['detailedAddress'],
       latitude: json['latitude'],
