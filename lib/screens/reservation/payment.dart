@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:bag_a_moment/screens/reservation/reservationSuccess.dart';
 import 'package:bag_a_moment/screens/reservation/reservation_details_screen.dart';
 import 'package:bag_a_moment/widgets/dialog.dart';
@@ -32,6 +33,7 @@ class ReservationScreen extends StatefulWidget {
 
 class _ReservationScreenState extends State<ReservationScreen> {
   late ApiService _apiService=ApiService();
+  final ScrollController _scrollController = ScrollController();
   late int? smallPricePerHour = 0;
   late int? mediumPricePerHour = 0;
   late int? largePricePerHour = 0;
@@ -179,8 +181,14 @@ class _ReservationScreenState extends State<ReservationScreen> {
       );
     });
     _updateBagCounts();
-    _calculateTotalPrice();
     _selectedImage.add(null);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOutSine,
+      );
+    });
   }
 
   //로그인 토큰, 아이디를 저장
@@ -304,8 +312,8 @@ class _ReservationScreenState extends State<ReservationScreen> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.luggage, color: AppColors.primaryDark),
-                    SizedBox(width: 12),
+                    const Icon(Icons.luggage, color: AppColors.primaryDark),
+                    const SizedBox(width: 12),
                     DropdownButton<String>(
                       value: item.type,
                       onChanged: (String? newValue) {
@@ -607,11 +615,12 @@ class _ReservationScreenState extends State<ReservationScreen> {
       ),
 
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Container(
           width: MediaQuery.of(context).size.width,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
           clipBehavior: Clip.antiAlias,
-          decoration: ShapeDecoration(
+          decoration: const ShapeDecoration(
             color: Color(0xFFF7F7F7),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.only(
@@ -725,7 +734,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                       Container(
                         clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(),
-                        child: Column(
+                        child: const Column(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -763,12 +772,12 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 4),
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -811,16 +820,22 @@ class _ReservationScreenState extends State<ReservationScreen> {
                         ],
                       ),
                     ),
-                    Align(
-                      alignment: Alignment.centerRight, // 버튼을 오른쪽으로 정렬
-                      child: TextButton.icon(
-                        icon: const Icon(Icons.camera_alt_outlined,
+                    Container(
+                      child: FilledButton.icon(
+                        icon: const Icon(Icons.camera_outlined,
                             color: Colors.teal),
                         label: const Text(
                           'AR 측정',
                           style: TextStyle(
-                            color: Colors.teal,
-                            fontSize: 10,
+                            color: AppColors.primaryDark,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: AppColors.primaryVeryLight,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                         onPressed: () => _fetchVolumeData(),
@@ -829,7 +844,6 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
               buildJimCard(),
               const SizedBox(height: 16),
               Container(
@@ -888,7 +902,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   children: [
                     Row(
                       children: [
-                        Row(
+                        const Row(
                           children: [
                             Icon(Icons.luggage, color: AppColors.primaryDark),
                             Text(' 소형',
@@ -898,11 +912,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
                         ),
                         Spacer(),
                         Text(smallBagCount.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                         Spacer(),
                         Text(smallPricePerHour.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
                     ),
@@ -911,7 +925,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     ),
                     Row(
                       children: [
-                        Row(
+                        const Row(
                           children: [
                             Icon(Icons.luggage, color: AppColors.primaryDark),
                             Text(' 중형',
@@ -921,11 +935,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
                         ),
                         Spacer(),
                         Text(mediumBagCount.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                         Spacer(),
                         Text(mediumPricePerHour.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
                     ),
@@ -934,7 +948,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                     ),
                     Row(
                       children: [
-                        Row(
+                        const Row(
                           children: [
                             Icon(Icons.luggage, color: AppColors.primaryDark),
                             Text(' 대형',
@@ -944,11 +958,11 @@ class _ReservationScreenState extends State<ReservationScreen> {
                         ),
                         Spacer(),
                         Text(largeBagCount.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                         Spacer(),
                         Text(largePricePerHour.toString(),
-                            style: TextStyle(
+                            style: const TextStyle(
                                 fontSize: 14, fontWeight: FontWeight.w700)),
                       ],
                     ),
@@ -974,12 +988,14 @@ class _ReservationScreenState extends State<ReservationScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text(
-                        _calculateTotalPrice().toString(),
-                        style: const TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
+                      AnimatedFlipCounter(
+                        duration: Duration(milliseconds: 300),
+                        value: _calculateTotalPrice(),
+                        curve: Curves.easeInOutCubicEmphasized,
+                        textStyle: const TextStyle(
+                          fontSize: 36,
+                          color: AppColors.primaryDark,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(

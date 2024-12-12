@@ -428,35 +428,26 @@ class _ReservationDetailsScreenState extends State<ReservationDetailsScreen> {
             Container(
               width: double.infinity,
               color: Colors.white,
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 250,
-                    height: 200, // 이미지 슬라이더의 높이
-                    child: dummyImages.length == 1
-                        ? Center(
-                            // 사진이 1개인 경우
-                            child: Image.network(
-                              reservation.luggage[0].imagePath??
-                                  AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : Center(
-                          child: PageView.builder(
-                            controller: PageController(viewportFraction: 0.8),
-                            itemCount: reservation.luggage.length,
-                            itemBuilder: (context, index) {
-                              return Image.network(
-                                reservation.luggage[index].imagePath ??
-                                    AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
-                                fit: BoxFit.cover,
-                              );
-                            },
-                          ),
-                        ),
-                  ),
-                ],
+              child: SizedBox(
+                width: double.infinity,
+                height: 200, // 이미지 슬라이더의 높이
+                child: dummyImages.length == 1
+                    ? Image.network(
+                      reservation.luggage[0].imagePath??
+                          AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
+                      fit: BoxFit.cover,
+                    )
+                    : PageView.builder(
+                      controller: PageController(viewportFraction: 0.8),
+                      itemCount: reservation.luggage.length,
+                      itemBuilder: (context, index) {
+                        return Image.network(
+                          reservation.luggage[index].imagePath ??
+                              AppConstants.DEFAULT_PREVIEW_IMAGE_PATH,
+                          fit: BoxFit.cover,
+                        );
+                      },
+                    ),
               ),
             ),
             const SizedBox(height: 8),

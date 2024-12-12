@@ -14,9 +14,6 @@ class ReservationsuccessPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFECFFFA), // #ECFFFA 색상 설정
-      appBar: AppBar(
-        title: Text(info['name'] ?? '결제 페이지'),
-      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -42,6 +42,7 @@ dependencies:
   geolocator: ^9.0.2
   kpostal: ^1.1.0
   bottom_picker: ^2.9.0
+  animated_flip_counter: ^0.3.4
 
 
 
