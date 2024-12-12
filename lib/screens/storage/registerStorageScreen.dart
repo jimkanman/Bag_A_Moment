@@ -57,8 +57,6 @@ class _StorageScreenState extends State<StorageScreen> {
   TimeOfDay _openTime = TimeOfDay(hour: 9, minute: 0);
   TimeOfDay _closeTime = TimeOfDay(hour: 18, minute: 0);
   File? _selectedImage;
-  File? _selectedFile;
-  List<String> _storageOptions = [];
 
   Future<void> _pickTime(bool isOpeningTime) async {
     final TimeOfDay? picked = await showTimePicker(
@@ -86,15 +84,6 @@ class _StorageScreenState extends State<StorageScreen> {
     }
   }
 
-  Future<void> _pickFile() async {
-    final result = await FilePicker.platform
-        .pickFiles(type: FileType.custom, allowedExtensions: ['pdf']);
-    if (result != null) {
-      setState(() {
-        _selectedFile = File(result.files.single.path!);
-      });
-    }
-  }
 
   Widget receiverZipTextField() {
     return Row(

@@ -44,7 +44,6 @@ class Luggage {
       'width': width,
       'depth': depth,
       'height': height,
-      'imagePath': imagePath,
     };
   }
 }

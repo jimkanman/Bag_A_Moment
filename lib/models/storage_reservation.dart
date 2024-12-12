@@ -86,3 +86,49 @@ StorageReservation {
 ''';
   }
 }
+
+
+//예약 요청을 위한 클래스
+class Reservation {
+
+  final List<Luggage> luggage;
+  final String startDateTime;
+  final String endDateTime;
+
+  Reservation copyWith({
+    List<Luggage>? luggage,
+  }) {
+    return Reservation(
+      luggage: luggage ?? this.luggage,
+    );
+  }
+
+  const Reservation({
+    this.luggage = const [],
+    this.startDateTime = '2024-01-01T10:00:00',
+    this.endDateTime = '2024-01-01T18:00:00',
+  });
+
+  factory Reservation.fromJson(Map<String, dynamic> json) {
+    return Reservation(
+      luggage: json['luggage'] != null
+          ? (json['luggage'] as List)
+          .map((item) => Luggage.fromJson(item))
+          .toList()
+          : [],
+      startDateTime: json['startDateTime'],
+      endDateTime: json['endDateTime'],
+    );
+  }
+
+  @override
+  String toString() {
+    return '''
+    StorageReservation {
+      luggage: ${luggage.map((l) => l.toString()).join(', ')},
+      startDateTime: $startDateTime,
+      endDateTime: $endDateTime,
+    }
+    ''';
+  }
+}

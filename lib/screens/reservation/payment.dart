@@ -1,23 +1,24 @@
 import 'dart:convert';
 
-import 'package:bag_a_moment/screens/reservation/reservationRequestScreen.dart';
 import 'package:bag_a_moment/screens/reservation/reservationSuccess.dart';
 import 'package:bag_a_moment/screens/reservation/reservation_details_screen.dart';
+import 'package:bag_a_moment/widgets/dialog.dart';
 import 'package:bag_a_moment/widgets/primarybtn.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/app_colors.dart';
-import '../../core/app_constants.dart';
 import '../../models/luggage.dart';
 import '../../models/storage_reservation.dart';
+import '../../services/api_service.dart';
 import '../../widgets/rectangular_elevated_button.dart';
-import 'deliveryRequestScreen.dart';
 
 class ReservationScreen extends StatefulWidget {
   //final int storageId;
@@ -30,6 +31,7 @@ class ReservationScreen extends StatefulWidget {
 }
 
 class _ReservationScreenState extends State<ReservationScreen> {
+  late ApiService _apiService=ApiService();
   late int? smallPricePerHour = 0;
   late int? mediumPricePerHour = 0;
   late int? largePricePerHour = 0;
@@ -49,7 +51,47 @@ class _ReservationScreenState extends State<ReservationScreen> {
         };
       });
       final volume=_volumeData['width']!+_volumeData['height']!+_volumeData['depth']!;
-
+      //부피를 바탕으로 해당 가방 추가
+      if(volume<=100) {
+        reservation = reservation.copyWith(
+          luggage: [
+            ...reservation.luggage,
+            Luggage(
+              type: 'BAG',
+              width: _volumeData['width'],
+              depth: _volumeData['depth'],
+              height: _volumeData['height'],
+            ),
+          ],
+        );
+      }
+      else if(volume<=200){
+        reservation = reservation.copyWith(
+          luggage: [
+            ...reservation.luggage,
+            Luggage(
+              type: 'CARRIER',
+              width: _volumeData['width'],
+              depth: _volumeData['depth'],
+              height: _volumeData['height'],
+            ),
+          ],
+        );
+      }
+      else{
+        reservation = reservation.copyWith(
+          luggage: [
+            ...reservation.luggage,
+            Luggage(
+              type: 'MISCELLANEOUS_ITEM',
+              width: _volumeData['width'],
+              depth: _volumeData['depth'],
+              height: _volumeData['height'],
+            ),
+          ],
+        );
+      }
+      _updateBagCounts();
     } on PlatformException catch (e) {
       print("Failed to get volume: '${e.message}'.");
     }
@@ -64,8 +106,25 @@ class _ReservationScreenState extends State<ReservationScreen> {
     smallPricePerHour = widget.info['backpackPrice'];
     mediumPricePerHour = widget.info['suitcasePrice'];
     largePricePerHour = widget.info['specialPrice'];
+    initialize();
     setState(() {
       isloading = false;
+    });
+  }
+  Future<void> initialize() async{
+    final token=await secureStorage.read(key: 'auth_token');
+    if(token==null){
+      print("[INFO] 로그인 토큰 없음");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('로그인이 필요합니다.')),
+      );
+      return;
+    }
+    print("token 값$token");
+    String? jwt=await secureStorage.read(key: 'auth_token');
+
+    _apiService=ApiService(defaultHeader: {
+      'Authorization': jwt ?? '',
     });
   }
 
@@ -83,7 +142,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
   TimeOfDay? endTime;
 
   //이미지 상태관리
-  List<File> _selectedImage = [];
+  List<File?> _selectedImage = [];
 
   //이미지 선택
   Future<void> _pickImage(int luggageIndex) async {
@@ -119,6 +178,9 @@ class _ReservationScreenState extends State<ReservationScreen> {
         ],
       );
     });
+    _updateBagCounts();
+    _calculateTotalPrice();
+    _selectedImage.add(null);
   }
 
   //로그인 토큰, 아이디를 저장
@@ -190,7 +252,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
         case 'BAG':
           smallCount++;
           break;
-        case 'LUGGAGE':
+        case 'CARRIER':
           mediumCount++;
           break;
         case 'MISCELLANEOUS_ITEM':
@@ -256,14 +318,14 @@ class _ReservationScreenState extends State<ReservationScreen> {
                           });
                         }
                       },
-                      items: ['BAG', 'LUGGAGE', 'MISCELLANEOUS_ITEM']
+                      items: ['BAG', 'CARRIER', 'MISCELLANEOUS_ITEM']
                           .map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(
                             value == 'BAG'
                                 ? '소형'
-                                : value == 'LUGGAGE'
+                                : value == 'CARRIER'
                                     ? '중형'
                                     : '대형',
                             style: TextStyle(fontSize: 14),
@@ -292,10 +354,9 @@ class _ReservationScreenState extends State<ReservationScreen> {
                               height: 150,
                               decoration: ShapeDecoration(
                                 image: DecorationImage(
-                                  image: _selectedImage.length > index
-                                      ? FileImage(_selectedImage[index])
-                                      : NetworkImage(
-                                          'https://via.placeholder.com/150'),
+                                  image: (index < _selectedImage.length && _selectedImage[index] != null)
+                                      ? FileImage(_selectedImage[index]!)
+                                      : NetworkImage('https://via.placeholder.com/150'),
                                   fit: BoxFit.fill,
                                 ),
                                 shape: RoundedRectangleBorder(
@@ -388,15 +449,16 @@ class _ReservationScreenState extends State<ReservationScreen> {
         selectedEndDate == null ||
         startTime == null ||
         endTime == null) {
-      print('날짜 & 시간 입력하시오');
-      _showErrorDialog('날짜와 시간을 모두 입력하세요.');
-      //TODO: 시간 입력하라고 경고 띄우기
+      print('날짜 & 시간 없음');
+      showDialog(
+        context: context,
+        builder: (context){return
+          CustomDialogUI(padding: EdgeInsets.zero, onPressed: (){}, content: "날짜와 시간을 입력해주세요", title: "오류");}
+      );
       return;
     }
     //reservation model 내용 출력
     print('예약 정보: $reservation');
-    print('시작 날짜: ${reservation.luggage}');
-    print('종료 날짜: $selectedEndDate');
 
     final startDateTime = formatDateTime(selectedStartDate!, startTime!);
     final endDateTime = formatDateTime(selectedEndDate!, endTime!);
@@ -436,19 +498,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
     // 서버로 데이터를 전송할 body??
     //TODO:  가방 크기 일단 랜덤값 넣음!!! AR 카메라에서 가져온 크기로 수정할 것채
     final reservationData = {
-      'luggage': [
-        for (int i = 0; i < smallBagCount; i++)
-          {'type': 'BAG', 'width': 20, 'depth': 15, 'height': 10},
-        for (int i = 0; i < largeBagCount; i++)
-          {'type': 'CARRIER', 'width': 40, 'depth': 25, 'height': 20},
-        for (int i = 0; i < mediumBagCount; i++)
-          {
-            'type': 'MISCELLANEOUS_ITEM',
-            'width': 50,
-            'depth': 30,
-            'height': 25
-          },
-      ],
+      'luggage': reservation.luggage,
       'startDateTime': startDateTime,
       'endDateTime': endDateTime,
     };
@@ -463,61 +513,43 @@ class _ReservationScreenState extends State<ReservationScreen> {
       _showErrorDialog('토큰이 만료되었습니다. 다시 로그인 해주세요.');
       return;
     }
-
     print('예약 정보: ${widget.info}');
     print('가방 정보: $reservationData');
 
     try {
-      final response = await http.post(
-        Uri.parse(
-            'http://3.35.175.114:8080/storages/${widget.info['storageId']}/reservations'),
-        headers: {
-          'Authorization': token,
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode(reservationData),
+      final response = await _apiService.post(
+        'storages/${widget.info['storageId']}/reservations',
+        requestBody: reservationData,
+        fromJson: (data) => data,
       );
 
-      //1. 예약 완료 화면으로 이동
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
-        print('예약 성공! ');
-        print('서버 응답: $decodedResponse'); // 서버에서 받은 메시지 확인
-        print('서버 응답 상태 코드: ${response.statusCode}');
-        print('서버 응답 본문: ${utf8.decode(response.bodyBytes)}');
-        // Navigate to PaymentPage
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ReservationsuccessPage(
-              info: {
-                ...widget.info,
-                ...reservationData,
-                'responseMessage': decodedResponse, // 응답 메시지를 전달
-              },
-            ),
+      print("selectedimage 길이:${_selectedImage.length}");
+      _apiService.postMultipart(
+        // reservation id로 요청 보냄
+        'reservations/${response['id']}/images',
+        fields: {},
+        files: _selectedImage
+            .where((file) => file != null) // null이 아닌 파일만 처리
+            .map((file) => http.MultipartFile(
+          'luggageImages',
+          file!.readAsBytes().asStream(), // null이 아닌 파일만 들어오므로 non-nullable 처리
+          file.lengthSync(),
+          filename: file.path.split('/').last,
+        )).toList(),
+        fromJson: (data) => data,
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ReservationsuccessPage(
+            info: {
+              ...widget.info,
+              ...reservationData,
+            },
           ),
-        );
-      } else {
-        // 에러 처리
-        print('예약 실패 - 상태 코드: ${response.statusCode}');
-        final decodedResponse =
-            jsonDecode(utf8.decode(response.bodyBytes)); // JSON 디코딩
-        print('디코딩된 응답: $decodedResponse'); // 전체 응답 확인
-
-        //final errorMessage = decodedResponse['message']?.toString() ?? '알 수 없는 오류'; // message 추출
-
-        // message 필드 추출
-        String errorMessage = '';
-        if (decodedResponse is Map && decodedResponse.containsKey('message')) {
-          errorMessage = decodedResponse['message']?.toString() ?? '알 수 없는 오류';
-        } else {
-          errorMessage = '알 수 없는 오류';
-        }
-        print('추출된 오류 메시지: $errorMessage'); // 추출된 메시지 확인
-        // 팝업에 에러 메시지 표시
-        _showErrorDialog('예약 실패: $errorMessage');
-      }
+        ),
+      );
     } catch (e) {
       print('Error: $e');
       _showErrorDialog('예약 실패 ㅠㅠ');

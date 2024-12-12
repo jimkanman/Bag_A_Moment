@@ -13,7 +13,7 @@ import java.nio.FloatBuffer;
 public class DepthRenderer {
     private static final String TAG = DepthRenderer.class.getSimpleName();
 
-    // Shader names.
+
     private static final String VERTEX_SHADER_NAME = "shaders/depth_point_cloud.vert";
     private static final String FRAGMENT_SHADER_NAME = "shaders/depth_point_cloud.frag";
 
@@ -67,15 +67,12 @@ public class DepthRenderer {
 
         ShaderUtil.checkGLError(TAG, "Init complete");
     }
-    /**
-     * Update the OpenGL buffer contents to the provided point. Repeated calls with the same point
-     * cloud will be ignored.
-     */
+
     public void update(FloatBuffer points) {
         ShaderUtil.checkGLError(TAG, "Update");
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, arrayBuffer);
 
-        // If the array buffer is not large enough to fit the new point cloud, resize it.
+
         points.rewind();
         numPoints = points.remaining() / DepthData.FLOATS_PER_POINT;
         if (numPoints * BYTES_PER_POINT > arrayBufferSize) {
@@ -91,7 +88,7 @@ public class DepthRenderer {
 
         ShaderUtil.checkGLError(TAG, "Update complete");
     }
-    /** Render the point cloud. The ARCore point cloud is given in world space. */
+
     public void draw(Camera camera) {
         float[] projectionMatrix = new float[16];
         camera.getProjectionMatrix(projectionMatrix, 0, 0.1f, 100.0f);
@@ -107,7 +104,7 @@ public class DepthRenderer {
         GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, arrayBuffer);
         GLES20.glVertexAttribPointer(positionAttribute, 4, GLES20.GL_FLOAT, false, BYTES_PER_POINT, 0);
         GLES20.glUniformMatrix4fv(modelViewProjectionUniform, 1, false, viewProjection, 0);
-        // Set point size to 5 pixels.
+
         GLES20.glUniform1f(pointSizeUniform, 5.0f);
 
         GLES20.glDrawArrays(GLES20.GL_POINTS, 0, numPoints);

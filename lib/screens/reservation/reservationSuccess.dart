@@ -4,6 +4,8 @@ import 'package:bag_a_moment/screens/reservation/reservationRequestScreen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../main.dart';
+
 class ReservationsuccessPage extends StatelessWidget {
   final Map<String, dynamic> info;
   ReservationsuccessPage({required this.info});
@@ -29,11 +31,10 @@ class ReservationsuccessPage extends StatelessWidget {
             SizedBox(height: 20), // 이미지와 버튼 사이 간격
             ElevatedButton(
               onPressed: () {
-                // 버튼 클릭 시 이동할 페이지
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ReservationScreen()),
-                );
+                final mainScreenState = mainScreenKey.currentState; // GlobalKey로 상태 접근
+                mainScreenState?.navigateTo(1);
+
+                Navigator.of(context).popUntil((route) => route.isFirst);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal, // 버튼 배경색
