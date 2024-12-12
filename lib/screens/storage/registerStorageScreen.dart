@@ -96,6 +96,12 @@ class _StorageScreenState extends State<StorageScreen> {
     }
   }
 
+  String _formatTimeOfDayToHHMM(TimeOfDay time) {
+    final hour = _openTime.hour.toString().padLeft(2, '0');
+    final minute = _openTime.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
   Widget receiverZipTextField() {
     return Row(
       children: [
@@ -157,6 +163,8 @@ class _StorageScreenState extends State<StorageScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundMypage,
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: const Text(
           '보관소 등록',
           style: TextStyle(
@@ -166,13 +174,11 @@ class _StorageScreenState extends State<StorageScreen> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        elevation: 0,
-        scrolledUnderElevation: 0,
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -186,8 +192,8 @@ class _StorageScreenState extends State<StorageScreen> {
               print(
                   'Address: ${_addressController.text} ${_detailaddressController.text}');
               print('Postal Code: ${receiverZipController.text}');
-              print('Opening Time: ${_openTime?.format(context)}');
-              print('Closing Time: ${_closeTime?.format(context)}');
+              print('Opening Time: ${_openTime.format(context)}');
+              print('Closing Time: ${_closeTime.format(context)}');
               print('Selected Image: ${_selectedImage?.path}');
 
               Navigator.push(
@@ -199,8 +205,8 @@ class _StorageScreenState extends State<StorageScreen> {
                     address:
                         "${_addressController.text} ${_detailaddressController.text}",
                     postalCode: receiverZipController.text,
-                    openTime: _openTime?.format(context),
-                    closeTime: _closeTime?.format(context),
+                    openTime: _formatTimeOfDayToHHMM(_openTime),
+                    closeTime: _formatTimeOfDayToHHMM(_closeTime),
                     image: _selectedImage,
                     deliveryService: _deliveryService,
                   ),
@@ -529,7 +535,11 @@ class _StorageScreenState extends State<StorageScreen> {
                               width: 18,
                               clipBehavior: Clip.antiAlias,
                               decoration: BoxDecoration(),
-                              child: FlutterLogo(),
+                              child: const Icon(
+                                Icons.info_outline,
+                                color: AppColors.primaryDark,
+                                size: 18,
+                              ),
                             ),
                             const SizedBox(width: 8),
                             const Text(
@@ -570,6 +580,7 @@ class _StorageScreenState extends State<StorageScreen> {
                             setState(() {
                               _deliveryService = value!;
                             });
+                            print("_DELIVERYSERVICE: $_deliveryService");
                           },
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(2),
