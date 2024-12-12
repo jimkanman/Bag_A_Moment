@@ -6,6 +6,8 @@ import 'package:bag_a_moment/widgets/reservation_card.dart';
 import 'package:flutter/material.dart';
 import 'package:bag_a_moment/core/app_colors.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -209,7 +211,14 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
   @override
   void initState() {
     super.initState();
+    _initializeMapRenderer();
+  }
 
+  void _initializeMapRenderer() {
+    final GoogleMapsFlutterPlatform mapsImplementation = GoogleMapsFlutterPlatform.instance;
+    if (mapsImplementation is GoogleMapsFlutterAndroid) {
+      mapsImplementation.useAndroidViewSurface = true;
+    }
   }
 
   @override

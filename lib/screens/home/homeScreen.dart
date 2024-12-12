@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:bag_a_moment/screens/home/afterMarker/StorageDetailPage.dart';
 import 'package:bag_a_moment/widgets/marker_details_widget.dart';
@@ -72,6 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
 // 초기화!
   void initState() {
     super.initState();
+    _initializeMapRenderer();
     _requestLocationPermission();
     _getCurrentLocation();
     _fetchNearbyStorages(); // 서버에서 storage 목록 가져오기
@@ -116,6 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _currentPosition = LatLng(position.latitude, position.longitude);
       });
     }
+    moveCameraTo(_currentPosition);
   }
 
   // 지도 이동 함수
@@ -123,6 +127,13 @@ class _HomeScreenState extends State<HomeScreen> {
     _mapController.animateCamera(
       CameraUpdate.newLatLng(_currentPosition),
     );
+  }
+
+  void _initializeMapRenderer() {
+    final GoogleMapsFlutterPlatform mapsImplementation = GoogleMapsFlutterPlatform.instance;
+    if (mapsImplementation is GoogleMapsFlutterAndroid) {
+      mapsImplementation.useAndroidViewSurface = true;
+    }
   }
 
 
@@ -141,6 +152,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     }
+  }
+
+  void moveCameraTo(LatLng position) {
+    _mapController.animateCamera(CameraUpdate.newLatLng(position));
   }
 
 
@@ -373,8 +388,6 @@ class _HomeScreenState extends State<HomeScreen> {
     void _moveToMarker(Marker marker) {
       mapController.animateCamera(CameraUpdate.newLatLng(marker.position));
     }
-
-
 
     //2. 마커 추가
     Future<void> _addMarkers(Map<String, dynamic> storage) async {
