@@ -29,10 +29,10 @@ class ExpandableReservationCard extends StatefulWidget {
   final DeliveryReservation deliveryReservation;
 
   // 추가 요소 (터치 시 GoogleMap 렌더링 관련)
-  final double? deliveryLatitude;
-  final double? deliveryLongitude;
+  double? deliveryLatitude;
+  double? deliveryLongitude;
 
-  const ExpandableReservationCard({
+  ExpandableReservationCard({
     super.key,
     List<Luggage>? luggage,
     String? previewImagePath,
@@ -162,7 +162,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
 
   }
 
-  Future<void> _addCustomMarker() async {
+  Future<void> _drawCustomMarkers() async {
     final BitmapDescriptor luggageBlue = await BitmapDescriptor.asset(
       const ImageConfiguration(size: Size(48, 48)),
       'assets/images/delivery_icon.png',
@@ -217,12 +217,20 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
     double? lat = json['latitude'];
     double? lng = json['longitude'];
 
-    // 카메라 수정
-    if(_mapController != null && lat != null && lng != null) {
-      _mapController!.animateCamera(
-          CameraUpdate.newLatLng(LatLng(lat, lng))
-      );
+    if(lat != null && lng != null) {
+      // 카메라 수정
+      if(_mapController != null) {
+        _mapController!.animateCamera(
+            CameraUpdate.newLatLng(LatLng(lat, lng))
+        );
+      }
+      // 위치 업데이트 및 마커 다시 그리기
+      print("REDRAW MARKERS TO $lat $lng");
+      widget.deliveryLatitude = lat;
+      widget.deliveryLongitude = lng;
+      _drawCustomMarkers();
     }
+
   }
 
   void _initializeWebSocket() {
@@ -416,7 +424,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                             // 맵 생성 완료 후
                             onMapCreated: (controller) {
                               // 마커 생성
-                              _addCustomMarker();
+                              _drawCustomMarkers();
                               // 컨트롤러 할당
                               _mapController = controller;
                               // Provider에 컨트롤러 저장
