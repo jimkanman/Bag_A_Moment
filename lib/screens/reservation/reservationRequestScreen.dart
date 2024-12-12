@@ -22,11 +22,15 @@ import '../../models/map_controller_notifier.dart';
 
 //예약 조회 페이지
 class ReservationScreen extends StatefulWidget {
+  const ReservationScreen({super.key});
+
   @override
-  _ReservationScreenState createState() => _ReservationScreenState();
+  ReservationScreenState createState() => ReservationScreenState();
+
+
 }
 
-class _ReservationScreenState extends State<ReservationScreen> {
+class ReservationScreenState extends State<ReservationScreen> {
   bool _isLoading = true;
 
   // 재환 추가
@@ -184,13 +188,23 @@ class _ReservationScreenState extends State<ReservationScreen> {
 
   @override
   void dispose() {
+    print("DISPONSE RESERVATION REQUEST SCREEN");
     try{
       print("DISCONNECTING WEBSOCKET SERVICE");
       _webSocketService.disconnect();
     } catch (e) {
-      print("exception while disconnection websㅓocket: $e");
+      print("exception while disconnecting websocket: $e");
     }
     super.dispose();
+  }
+
+  void disposeWebSocket() {
+    try{
+      print("DISCONNECTING WEBSOCKET SERVICE");
+      _webSocketService.disconnect();
+    } catch (e) {
+      print("exception while disconnecting  websocket: $e");
+    }
   }
 
   @override
@@ -263,6 +277,7 @@ class _ReservationScreenState extends State<ReservationScreen> {
                 children: [
                   for (int idx = 0; idx < _reservationsOnDelivery.length; idx++)
                     ExpandableReservationCard(
+                      webSocketService: _webSocketService,
                       luggage: _reservationsOnDelivery[idx].luggage,
                       previewImagePath: _reservationsOnDelivery[idx].previewImagePath,
                       storageName: _reservationsOnDelivery[idx].storageName,

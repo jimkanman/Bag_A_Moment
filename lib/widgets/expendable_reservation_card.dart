@@ -10,6 +10,7 @@ import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:bag_a_moment/services/websocket_service.dart';
 
 import '../models/map_controller_notifier.dart';
 
@@ -24,9 +25,10 @@ class ExpandableReservationCard extends StatefulWidget {
   final Text buttonText;
   final Color backgroundColor;
   final VoidCallback? onButtonPressed;
+  final WebSocketService webSocketService;
   final DeliveryReservation deliveryReservation;
 
-  // 추가 요소 (터치 시 GoogleMap 렌더링 관련
+  // 추가 요소 (터치 시 GoogleMap 렌더링 관련)
   final double? deliveryLatitude;
   final double? deliveryLongitude;
 
@@ -39,6 +41,7 @@ class ExpandableReservationCard extends StatefulWidget {
     Color? buttonBackgroundColor,
     Text? buttonText,
     Color? backgroundColor,
+    required this.webSocketService,
     this.onButtonPressed,
     required this.deliveryReservation,
     this.deliveryLatitude,
@@ -57,7 +60,7 @@ class ExpandableReservationCard extends StatefulWidget {
 
 class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
   bool _isExpanded = false;
-  late GoogleMapController _mapController;
+  GoogleMapController? _mapController;
   final Set<Marker> _markers = {};
 
   Widget determineElevatedButton(String? status) {
@@ -77,7 +80,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
         buttonText = const Text("배송 중", style: TextStyle(color: AppColors.textLight, fontSize: 10));
         backgroundColor = AppColors.textDark;
         break;
-      case "COMPLETED":
+      case "COMPLETE":
         buttonText = const Text("배송 완료", style: TextStyle(color: Colors.white, fontSize: 10));
         backgroundColor = AppColors.backgroundDarkBlack;
         break;
@@ -208,10 +211,35 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
     });
   }
 
+  /// 웹소켓 메시지 도착 시 해당 응답대로 delivery의 위치 업데이트
+  void onWebSocketJsonResponse(Map<String, dynamic> json) {
+    int deliveryId = json['deliveryId'];
+    double? lat = json['latitude'];
+    double? lng = json['longitude'];
+
+    // 카메라 수정
+    if(_mapController != null && lat != null && lng != null) {
+      _mapController!.animateCamera(
+          CameraUpdate.newLatLng(LatLng(lat, lng))
+      );
+    }
+  }
+
+  void _initializeWebSocket() {
+    widget.webSocketService.subscribe(
+        widget.deliveryReservation.deliveryId,
+        '/topic/delivery/${widget.deliveryReservation.deliveryId}',
+        (json) {
+          print("EXPENDABLERESERVCARD: WEBSOCKET RECEIVED $json");
+          onWebSocketJsonResponse(json);
+      });
+  }
+
   @override
   void initState() {
     super.initState();
     _initializeMapRenderer();
+    _initializeWebSocket();
   }
 
   void _initializeMapRenderer() {
@@ -223,11 +251,13 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
 
   @override
   void dispose() {
-    print("DISPONSE RESERVATION CARD");
+    print("DISPOSE RESERVATION CARD ${widget.deliveryReservation.deliveryId}");
+    // 웹소켓 연결 해제
+    widget.webSocketService.unsubscribe(widget.deliveryReservation.deliveryId);
     // Provider에서 컨트롤러 제거
     context.read<MapControllerProvider>().removeController(widget.deliveryReservation.deliveryId);
     // GoogleMapController 리소스 정리
-    _mapController.dispose();
+    _mapController?.dispose();
 
     super.dispose();
   }

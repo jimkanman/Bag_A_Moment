@@ -190,6 +190,9 @@ class MainScreenBottomState extends State<MainBottomScreen>
     with SingleTickerProviderStateMixin {
   int _selectedIndex = 0;
 
+  // GlobalKey로 ReservationScreenState 참조
+  GlobalKey<ReservationScreenState> _reservationScreenKey = GlobalKey<ReservationScreenState>();
+
   // 페이지 목록
   /*final List<Widget> _pages = [
     HomeScreen(), // 홈 (지도 페이지)
@@ -199,6 +202,13 @@ class MainScreenBottomState extends State<MainBottomScreen>
   ];*/
 
   void navigateTo(int index) {
+    // ReservationScreen인 경우 웹소켓 정리
+    if(_selectedIndex == 1 && _reservationScreenKey.currentState != null) {
+      print("Calling dispose on ReservationScreenState");
+      _reservationScreenKey.currentState!.disposeWebSocket();
+      _reservationScreenKey = GlobalKey<ReservationScreenState>();; // 키 초기화
+    }
+
     // index번째 탭으로 이동
     setState(() {
       print("탭 선택: $index");
@@ -211,7 +221,7 @@ class MainScreenBottomState extends State<MainBottomScreen>
       case 0:
         return const HomeScreen();
       case 1:
-        return ReservationScreen();
+        return ReservationScreen(key: _reservationScreenKey);
       case 2:
         return StorageManagementPage();
       case 3:
