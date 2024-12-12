@@ -23,7 +23,6 @@ class ExpandableReservationCard extends StatefulWidget {
   final Color backgroundColor;
   final VoidCallback? onButtonPressed;
   final DeliveryReservation deliveryReservation;
-  static final Map<int, GoogleMapController> googleMapControllers = {}; // Controller 저장용 MAP (deliveryId : 컨트롤러)
 
   // 추가 요소 (터치 시 GoogleMap 렌더링 관련
   final double? deliveryLatitude;
@@ -149,7 +148,9 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
         return const Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("보관소에서 보관 중이에요", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
+            Text("보관소에서 ", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
+            Text("보관 중", style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold ),),
+            Text("이에요", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
           ],
         );
     }
@@ -157,6 +158,10 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
   }
 
   Future<void> _addCustomMarker() async {
+    final BitmapDescriptor luggageBlue = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(48, 48)),
+      'assets/images/delivery_icon.png',
+    );
     final BitmapDescriptor storageRed = await BitmapDescriptor.asset(
       const ImageConfiguration(size: Size(48, 48)), // 이미지 크기 조정
       'assets/images/red_box_icon.png', // assets 경로
@@ -174,6 +179,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
               widget.deliveryLatitude!,
               widget.deliveryLongitude!),
           infoWindow: const InfoWindow(title: '배송맨'),
+          icon: luggageBlue
         ),
       Marker(
           markerId: const MarkerId('destination'),
@@ -192,11 +198,6 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
           icon: storageGreen
       )
     ];
-    print("ADDING MARKERS :");
-    for(var marker in marks) {
-      print(marker);
-    }
-    print("ADDING...");
 
     setState(() {
       _markers.addAll(
@@ -388,7 +389,6 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                                 // 시작 위치 주어지지 않은 경우 (= 배송 시작이 아닌 경우) 보관소 위치를 보여줌
                                 controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryReservation.storageLatitude, widget.deliveryReservation!.storageLongitude)));
                               }
-                              ExpandableReservationCard.googleMapControllers[widget.deliveryReservation.deliveryId] = controller;
                             },
                             initialCameraPosition: const CameraPosition(
                               target: LatLng(37.5665, 126.9780), // 서울
@@ -407,7 +407,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                           children: [
                             const Text("도착지", style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold)),
                             Expanded(
-                              child: Text(widget.deliveryReservation?.destinationAddress ?? "서울특별시 흑석로 84 208관 519호",
+                              child: Text(widget.deliveryReservation.destinationAddress,
                                 style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                                 textAlign: TextAlign.end, overflow: TextOverflow.ellipsis,),
                             )

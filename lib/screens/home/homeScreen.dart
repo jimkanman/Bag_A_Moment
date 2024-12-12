@@ -31,7 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isSearchActive = false;
 
 
-
   // dispose에서 컨트롤러 해제
   @override
   void dispose() {
