@@ -258,24 +258,26 @@ class _StorageDetailScreenState extends State<StorageDetailScreen> {
         files.add(otherFile);
       }
 
+      final multipartFields = {
+        'registerName': widget.name,
+        'phoneNumber': widget.phone,
+        'detailedAddress': widget.address,
+        'postalCode': widget.postalCode,
+        'description': _descriptionController.text,
+        'backpackPricePerHour': items[0]['price'].toString(),
+        'carrierPricePerHour': items[1]['price'].toString(),
+        'miscellaneousItemPricePerHour': items[2]['price'].toString(),
+        "openingTime": widget.openTime ?? "09:00",
+        "closingTime": widget.closeTime ?? "21:00",
+        'refundPolicy': _refundPolicyController.text,
+        'storageOptions': jsonEncode(_storageOptions),
+        'hasDeliveryService': widget.deliveryService.toString(),
+      };
+
       // Form 데이터 전송
       final result = await apiService.postMultipart(
         'storages', // 엔드포인트
-        fields: {
-          'registerName': widget.name,
-          'phoneNumber': widget.phone,
-          'detailedAddress': widget.address,
-          'postalCode': widget.postalCode,
-          'description': _descriptionController.text,
-          'backpackPricePerHour': items[0]['price'].toString(),
-          'carrierPricePerHour': items[1]['price'].toString(),
-          'miscellaneousItemPricePerHour': items[2]['price'].toString(),
-          "openingTime": _timeOfDayToString(widget.openTime),
-          "closingTime": _timeOfDayToString(widget.closeTime),
-          'refundPolicy': _refundPolicyController.text,
-          'storageOptions': jsonEncode(_storageOptions),
-          'deliveryService': widget.deliveryService.toString(),
-        },
+        fields: multipartFields,
         files: files,
         fromJson: (data) => data, // 응답 처리 (필요시 매핑 함수 작성)
       );

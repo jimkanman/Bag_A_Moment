@@ -72,6 +72,8 @@ class _StorageScreenState extends State<StorageScreen> {
         }
       });
     }
+    print("OPENTIME: $_openTime");
+    print("CLOSETIME: $_closeTime");
   }
 
   Future<void> _pickImage() async {
@@ -84,6 +86,12 @@ class _StorageScreenState extends State<StorageScreen> {
     }
   }
 
+
+  String _formatTimeOfDayToHHMM(TimeOfDay time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
 
   Widget receiverZipTextField() {
     return Row(
@@ -146,6 +154,8 @@ class _StorageScreenState extends State<StorageScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundMypage,
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: const Text(
           '보관소 등록',
           style: TextStyle(
@@ -155,13 +165,11 @@ class _StorageScreenState extends State<StorageScreen> {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        elevation: 0,
-        scrolledUnderElevation: 0,
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -172,11 +180,10 @@ class _StorageScreenState extends State<StorageScreen> {
               print('디버깅디버깅디버깅디버깅디버깅');
               print('Name: ${_nameController.text}');
               print('Phone: ${_phoneController.text}');
-              print(
-                  'Address: ${_addressController.text} ${_detailaddressController.text}');
+              print('Address: ${_addressController.text} ${_detailaddressController.text}');
               print('Postal Code: ${receiverZipController.text}');
-              print('Opening Time: ${_openTime?.format(context)}');
-              print('Closing Time: ${_closeTime?.format(context)}');
+              print('Opening Time: ${_formatTimeOfDayToHHMM(_openTime)}, $_openTime');
+              print('Closing Time: ${_formatTimeOfDayToHHMM(_closeTime)}, $_closeTime');
               print('Selected Image: ${_selectedImage?.path}');
 
               Navigator.push(
@@ -188,8 +195,8 @@ class _StorageScreenState extends State<StorageScreen> {
                     address:
                         "${_addressController.text} ${_detailaddressController.text}",
                     postalCode: receiverZipController.text,
-                    openTime: _openTime?.format(context),
-                    closeTime: _closeTime?.format(context),
+                    openTime: _formatTimeOfDayToHHMM(_openTime),
+                    closeTime: _formatTimeOfDayToHHMM(_closeTime),
                     image: _selectedImage,
                     deliveryService: _deliveryService,
                   ),
@@ -563,6 +570,7 @@ class _StorageScreenState extends State<StorageScreen> {
                             setState(() {
                               _deliveryService = value!;
                             });
+                            print("_DELIVERYSERVICE: $_deliveryService");
                           },
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(2),

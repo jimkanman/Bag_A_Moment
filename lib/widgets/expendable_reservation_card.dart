@@ -10,6 +10,7 @@ import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:bag_a_moment/services/websocket_service.dart';
 
 import '../models/map_controller_notifier.dart';
 
@@ -24,13 +25,14 @@ class ExpandableReservationCard extends StatefulWidget {
   final Text buttonText;
   final Color backgroundColor;
   final VoidCallback? onButtonPressed;
+  final WebSocketService webSocketService;
   final DeliveryReservation deliveryReservation;
 
-  // 추가 요소 (터치 시 GoogleMap 렌더링 관련
-  final double? deliveryLatitude;
-  final double? deliveryLongitude;
+  // 추가 요소 (터치 시 GoogleMap 렌더링 관련)
+  double? deliveryLatitude;
+  double? deliveryLongitude;
 
-  const ExpandableReservationCard({
+  ExpandableReservationCard({
     super.key,
     List<Luggage>? luggage,
     String? previewImagePath,
@@ -39,6 +41,7 @@ class ExpandableReservationCard extends StatefulWidget {
     Color? buttonBackgroundColor,
     Text? buttonText,
     Color? backgroundColor,
+    required this.webSocketService,
     this.onButtonPressed,
     required this.deliveryReservation,
     this.deliveryLatitude,
@@ -57,7 +60,7 @@ class ExpandableReservationCard extends StatefulWidget {
 
 class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
   bool _isExpanded = false;
-  late GoogleMapController _mapController;
+  GoogleMapController? _mapController;
   final Set<Marker> _markers = {};
 
   Widget determineElevatedButton(String? status) {
@@ -77,7 +80,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
         buttonText = const Text("배송 중", style: TextStyle(color: AppColors.textLight, fontSize: 10));
         backgroundColor = AppColors.textDark;
         break;
-      case "COMPLETED":
+      case "COMPLETE":
         buttonText = const Text("배송 완료", style: TextStyle(color: Colors.white, fontSize: 10));
         backgroundColor = AppColors.backgroundDarkBlack;
         break;
@@ -140,7 +143,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
         return const Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("배송이", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
+            Text("배송이 ", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
             Text("완료", style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold ),),
             Text("되었어요", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),)
           ],
@@ -159,7 +162,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
 
   }
 
-  Future<void> _addCustomMarker() async {
+  Future<void> _drawCustomMarkers() async {
     final BitmapDescriptor luggageBlue = await BitmapDescriptor.asset(
       const ImageConfiguration(size: Size(48, 48)),
       'assets/images/delivery_icon.png',
@@ -208,10 +211,43 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
     });
   }
 
+  /// 웹소켓 메시지 도착 시 해당 응답대로 delivery의 위치 업데이트
+  void onWebSocketJsonResponse(Map<String, dynamic> json) {
+    int deliveryId = json['deliveryId'];
+    double? lat = json['latitude'];
+    double? lng = json['longitude'];
+
+    if(lat != null && lng != null) {
+      // 카메라 수정
+      if(_mapController != null) {
+        _mapController!.animateCamera(
+            CameraUpdate.newLatLng(LatLng(lat, lng))
+        );
+      }
+      // 위치 업데이트 및 마커 다시 그리기
+      print("REDRAW MARKERS TO $lat $lng");
+      widget.deliveryLatitude = lat;
+      widget.deliveryLongitude = lng;
+      _drawCustomMarkers();
+    }
+
+  }
+
+  void _initializeWebSocket() {
+    widget.webSocketService.subscribe(
+        widget.deliveryReservation.deliveryId,
+        '/topic/delivery/${widget.deliveryReservation.deliveryId}',
+        (json) {
+          print("EXPENDABLERESERVCARD: WEBSOCKET RECEIVED $json");
+          onWebSocketJsonResponse(json);
+      });
+  }
+
   @override
   void initState() {
     super.initState();
     _initializeMapRenderer();
+    _initializeWebSocket();
   }
 
   void _initializeMapRenderer() {
@@ -223,11 +259,13 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
 
   @override
   void dispose() {
-    print("DISPONSE RESERVATION CARD");
+    print("DISPOSE RESERVATION CARD ${widget.deliveryReservation.deliveryId}");
+    // 웹소켓 연결 해제
+    widget.webSocketService.unsubscribe(widget.deliveryReservation.deliveryId);
     // Provider에서 컨트롤러 제거
     context.read<MapControllerProvider>().removeController(widget.deliveryReservation.deliveryId);
     // GoogleMapController 리소스 정리
-    _mapController.dispose();
+    _mapController?.dispose();
 
     super.dispose();
   }
@@ -386,22 +424,25 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                             // 맵 생성 완료 후
                             onMapCreated: (controller) {
                               // 마커 생성
-                              _addCustomMarker();
+                              _drawCustomMarkers();
                               // 컨트롤러 할당
                               _mapController = controller;
                               // Provider에 컨트롤러 저장
                               context.read<MapControllerProvider>().setController(widget.deliveryReservation.deliveryId, controller);
                               if(widget.deliveryLatitude != null && widget.deliveryLongitude != null) {
-                                // 시작 위치 주어진 경우 해당 위치로 이동
+                                // 배송자 위치 주어진 경우 해당 위치로 이동
                                 controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryLatitude!, widget.deliveryLongitude!)));
+                              } else if (widget.deliveryReservation.status == 'COMPLETE') {
+                                // 도착한 경우 도착지로 이동
+                                controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryReservation.destinationLatitude, widget.deliveryReservation.destinationLongitude)));
                               } else {
-                                // 시작 위치 주어지지 않은 경우 (= 배송 시작이 아닌 경우) 보관소 위치를 보여줌
+                                // 배송자 위치 주어지지 않은 경우 (= 배송 시작이 아닌 경우) 보관소 위치를 보여줌
                                 controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryReservation.storageLatitude, widget.deliveryReservation!.storageLongitude)));
                               }
                             },
                             initialCameraPosition: const CameraPosition(
                               target: LatLng(37.5665, 126.9780), // 서울
-                              zoom: 14,
+                              zoom: 16,
                             ),
                             markers: _markers,
                           ),

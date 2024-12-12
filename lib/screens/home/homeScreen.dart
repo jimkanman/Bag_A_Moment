@@ -398,8 +398,8 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Adding marker for storage: ${storage['id']}');
 
       // fromAssetImage를 사용하여 BitmapDescriptor 생성, 이미지로 아이콘 설정
-      final BitmapDescriptor bagIcon = await BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(80, 80)), // 크기 설정
+      final BitmapDescriptor bagIcon = await BitmapDescriptor.asset(
+        const ImageConfiguration(size: Size(60, 60)), // 크기 설정
         'assets/images/box_icon3.png', // 파일 경로
       );
 
@@ -489,8 +489,8 @@ class _HomeScreenState extends State<HomeScreen> {
               myLocationButtonEnabled: false,
 
               initialCameraPosition: CameraPosition(
-                target: _currentPosition,
-                zoom: 20.0,
+                target: _initialPosition,
+                zoom: 16.35,
               ),
               markers: Set.from(_markers),
               onTap: (_) {
@@ -565,9 +565,6 @@ class _HomeScreenState extends State<HomeScreen> {
       //behavior: HitTestBehavior.opaque,
       behavior: HitTestBehavior.opaque,
       onTap: (){
-        print("widget tapped ! ");
-        print('마커가 눌렸노라');
-        print('@@@@@@@@@@@@@@@@@@@##^%########## 왜안보이지');
         print('마커 눌린 storageId: ${_selectedMarkerInfo!['id']}');
         setState(() {
           _showExtraContainer = !_showExtraContainer; // 상태 변경
@@ -700,7 +697,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildSearchBar(BuildContext context) {
     return Positioned(
-      top: 20,
+      top: 35,
       left: 15,
       right: 15,
       child: AnimatedContainer(
@@ -764,7 +761,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Icon(Icons.location_on, color: Color(0xFF43CBBA)),
                               SizedBox(width: 5),
                               Text(
-                                "현위치",
+                                "현 위치",
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -1017,8 +1014,8 @@ class DraggableScrollableBottomSheet extends StatelessWidget {
                   itemBuilder: (context, index) {
                     if (index == 0) {
                       // 첫 번째 항목으로 추천 짐스팟 표시
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                         child: Text(
                           "추천 짐스팟",
                           style: TextStyle(
@@ -1029,7 +1026,7 @@ class DraggableScrollableBottomSheet extends StatelessWidget {
                       );
                     } else if (index - 1 >= markers.length) {
                       // 유효하지 않은 인덱스 접근 방지
-                      return SizedBox.shrink();
+                      return const SizedBox.shrink();
                     }
                     final marker = markers[index - 1];
                     final markerInfo = markerDetails[marker.markerId.value]; // 매핑된 마커 정보 가져오기
@@ -1053,49 +1050,66 @@ class DraggableScrollableBottomSheet extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // 왼쪽: 이미지
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                markerInfo?['previewImagePath'] ??
-                                    'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png',
-                                width: 80,
-                                height: 80,
-                                fit: BoxFit.cover,
-                              ),
+
+                        // 스와이프 창에 놓인 짐스팟 카드
+                        child: GestureDetector(
+                          onTap: () {
+                            print(markerInfo);
+                            final storageId = int.tryParse(marker.markerId.value);
+                            if(storageId == null) {
+                              return;
+                            }
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(builder:
+                                    (context) => StorageDetailPage(storageId: storageId), // TODO
                             ),
-                            const SizedBox(width: 8),
-                            // 오른쪽: 텍스트 정보
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    markerInfo?['name'] ?? 'Unknown',
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    markerInfo?['address'] ?? 'Unknown Address',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.grey,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
-                                  ),
-                                ],
+                          );
+                          },
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // 왼쪽: 이미지
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  markerInfo?['previewImagePath'] ??
+                                      'https://jimkanman-bucket.s3.ap-northeast-2.amazonaws.com/defaults/jimkanman-default-preview-image.png',
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 8),
+                              // 오른쪽: 텍스트 정보
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      markerInfo?['name'] ?? '보관소명',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      markerInfo?['address'] ?? '보관소 주소',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
