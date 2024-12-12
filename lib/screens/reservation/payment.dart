@@ -51,7 +51,47 @@ class _ReservationScreenState extends State<ReservationScreen> {
         };
       });
       final volume=_volumeData['width']!+_volumeData['height']!+_volumeData['depth']!;
-
+      //부피를 바탕으로 해당 가방 추가
+      if(volume<=100) {
+        reservation = reservation.copyWith(
+          luggage: [
+            ...reservation.luggage,
+            Luggage(
+              type: 'BAG',
+              width: _volumeData['width'],
+              depth: _volumeData['depth'],
+              height: _volumeData['height'],
+            ),
+          ],
+        );
+      }
+      else if(volume<=200){
+        reservation = reservation.copyWith(
+          luggage: [
+            ...reservation.luggage,
+            Luggage(
+              type: 'CARRIER',
+              width: _volumeData['width'],
+              depth: _volumeData['depth'],
+              height: _volumeData['height'],
+            ),
+          ],
+        );
+      }
+      else{
+        reservation = reservation.copyWith(
+          luggage: [
+            ...reservation.luggage,
+            Luggage(
+              type: 'MISCELLANEOUS_ITEM',
+              width: _volumeData['width'],
+              depth: _volumeData['depth'],
+              height: _volumeData['height'],
+            ),
+          ],
+        );
+      }
+      _updateBagCounts();
     } on PlatformException catch (e) {
       print("Failed to get volume: '${e.message}'.");
     }

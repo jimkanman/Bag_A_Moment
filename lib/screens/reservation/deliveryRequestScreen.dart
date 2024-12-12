@@ -37,6 +37,10 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
   late int? smallPricePerHour = 0;
   late int? mediumPricePerHour = 0;
   late int? largePricePerHour = 0;
+  DeliveryReservation reservation = DeliveryReservation(
+    luggage: [],
+  );
+
 
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController receiverZipController = TextEditingController();
@@ -58,9 +62,50 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
         };
       });
       final volume=_volumeData['width']!+_volumeData['height']!+_volumeData['depth']!;
-
+      //부피를 바탕으로 해당 가방 추가
+      if(volume<=100) {
+        reservation = reservation.copyWith(
+          luggage: [
+            ...reservation.luggage,
+            Luggage(
+              type: 'BAG',
+              width: _volumeData['width'],
+              depth: _volumeData['depth'],
+              height: _volumeData['height'],
+            ),
+          ],
+        );
+      }
+      else if(volume<=200){
+        reservation = reservation.copyWith(
+          luggage: [
+            ...reservation.luggage,
+            Luggage(
+              type: 'CARRIER',
+              width: _volumeData['width'],
+              depth: _volumeData['depth'],
+              height: _volumeData['height'],
+            ),
+          ],
+        );
+      }
+      else{
+        reservation = reservation.copyWith(
+          luggage: [
+            ...reservation.luggage,
+            Luggage(
+              type: 'MISCELLANEOUS_ITEM',
+              width: _volumeData['width'],
+              depth: _volumeData['depth'],
+              height: _volumeData['height'],
+            ),
+          ],
+        );
+      }
+      _updateBagCounts();
     } on PlatformException catch (e) {
       print("Failed to get volume: '${e.message}'.");
+
     }
   }
 
@@ -94,11 +139,6 @@ class _ReservationScreenState extends State<DeliveryrequestScreen> {
       'Authorization': jwt ?? '',
     });
   }
-
-  DeliveryReservation reservation = DeliveryReservation(
-    luggage: [],
-  );
-
   // 가방 개수 초기화
   int smallBagCount = 0;
   int largeBagCount = 0;
