@@ -48,8 +48,6 @@ class StorageReservation {
       memberId: json['memberId'],
       memberNickname: json['memberNickname'],
       storageId: json['storageId'],
-      memberId: json['memberId'],
-      memberNickname: json['memberNickname'],
       storageName: json['storageName'],
       luggage: json['luggage'] != null
           ? (json['luggage'] as List)
