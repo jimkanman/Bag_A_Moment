@@ -1,18 +1,4 @@
-/*
- * Copyright 2021 Google Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
 
 package com.example.bag_a_moment.common.rendering;
 
@@ -36,11 +22,11 @@ public class BoxRenderer {
     private static final String VERTEX_SHADER_NAME = "shaders/box.vert";
     private static final String FRAGMENT_SHADER_NAME = "shaders/box.frag";
 
-    // Stores the triangulation of the cube.
+    // 박스 정점을 저장
     private FloatBuffer vertexBuffer;
     private ShortBuffer indexBuffer;
 
-    // Shader program.
+    // 쉐이더
     private int program;
     private int vPosition;
     private int uViewProjection;
@@ -68,7 +54,7 @@ public class BoxRenderer {
         vPosition = GLES20.glGetAttribLocation(program, "vPosition");
         uViewProjection = GLES20.glGetUniformLocation(program, "uViewProjection");
 
-        // Sets the index buffer, which is constant regardless of the size/position of the cube.
+
         short[] indices = {
                 0, 1, 2, 2, 1, 3, // Front.
                 4, 5, 6, 6, 5, 7, // Back.
@@ -77,14 +63,14 @@ public class BoxRenderer {
                 16, 17, 18, 18, 17, 19, // Top.
                 20, 21, 22, 22, 21, 23  // Bottom.
         };
-        ByteBuffer indexByteBuffer = ByteBuffer.allocateDirect(2 * indices.length); // 2 bytes per short.
+        ByteBuffer indexByteBuffer = ByteBuffer.allocateDirect(2 * indices.length);
         indexByteBuffer.order(ByteOrder.nativeOrder());
         indexBuffer = indexByteBuffer.asShortBuffer();
         indexBuffer.rewind();
         indexBuffer.put(indices);
 
-        // Allocates vertexBuffer.
-        ByteBuffer vertexByteBuffer = ByteBuffer.allocateDirect(288); // 6 faces * 4 corners * 3 dimensions * 4 bytes-per-float.
+
+        ByteBuffer vertexByteBuffer = ByteBuffer.allocateDirect(288); // 6 faces * 4 vertices * 3 coordinates * 4 bytes.
         vertexByteBuffer.order(ByteOrder.nativeOrder());
         vertexBuffer = vertexByteBuffer.asFloatBuffer();
         ShaderUtil.checkGLError(TAG, "Init complete");

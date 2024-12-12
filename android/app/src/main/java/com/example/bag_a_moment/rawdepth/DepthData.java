@@ -44,11 +44,10 @@ public class DepthData {
         return null;
     }
 
-    /** Applies camera intrinsics to convert depth image into a 3D pointcloud. */
     private static FloatBuffer convertRawDepthImagesTo3dPointBuffer(
             Image depth, Image confidence, CameraIntrinsics cameraTextureIntrinsics, float[] modelMatrix) {
-        // Java uses big endian so we have to change the endianess to ensure we extract
-        // depth data in the correct byte order.
+
+
         final Image.Plane depthImagePlane = depth.getPlanes()[0];
         ByteBuffer depthByteBufferOriginal = depthImagePlane.getBuffer();
         ByteBuffer depthByteBuffer = ByteBuffer.allocate(depthByteBufferOriginal.capacity());
@@ -90,33 +89,31 @@ public class DepthData {
 
         for (int y = 0; y < depthHeight; y += step) {
             for (int x = 0; x < depthWidth; x += step) {
-                // Depth images are tightly packed, so it's OK to not use row and pixel strides.
-                int depthMillimeters = depthBuffer.get(y * depthWidth + x); // Depth image pixels are in mm.
+
+                int depthMillimeters = depthBuffer.get(y * depthWidth + x);
                 if (depthMillimeters == 0) {
-                    // Pixels with value zero are invalid, meaning depth estimates are missing from
-                    // this location.
                     continue;
                 }
+
+                //depth의 값을 m단위로 변환
                 final float depthMeters = depthMillimeters / 1000.0f; // Depth image pixels are in mm.
 
-                // Retrieves the confidence value for this pixel.
+
                 final byte confidencePixelValue =
                         confidenceBuffer.get(
                                 y * confidenceImagePlane.getRowStride()
                                         + x * confidenceImagePlane.getPixelStride());
                 final float confidenceNormalized = ((float) (confidencePixelValue & 0xff)) / 255.0f;
                 if (confidenceNormalized < 0.3 || depthMeters > 1.5) {
-                    // Ignores "low-confidence" pixels.
+                   //특정 임계값이 넘어가면 무시
                     continue;
                 }
 
-                // Unprojects the depth into a 3D point in camera coordinates.
                 pointCamera[0] = depthMeters * (x - cx) / fx;
                 pointCamera[1] = depthMeters * (cy - y) / fy;
                 pointCamera[2] = -depthMeters;
                 pointCamera[3] = 1;
 
-                // Applies model matrix to transform point into world coordinates.
                 Matrix.multiplyMV(pointWorld, 0, modelMatrix, 0, pointCamera, 0);
                 points.put(pointWorld[0]); // X.
                 points.put(pointWorld[1]); // Y.
@@ -132,36 +129,31 @@ public class DepthData {
     public static void filterUsingPlanes(FloatBuffer points, Collection<Plane> allPlanes) {
         float[] planeNormal = new float[3];
 
-        // Allocates the output buffer.
         int numPoints = points.remaining() / DepthData.FLOATS_PER_POINT;
 
-        // Each plane is checked against each point.
+
         for (Plane plane : allPlanes) {
             if (plane.getTrackingState() != TrackingState.TRACKING || plane.getSubsumedBy() != null) {
                 continue;
             }
 
-            // Computes the normal vector of the plane.
             Pose planePose = plane.getCenterPose();
             planePose.getTransformedAxis(1, 1.0f, planeNormal, 0);
 
-            // Filters points that are too close to the plane.
             for (int index = 0; index < numPoints; ++index) {
-                // Retrieves the next point.
                 final float x = points.get(FLOATS_PER_POINT * index);
                 final float y = points.get(FLOATS_PER_POINT * index + 1);
                 final float z = points.get(FLOATS_PER_POINT * index + 2);
 
-                // Transforms point to be in world coordinates, to match plane info.
+
                 float distance = (x - planePose.tx()) * planeNormal[0]
                         + (y - planePose.ty()) * planeNormal[1]
                         + (z - planePose.tz()) * planeNormal[2];
 
                 if (Math.abs(distance) > 0.03) {
-                    continue;  // Keeps this point, since it's far enough away from the plane.
+                    continue;
                 }
 
-                // Invalidates points that are too close to planar surfaces.
                 points.put(FLOATS_PER_POINT * index, 0);
                 points.put(FLOATS_PER_POINT * index + 1, 0);
                 points.put(FLOATS_PER_POINT * index + 2, 0);

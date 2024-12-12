@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements GLSurfaceView.Ren
     private static final int DEPTH_BUFFER_SIZE = 16;
 
     private AABB selectedCluster;
+    private List<AABB> fixedClusters = new ArrayList<>();
 
     private Camera lastCamera;
     private Frame lastFrame;
@@ -359,15 +360,18 @@ public class MainActivity extends AppCompatActivity implements GLSurfaceView.Ren
 
 //              PointClusteringHelper clusteringHelper = new PointClusteringHelper(points);
 //              List<AABB> clusters = clusteringHelper.findNonOverlappingLargestClusters();
+//              for (AABB aabb : clusters) {
+//                boxRenderer.draw(aabb, camera);
+//                }
 
-//                  // 안정적인 클러스터만 고정된 클러스터로 저장
+//              // 안정적인 클러스터만 고정된 클러스터로 저장
 //              for (AABB cluster : clusters) {
 //                if (isStable(cluster)) {
 //                  fixedClusters.add(cluster);
 //                }
 //              }
-//              // 고정된 클러스터는 그대로 렌더링
-//              for (AABB fixedCluster : fixedClusters) {
+              // 고정된 클러스터는 그대로 렌더링
+//              for (AABB fixedCluster : clusters) {
 //                boxRenderer.draw(fixedCluster, camera);
 //              }
 
@@ -426,7 +430,7 @@ public class MainActivity extends AppCompatActivity implements GLSurfaceView.Ren
             // 찾은 클러스터를 선택된 클러스터로 설정하고 렌더링합니다.
             selectedCluster = targetCluster;
             if (selectedCluster != null) {
-                messageSnackbarHelper.showMessage(this, "클러스터 선택됨fds");
+                messageSnackbarHelper.showMessage(this, "클러스터 선택됨");
                 guide_text_container.setVisibility(View.GONE);
                 result_popup_container.setVisibility(View.VISIBLE);
                 result_text.setText("가로" + (int) selectedCluster.getWidthInCm() + "세로" + (int) selectedCluster.getHeightInCm() + "높이" + (int) selectedCluster.getDepthInCm());
