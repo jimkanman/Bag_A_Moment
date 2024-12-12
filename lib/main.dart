@@ -85,6 +85,7 @@ class JimApp extends StatelessWidget {
         //   ),
         // ),
       ),
+      debugShowCheckedModeBanner: false, // DEBUG 배너 제거
 
     );
   }
