@@ -94,6 +94,18 @@ Future<void> fetchStorageDetails() async {
 
 }
 
+  // 태그 맵 정의
+  final Map<String, String> tagMap = {
+    'PARKING': '주차 가능',
+    'CART': '카트 사용',
+    'BOX': '박스 제공',
+    'TWENTY_FOUR_HOURS': '24시간',
+    'CCTV': 'CCTV 설치',
+    'INSURANCE': '보험 제공',
+    'REFRIGERATION': '냉장 보관',
+    'VALUABLES': '귀중품 보관',
+    'OTHER': '기타',
+  };
 
 
 
@@ -373,7 +385,7 @@ Future<void> fetchStorageDetails() async {
                 return Chip(
                   label: Text(
                     //TODO: 태그 추가
-                    option == 'TWENTY_FOUR_HOURS' ? '24시간' : option, // "24hours"는 "24시간"으로 표시
+                    tagMap[option] ?? option, // "24hours"는 "24시간"으로 표시
                     style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
