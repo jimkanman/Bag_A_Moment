@@ -1,5 +1,5 @@
 import 'package:bag_a_moment/models/storage_model.dart';
-import 'package:bag_a_moment/screens/home/afterMarker/StorageDetailPage.dart';
+import 'package:bag_a_moment/screens/storage/StorageDetailPage.dart';
 import 'package:flutter/material.dart';
 
 /// '내 보관소' 화면의 보관소 카드
@@ -11,8 +11,8 @@ class StorageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 70,
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
@@ -20,8 +20,9 @@ class StorageCard extends StatelessWidget {
     
       child: Row(
         children: [
-          // 보관소 이미지 // TODO: image 삽입
-          Container(width: 70, height: 70, color: Colors.black,),
+          Container(width: 70, height: 70,
+            child: Image(image: NetworkImage(storage.images[0]))//TODO 나중에 대표이미지?
+          ),
           const SizedBox(width: 16),
 
           // 보관소 정보
@@ -30,9 +31,9 @@ class StorageCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text( storage.name ,/* TODO Title */ style: const TextStyle( fontSize: 16, fontWeight: FontWeight.bold,), overflow: TextOverflow.ellipsis,),
+                Text( storage.name ,style: const TextStyle( fontSize: 16, fontWeight: FontWeight.bold,), overflow: TextOverflow.ellipsis,),
                 const SizedBox(height: 4),
-                Text(storage.detailedAddress, /* TODO 주소 */style: const TextStyle(fontSize: 10, overflow: TextOverflow.ellipsis),
+                Text(storage.detailedAddress, style: const TextStyle(fontSize: 10, overflow: TextOverflow.ellipsis),
                 ),
               ],
             ),
@@ -45,7 +46,7 @@ class StorageCard extends StatelessWidget {
             children: [
               // 상태 텍스트 (검수 중 or REJECTED)
               Text(
-                storage.status, // TODO status 보고 결정 (APPROVED 시 렌더링 X)
+                storage.status == 'REJECTED' ? '검수 거절' : '',
                 style: TextStyle(
                   color: Colors.red,
                   fontWeight: FontWeight.bold,
