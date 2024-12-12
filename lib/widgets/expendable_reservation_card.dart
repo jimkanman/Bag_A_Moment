@@ -143,7 +143,7 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
         return const Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("배송이", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
+            Text("배송이 ", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),),
             Text("완료", style: TextStyle(color: AppColors.textDark, fontWeight: FontWeight.bold ),),
             Text("되었어요", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold ),)
           ],
@@ -430,16 +430,19 @@ class _ExpandableReservationCardState extends State<ExpandableReservationCard> {
                               // Provider에 컨트롤러 저장
                               context.read<MapControllerProvider>().setController(widget.deliveryReservation.deliveryId, controller);
                               if(widget.deliveryLatitude != null && widget.deliveryLongitude != null) {
-                                // 시작 위치 주어진 경우 해당 위치로 이동
+                                // 배송자 위치 주어진 경우 해당 위치로 이동
                                 controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryLatitude!, widget.deliveryLongitude!)));
+                              } else if (widget.deliveryReservation.status == 'COMPLETE') {
+                                // 도착한 경우 도착지로 이동
+                                controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryReservation.destinationLatitude, widget.deliveryReservation.destinationLongitude)));
                               } else {
-                                // 시작 위치 주어지지 않은 경우 (= 배송 시작이 아닌 경우) 보관소 위치를 보여줌
+                                // 배송자 위치 주어지지 않은 경우 (= 배송 시작이 아닌 경우) 보관소 위치를 보여줌
                                 controller.animateCamera(CameraUpdate.newLatLng(LatLng(widget.deliveryReservation.storageLatitude, widget.deliveryReservation!.storageLongitude)));
                               }
                             },
                             initialCameraPosition: const CameraPosition(
                               target: LatLng(37.5665, 126.9780), // 서울
-                              zoom: 14,
+                              zoom: 16,
                             ),
                             markers: _markers,
                           ),
