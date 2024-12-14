@@ -8,6 +8,7 @@
 <img src="https://img.shields.io/badge/firebase-%23FFCA28.svg?&style=for-the-badge&logo=firebase&logoColor=white" />
 <img src="https://img.shields.io/badge/rest%20api-%23007EC6.svg?&style=for-the-badge&logo=api&logoColor=white" />
 <img src="https://img.shields.io/badge/figma-%23F24E1E.svg?&style=for-the-badge&logo=figma&logoColor=white" />
+<img src="https://img.shields.io/badge/aws-%23FF9900.svg?&style=for-the-badge&logo=amazon-aws&logoColor=white" />
 
 
 ![image](https://github.com/user-attachments/assets/cc219e41-7c7b-4196-a351-a62f6bdcd779)
@@ -58,7 +59,7 @@
 
 ### 📦 **Tech Stack**  
 - **Frontend:** Flutter, Dart  
-- **Backend:** Spring Boot, REST API, Firebase  
+- **Backend:** Spring Boot, REST API, AWS infrastructure 
 - **Others:** Google Maps, ARCore, WebSocket, MySQL
 <table border="0">
   <tr>
@@ -107,8 +108,8 @@
    - 안전한 데이터 처리 및 서버 성능 최적화를 위해 Spring Boot를 활용하였습니다.  
    - REST API와 Firebase 인증을 통해 강력한 보안을 제공합니다.  
 
-4. **Firebase 연동**  
-   - 사용자의 계정 정보와 데이터는 Firebase를 통해 안정적으로 관리됩니다.  
+4. **AWS EC2를 사용하여 안정적인 서버 환경 구축**  
+   - 사용자의 계정 정보와 데이터가 안정적으로 관리됩니다.  
    - Google Maps와의 통합으로 실시간 위치 데이터를 처리합니다.  
 
 5. **멀티 플랫폼 확장 가능성**  
@@ -118,7 +119,7 @@
 
 ### 📦 **기술 스택**  
 - **프론트엔드:** Flutter, Dart  
-- **백엔드:** Spring Boot, REST API, Firebase  
+- **백엔드:** Spring Boot, REST API, AWS EC2
 - **기타:** Google Maps, ARCore, WebSocket, MySQL  
 
 
