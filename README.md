@@ -48,9 +48,9 @@
    - Utilizes Spring Boot for secure data processing and server performance optimization.  
    - Integrates REST APIs and Firebase Authentication for enhanced security.  
 
-4. **Firebase Integration**  
-   - User account information and data are reliably managed through Firebase.  
-   - Processes real-time location data via integration with Google Maps.  
+4. **AWS EC2 Integration**  
+   - User account information and application data are securely managed on an AWS EC2 server.  
+   - Real-time location data is processed seamlessly through integration with Google Maps and the EC2 server.
 
 5. **Multi-Platform Scalability**  
    - Currently developed for Android but planned for future iOS expansion.  
