@@ -9,10 +9,9 @@
 <img src="https://img.shields.io/badge/rest%20api-%23007EC6.svg?&style=for-the-badge&logo=api&logoColor=white" />
 <img src="https://img.shields.io/badge/figma-%23F24E1E.svg?&style=for-the-badge&logo=figma&logoColor=white" />
 
- 
- 
 
 ![image](https://github.com/user-attachments/assets/cc219e41-7c7b-4196-a351-a62f6bdcd779)
+
 
 
 ### Chung-ang University, Team Jimkkanman Project
@@ -61,7 +60,19 @@
 - **Frontend:** Flutter, Dart  
 - **Backend:** Spring Boot, REST API, Firebase  
 - **Others:** Google Maps, ARCore, WebSocket, MySQL
----
+<table border="0">
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/451b1fcf-e8b2-44d2-9f50-505a9b63dd88" alt="Image 1" width="300"/>
+      <div><b>Jimkkanman</b><br>This is the first screen you can see.</div>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/1db499f2-5697-4662-bf64-95cb4004912a" alt="Image 2" width="300"/>
+      <div><b>Real time delivery check</b><br>Real time tracking system, by @ja7811</div>
+    </td>
+  </tr>
+</table>
+
 
 # 짐깐만: Bag A Moment, for your luggage everywhere 📱  
 ### Chung-ang University, Team Jimkkanman Project  
