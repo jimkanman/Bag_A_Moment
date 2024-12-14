@@ -12,6 +12,8 @@
  
  
 
+![image](https://github.com/user-attachments/assets/cc219e41-7c7b-4196-a351-a62f6bdcd779)
+
 
 ### Chung-ang University, Team Jimkkanman Project
 
@@ -110,5 +112,3 @@
 
 
 
-
-![image](https://github.com/user-attachments/assets/cc219e41-7c7b-4196-a351-a62f6bdcd779)
